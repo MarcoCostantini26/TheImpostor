@@ -1,0 +1,46 @@
+# --- IDE e File di Sistema ---
+.idea/
+.vscode/
+*.swp
+*.iml
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# --- Node.js (Comms & Frontend) ---
+# Fondamentale per evitare l'errore "Invalid argument" che hai avuto
+node_modules/
+npm-debug.log*
+dist/
+.husky/_/
+.eslintcache
+
+# --- Java / Gradle (Lobby & DSL) ---
+.gradle/
+build/
+bin/
+out/
+*.class
+*.jar
+*.war
+# Non ignoriamo il wrapper perché serve per la CI
+!gradle-wrapper.jar
+
+# --- Go (Game Engine) ---
+# Ignora il file binario generato (sia Linux che Windows)
+engine-go/engine
+engine-go/engine.exe
+# File di test e vendor
+*.out
+*.test
+vendor/
+
+# --- Docker & Environment ---
+.env
+.env.local
+# Ignora i dati persistenti del database se li metti in una cartella locale
+postgres-data/
+mongodb-data/
+
+# --- Log ---
+*.log
