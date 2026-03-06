@@ -46,17 +46,17 @@ jobs:
         run: docker build -t theimpostor-lobby:latest .
 
   build-game-engine:
-    name: Build & Test Game Engine (Go 1.22)
+    name: Build & Test Game Engine (Go 1.24)
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: game-engine
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Go 1.22
+      - name: Setup Go 1.24
         uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.24'
       - name: Download Go modules
         run: go mod download
       - name: Run Tests
