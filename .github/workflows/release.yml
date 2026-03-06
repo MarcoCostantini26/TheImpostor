@@ -26,7 +26,7 @@ jobs:
 
       - name: Install Semantic Release & Plugins
         run: |
-          npm install -g semantic-release \
+          npm install semantic-release \
           semantic-release-preconfigured-conventional-commits \
           @semantic-release/github \
           @semantic-release/git
