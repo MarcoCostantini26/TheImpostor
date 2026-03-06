@@ -14,7 +14,7 @@ npm-debug.log*
 dist/
 .husky/_/
 .eslintcache
-
+docs/
 # --- Java / Gradle (Lobby & DSL) ---
 .gradle/
 build/
