@@ -1,3 +1,22 @@
+## [1.0.1](https://github.com/MarcoCostantini26/TheImpostor/compare/1.0.0...1.0.1) (2026-03-10)
+
+### Dependency updates
+
+* **core-deps:** update dependency vue to v3.5.30 ([#23](https://github.com/MarcoCostantini26/TheImpostor/issues/23)) ([4375ffb](https://github.com/MarcoCostantini26/TheImpostor/commit/4375ffb71664a104f9be267e1f05f56d27481943))
+* **deps:** update actions/setup-go action to v6 ([ecaf1b9](https://github.com/MarcoCostantini26/TheImpostor/commit/ecaf1b99b0de89a531a8f84496ed5b2f96adb044))
+* **deps:** update commitlint monorepo to v20.4.3 ([#3](https://github.com/MarcoCostantini26/TheImpostor/issues/3)) ([d61250a](https://github.com/MarcoCostantini26/TheImpostor/commit/d61250a3f2e915eb906ace95774dfefe40adc48f))
+* **deps:** update dependency @vue/tsconfig to ^0.9.0 ([#5](https://github.com/MarcoCostantini26/TheImpostor/issues/5)) ([9338c31](https://github.com/MarcoCostantini26/TheImpostor/commit/9338c31167d196da40474fbb345a5e83457ea389))
+* **deps:** update dependency eslint to v10.0.3 ([#18](https://github.com/MarcoCostantini26/TheImpostor/issues/18)) ([bb0ddd9](https://github.com/MarcoCostantini26/TheImpostor/commit/bb0ddd96a9eaef5948b2c1cf511a844bd646c262))
+* **deps:** update dependency go to 1.26 ([31ac05b](https://github.com/MarcoCostantini26/TheImpostor/commit/31ac05b07a925004f59bc941008ab06140745df3))
+* **deps:** update dependency lint-staged to v16.3.2 ([#7](https://github.com/MarcoCostantini26/TheImpostor/issues/7)) ([b4e0e47](https://github.com/MarcoCostantini26/TheImpostor/commit/b4e0e479601cab4fafa5993fdfc84e9b70d616dd))
+* **deps:** update dependency node to v24 ([5537cf1](https://github.com/MarcoCostantini26/TheImpostor/commit/5537cf1e6b62a30256de1408f23be06241f64a4c))
+* **deps:** update eclipse-temurin docker tag ([#4](https://github.com/MarcoCostantini26/TheImpostor/issues/4)) ([b036277](https://github.com/MarcoCostantini26/TheImpostor/commit/b03627783f84f9b430100dd33661aed178c96d3d))
+* **deps:** update golang docker tag to v1.26 ([#8](https://github.com/MarcoCostantini26/TheImpostor/issues/8)) ([6c1653f](https://github.com/MarcoCostantini26/TheImpostor/commit/6c1653fc9a86e49b3731ba4985037c4c0f340f1e))
+
+### Build and continuous integration
+
+* **fix:** refactor triggers and use wagoid action to fix commitlint errors ([d1e26bc](https://github.com/MarcoCostantini26/TheImpostor/commit/d1e26bc88a1bf357e54ee27f517179b329572b37))
+
 ## 1.0.0 (2026-03-06)
 
 ### Dependency updates
