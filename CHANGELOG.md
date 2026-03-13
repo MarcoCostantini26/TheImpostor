@@ -1,3 +1,18 @@
+## [1.1.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.0.1...1.1.0) (2026-03-13)
+
+### Features
+
+* **infra:** setup local docker compose environment ([3f32946](https://github.com/MarcoCostantini26/TheImpostor/commit/3f32946c45eb28aac0a3b70f5e9dc648845f75fd))
+
+### Dependency updates
+
+* **deps:** update commitlint monorepo to v20.4.4 ([#33](https://github.com/MarcoCostantini26/TheImpostor/issues/33)) ([1fd45c1](https://github.com/MarcoCostantini26/TheImpostor/commit/1fd45c13530829466aafdd003ef845b52772f146))
+* **deps:** update dependency @types/node to v25.4.0 ([#30](https://github.com/MarcoCostantini26/TheImpostor/issues/30)) ([899d626](https://github.com/MarcoCostantini26/TheImpostor/commit/899d6268e4fc555bdd466ea3f856c268bf97eb49))
+* **deps:** update dependency @vitejs/plugin-vue to v6.0.5 ([#34](https://github.com/MarcoCostantini26/TheImpostor/issues/34)) ([dcffe11](https://github.com/MarcoCostantini26/TheImpostor/commit/dcffe11a7dee3336ba65155692891eebaba4935d))
+* **deps:** update dependency lint-staged to v16.3.3 ([#31](https://github.com/MarcoCostantini26/TheImpostor/issues/31)) ([2fdd516](https://github.com/MarcoCostantini26/TheImpostor/commit/2fdd5167cd6e5eda9279abbc2e19b9017b12b94c))
+* **deps:** update gradle to v9.4.0 ([#9](https://github.com/MarcoCostantini26/TheImpostor/issues/9)) ([bcdfa95](https://github.com/MarcoCostantini26/TheImpostor/commit/bcdfa953e5c6e34d8b256fffc345080fb2304781))
+* **deps:** update oxlint monorepo to ~1.53.0 ([#10](https://github.com/MarcoCostantini26/TheImpostor/issues/10)) ([cd04577](https://github.com/MarcoCostantini26/TheImpostor/commit/cd04577a0a6b309ae2cac6c7a2b54a94d4936705))
+
 ## [1.0.1](https://github.com/MarcoCostantini26/TheImpostor/compare/1.0.0...1.0.1) (2026-03-10)
 
 ### Dependency updates
