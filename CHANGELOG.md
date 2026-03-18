@@ -1,3 +1,13 @@
+## [1.2.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.1.1...1.2.0) (2026-03-18)
+
+### Features
+
+* **engine:** implement core domain entities and value objects ([a3ed50f](https://github.com/MarcoCostantini26/TheImpostor/commit/a3ed50f46239200897e9cab3a4e5c431081421c9))
+
+### Bug Fixes
+
+* **engine:** remove unused valueobject import ([9dbafa3](https://github.com/MarcoCostantini26/TheImpostor/commit/9dbafa38111a93e0d3ebdd96ec3fc0aa6eeb0337))
+
 ## [1.1.1](https://github.com/MarcoCostantini26/TheImpostor/compare/1.1.0...1.1.1) (2026-03-18)
 
 ### Dependency updates
