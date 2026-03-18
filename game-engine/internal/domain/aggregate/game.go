@@ -2,7 +2,7 @@ package aggregate
 
 import (
 	"game-engine/internal/domain/entity"
-	"game-engine/internal/domain/valueobject"
+	//"game-engine/internal/domain/valueobject"
 )
 
 type Game struct {
