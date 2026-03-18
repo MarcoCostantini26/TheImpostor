@@ -1,3 +1,21 @@
+## [1.1.1](https://github.com/MarcoCostantini26/TheImpostor/compare/1.1.0...1.1.1) (2026-03-18)
+
+### Dependency updates
+
+* **deps:** update actions/checkout action to v6 ([#11](https://github.com/MarcoCostantini26/TheImpostor/issues/11)) ([6ac606c](https://github.com/MarcoCostantini26/TheImpostor/commit/6ac606c94ee05c3195d391efff1a11ded93faf65))
+* **deps:** update actions/setup-java action to v5 ([#15](https://github.com/MarcoCostantini26/TheImpostor/issues/15)) ([9a0b908](https://github.com/MarcoCostantini26/TheImpostor/commit/9a0b9089521056b75323867401035196cbeb7c52))
+* **deps:** update commitlint monorepo to v20.5.0 ([#40](https://github.com/MarcoCostantini26/TheImpostor/issues/40)) ([ad872cf](https://github.com/MarcoCostantini26/TheImpostor/commit/ad872cfebb53d28d9d144cad2b04b468471ed05d))
+* **deps:** update dependency @types/node to v25.5.0 ([#35](https://github.com/MarcoCostantini26/TheImpostor/issues/35)) ([e4540f2](https://github.com/MarcoCostantini26/TheImpostor/commit/e4540f2c5d304d2da4158daebe4f9968242d50d9))
+* **deps:** update dependency lint-staged to v16.4.0 ([#39](https://github.com/MarcoCostantini26/TheImpostor/issues/39)) ([58f6e3b](https://github.com/MarcoCostantini26/TheImpostor/commit/58f6e3b7d1fcfa5cb868679d34c0aabaf6b45132))
+* **deps:** update dependency vite-plugin-vue-devtools to v8.1.0 ([#37](https://github.com/MarcoCostantini26/TheImpostor/issues/37)) ([586b761](https://github.com/MarcoCostantini26/TheImpostor/commit/586b761ddaa85e28f1fbc88dac52fd4ece376233))
+* **deps:** update dependency vue-tsc to v3.2.6 ([#42](https://github.com/MarcoCostantini26/TheImpostor/issues/42)) ([bd6d761](https://github.com/MarcoCostantini26/TheImpostor/commit/bd6d761363f2fcf77149aad068f8c120dcf698db))
+* **deps:** update oxlint monorepo to ~1.55.0 ([#32](https://github.com/MarcoCostantini26/TheImpostor/issues/32)) ([032bc67](https://github.com/MarcoCostantini26/TheImpostor/commit/032bc677c4d85642879c86178ac213eaba7ea153))
+* **deps:** update oxlint monorepo to ~1.56.0 ([#41](https://github.com/MarcoCostantini26/TheImpostor/issues/41)) ([84bb591](https://github.com/MarcoCostantini26/TheImpostor/commit/84bb59160953f4251f6f68762de2385e7cf13693))
+
+### Bug Fixes
+
+* **engine:** add http healthcheck to keep docker container alive ([bfd1c7d](https://github.com/MarcoCostantini26/TheImpostor/commit/bfd1c7d9d0eebc5aa3fa9d30059dd9e022d588af))
+
 ## [1.1.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.0.1...1.1.0) (2026-03-13)
 
 ### Features
