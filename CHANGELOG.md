@@ -1,3 +1,25 @@
+## [1.3.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.2.0...1.3.0) (2026-03-19)
+
+### Features
+
+* **comms:** setup hexagonal architecture and websocket server ([41f578d](https://github.com/MarcoCostantini26/TheImpostor/commit/41f578d0e58f77bba370fb9e82e8a84a7dc00ea9))
+
+### Dependency updates
+
+* **deps:** update actions/setup-node action to v6 ([#20](https://github.com/MarcoCostantini26/TheImpostor/issues/20)) ([c8998a5](https://github.com/MarcoCostantini26/TheImpostor/commit/c8998a55ced4abf8bd5c190312cb553998ca18d6))
+* **deps:** update dependency vite to v8 ([#36](https://github.com/MarcoCostantini26/TheImpostor/issues/36)) ([1d2c34f](https://github.com/MarcoCostantini26/TheImpostor/commit/1d2c34fa5f5b3d86036292dc2290e7ba8d9878e0))
+
+### Bug Fixes
+
+* **comms:** add ws types and explicit parameters in websocket server ([328a0cc](https://github.com/MarcoCostantini26/TheImpostor/commit/328a0cc4b22bc12a01f39e0afa1725d409aeca4e))
+
+### General maintenance
+
+* **docker:** update node image to v22 ([6d8160d](https://github.com/MarcoCostantini26/TheImpostor/commit/6d8160d20bdf23387b7ee243e2d1b048322d188e))
+* fixed duplicate lobby ([a7441cd](https://github.com/MarcoCostantini26/TheImpostor/commit/a7441cd46290359a768b1489f6a0ad9e65ea48e1))
+* refactored name structure java ([d5cd914](https://github.com/MarcoCostantini26/TheImpostor/commit/d5cd9140f62ac509ae617d675a73d041ecb9abf9))
+* refactored name structure java ([450ef37](https://github.com/MarcoCostantini26/TheImpostor/commit/450ef370edc0711f56516a97503c91de5d09beff))
+
 ## [1.2.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.1.1...1.2.0) (2026-03-18)
 
 ### Features
