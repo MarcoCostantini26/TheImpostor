@@ -1,10 +1,9 @@
-version: '3.8'
 
 services:
   # 1. LOBBY SERVICE (Java 21)
   lobby-service:
     build: 
-      context: ./LobbyService
+      context: ./lobby-service
       dockerfile: Dockerfile
     ports:
       - "8080:8080"
