@@ -17,7 +17,7 @@ type Game struct {
 	State       string
 	Players     []entity.Player
 	CurrentTurn valueobject.Turn
-	Word        valueobject.Word
+	SecretWord        valueobject.SecretWord
 	Hint        valueobject.Hint
 	Votes       []valueobject.Vote
 	domainEvents []event.DomainEvent 
