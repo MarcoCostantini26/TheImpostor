@@ -1,0 +1,37 @@
+name: Semantic Release
+
+on:
+  push:
+    branches:
+      - main # Gira SOLO quando fai il merge sul main
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  release:
+    name: Create Automated Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Install Semantic Release & Plugins
+        run: |
+          npm install semantic-release \
+          semantic-release-preconfigured-conventional-commits \
+          @semantic-release/github \
+          @semantic-release/git
+
+      - name: Run Semantic Release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: npx semantic-release

@@ -1,0 +1,54 @@
+
+services:
+  # 1. LOBBY SERVICE (Java 21)
+  lobby-service:
+    build: 
+      context: ./lobby-service
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    networks:
+      - game-network
+    environment:
+      - SPRING_PROFILES_ACTIVE=dev
+
+  # 2. GAME ENGINE (Go 1.24)
+  game-engine:
+    build:
+      context: ./game-engine
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"             # Modifica se il tuo server Go usa una porta diversa
+    networks:
+      - game-network
+
+  # 3. COMM SERVICE (Node.js 22 - WebSocket)
+  comm-service:
+    build:
+      context: ./comm-service
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    networks:
+      - game-network
+    environment:
+      - PORT=3000
+      - ENGINE_URL=http://game-engine:8081  # Node parla con Go usando il nome del container!
+
+  # 4. FRONT-END (Vue.js)
+  # frontend:
+  #   build:
+  #     context: ./frontend       # <-- CAMBIA QUESTO col nome esatto della cartella Vue
+  #     dockerfile: Dockerfile
+  #   ports:
+  #     - "5173:5173"             # 5173 è la porta standard di Vite/Vue. Modifica se usi altro.
+  #   networks:
+  #     - game-network
+  #   depends_on:
+  #     - lobby-service
+  #     - comm-service
+
+# La rete virtuale che permette ai servizi di "vedersi" tra loro
+networks:
+  game-network:
+    driver: bridge
