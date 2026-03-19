@@ -1,4 +1,4 @@
-import { WebSocketServer } from 'ws';
+import { WebSocketServer, WebSocket, RawData } from 'ws';
 import { InMemorySessionRepository } from './infrastructure/InMemorySessionRepository';
 import { RoutingService } from './application/RoutingService';
 import { ChatAndSignalingService } from './application/ChatAndSignalingService';
@@ -10,17 +10,15 @@ const sessionRepository = new InMemorySessionRepository();
 const routingService = new RoutingService(sessionRepository);
 const chatAndSignalingService = new ChatAndSignalingService(sessionRepository);
 
-wss.on('connection', (ws) => {
+wss.on('connection', (ws: WebSocket) => {
     console.log('Nuovo client connesso al Gateway!');
 
-    ws.on('message', (data) => {
+    ws.on('message', (data: RawData) => {
         console.log(`Messaggio grezzo ricevuto: ${data}`);
-        //qui faremo il parsing del JSON (Message o Event) e lo passeremo a routingService o chatAndSignalingService in base al tipo.
     });
 
     ws.on('close', () => {
         console.log('Client disconnesso dal Gateway.');
-        //qui andrà la logica per ripulire la connessione dalla Sessione
     });
 });
 

@@ -12,6 +12,10 @@
   "type": "commonjs",
   "devDependencies": {
     "@types/node": "^25.3.5",
+    "@types/ws": "^8.18.1",
     "typescript": "^5.9.3"
+  },
+  "dependencies": {
+    "ws": "^8.19.0"
   }
 }
