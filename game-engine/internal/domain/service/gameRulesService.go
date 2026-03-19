@@ -12,7 +12,6 @@ func NewGameRulesService() *GameRulesService {
 }
 
 func (s *GameRulesService) CheckWinCondition(game *aggregate.Game) string {
-	// Esempio logico: contiamo gli impostori e i crewmate vivi
 	impostorsAlive := 0
 	crewmatesAlive := 0
 
