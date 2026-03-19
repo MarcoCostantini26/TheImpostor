@@ -1,3 +1,16 @@
+## [1.4.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.3.0...1.4.0) (2026-03-19)
+
+### Features
+
+* **engine:** add game factory to enforce domain rules on creation ([8417900](https://github.com/MarcoCostantini26/TheImpostor/commit/8417900e0e46116d9ed9a48926aa17958ae8f135))
+* **engine:** add game repository interface and rules service ([ccb7eb0](https://github.com/MarcoCostantini26/TheImpostor/commit/ccb7eb030d3a50b2f147c1ded97ddfd376d4a999))
+* **engine:** integrate domain events into game aggregate ([f2ce4ad](https://github.com/MarcoCostantini26/TheImpostor/commit/f2ce4ad4c04617bff1a01ef245dbdd7747b9af11))
+* **engine:** setup core domain entities and value objects ([1e24a8b](https://github.com/MarcoCostantini26/TheImpostor/commit/1e24a8b6dd4515a7bcb09ec6a0cce4e07742804c))
+
+### Bug Fixes
+
+* **engine:** resolve build errors in aggregate ([e7ac7eb](https://github.com/MarcoCostantini26/TheImpostor/commit/e7ac7eb527c2434b45e942c87ddd359cdda531b4))
+
 ## [1.3.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.2.0...1.3.0) (2026-03-19)
 
 ### Features
