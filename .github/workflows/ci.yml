@@ -22,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: LobbyService
+        working-directory: lobby-service
     steps:
       - uses: actions/checkout@v6
       - name: Setup Java 21
