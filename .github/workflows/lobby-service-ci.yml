@@ -6,6 +6,7 @@ on:
       - 'feat/lobby-service'
     paths:
       - 'lobby-service/**'
+      - '.github/workflows/lobby-service-ci.yml'
   pull_request:
     branches:
       - feat/lobby-service
