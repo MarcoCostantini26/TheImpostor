@@ -12,17 +12,21 @@ const error = ref('')
 const loading = ref(false)
 
 const handleLogin = async () => {
-	loading.value = true
-	error.value = ''
-  
-	const result = await authStore.login(email.value, password.value)
-  
-	if (result && result.success) {
-		router.push('/')		// to update
-	} else {
-		error.value = result?.error || 'Login failed'
-	}
-	loading.value = false
+  loading.value = true
+  error.value = ''
+
+  const result = await authStore.login({
+    email: email.value,
+    password: password.value
+  })
+
+  if (result && result.success) {
+    router.push('/')
+  } else {
+    error.value = result?.error || 'Login failed'
+  }
+
+  loading.value = false
 }
 </script>
 
@@ -80,7 +84,6 @@ const handleLogin = async () => {
 </template>
 
 <style scoped>
-/* keep minimal scoped rules so Tailwind handles the layout */
 .hidden-md { display: none; }
 @media (min-width: 768px) { .hidden-md { display: block; } }
 </style>
