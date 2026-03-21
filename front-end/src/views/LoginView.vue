@@ -29,7 +29,7 @@ const handleLogin = async () => {
   })
 
   if (result && result.success) {
-		router.push('/home')
+    router.push('/')
   } else {
     error.value = result?.error || 'Login failed'
   }
