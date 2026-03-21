@@ -23,7 +23,11 @@ const handleRegister = async () => {
     return
   }
 
-  const result = await authStore.register?.({ username: username.value, email: email.value, password: password.value })
+  const result = await authStore.register({
+    username: username.value,
+    email: email.value,
+    password: password.value
+  })
 
   if (result && result.success) {
     router.push('/')
