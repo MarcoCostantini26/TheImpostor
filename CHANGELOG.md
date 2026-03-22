@@ -1,3 +1,12 @@
+## [1.4.2](https://github.com/MarcoCostantini26/TheImpostor/compare/1.4.1...1.4.2) (2026-03-22)
+
+### Dependency updates
+
+* **core-deps:** update dependency ws to v8.20.0 ([#53](https://github.com/MarcoCostantini26/TheImpostor/issues/53)) ([c77401c](https://github.com/MarcoCostantini26/TheImpostor/commit/c77401c97aead201bc3017e5eab1043bbe72d8b6))
+* **deps:** update dependency vite to v8.0.1 ([#45](https://github.com/MarcoCostantini26/TheImpostor/issues/45)) ([c621a2e](https://github.com/MarcoCostantini26/TheImpostor/commit/c621a2e86e95bb2fa4a4854b2e89b9facec3ebc3))
+* **deps:** update eclipse-temurin docker tag ([#49](https://github.com/MarcoCostantini26/TheImpostor/issues/49)) ([008b796](https://github.com/MarcoCostantini26/TheImpostor/commit/008b7963efff28a4058d0cc1e2100bc85b1f2ce2))
+* **deps:** update plugin org.springframework.boot to v4.0.4 ([#48](https://github.com/MarcoCostantini26/TheImpostor/issues/48)) ([401e5e2](https://github.com/MarcoCostantini26/TheImpostor/commit/401e5e2a100e30a8ec690105fa51aafa8784da0d))
+
 ## [1.4.1](https://github.com/MarcoCostantini26/TheImpostor/compare/1.4.0...1.4.1) (2026-03-20)
 
 ### Dependency updates
