@@ -42,6 +42,14 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
+    function guest(name) {
+        user.value = { username: name }
+        token.value = null
+        localStorage.setItem('user', JSON.stringify(user.value))
+        localStorage.removeItem('token')
+        return { success: true }
+    }
+
     function logout() {
         user.value = null
         token.value = null
@@ -50,5 +58,5 @@ export const useAuthStore = defineStore('auth', () => {
         window.location.href = '/'
     }
 
-    return { user, token, login, register, logout }
+    return { user, token, login, register, logout, guest }
 })
