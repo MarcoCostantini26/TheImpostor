@@ -11,6 +11,14 @@ const password = ref('')
 const error = ref('')
 const loading = ref(false)
 
+const handleGuest = () => {
+	if (loading.value) return
+	const rnd = Math.floor(Math.random() * 90000) + 10000
+	const guestName = `player${rnd}`
+	authStore.guest(guestName)
+	router.push('/home')
+}
+
 const handleLogin = async () => {
   loading.value = true
   error.value = ''
@@ -21,7 +29,7 @@ const handleLogin = async () => {
   })
 
   if (result && result.success) {
-    router.push('/')
+		router.push('/home')
   } else {
     error.value = result?.error || 'Login failed'
   }
@@ -33,7 +41,7 @@ const handleLogin = async () => {
 <template>
 	<div class="min-h-screen flex items-center justify-center px-4">
 		<div class="w-full max-w-6xl p-6 md:p-8 rounded-2xl bg-[rgba(48,48,48,0.85)] shadow-[0_20px_60px_rgba(0,0,0,0.6)] grid grid-cols-1 md:grid-cols-2 gap-0 items-center">
-			<div class="max-w-md w-full space-y-8 bg-[rgba(18,18,18,0.95)] p-8 rounded-xl shadow-md border border-transparent order-2 md:order-1">
+			<div class="card pop-in max-w-md w-full space-y-8 bg-[rgba(18,18,18,0.95)] p-8 rounded-xl shadow-md border border-transparent order-2 md:order-1">
 				<div>
 					<h2 class="text-3xl font-bold text-white">LOGIN</h2>
 				</div>
@@ -72,8 +80,8 @@ const handleLogin = async () => {
 					<div class="flex-1 h-px bg-gray-700"></div>
 				</div>
 
-				<router-link to="/register" class="block w-full text-center py-3 rounded-full border-2 border-emerald-400 text-emerald-400">Sign up</router-link>
-				<button @click="() => { if(!loading) $emit?.('') }" class="block w-full text-center py-3 rounded-full border-2 border-white text-white">Play as Guest</button>
+				<router-link to="/register" class="block w-full text-center py-3 rounded-full border-2 border-emerald-400 text-emerald-400 hover:bg-emerald-700/10">Sign up</router-link>
+				<button @click="handleGuest" :disabled="loading" class="block w-full text-center py-3 rounded-full border-2 border-white text-white disabled:opacity-50 hover:bg-gray-700/10">Play as Guest</button>
 			</div>
 
 			<div class="flex items-center justify-center order-1 md:order-2 mb-4 md:mb-0">
@@ -86,5 +94,21 @@ const handleLogin = async () => {
 <style scoped>
 .hidden-md { display: none; }
 @media (min-width: 768px) { .hidden-md { display: block; } }
+
+/* pop-in animation */
+.card { opacity: 0; transform: translateY(8px) scale(0.995); }
+
+@keyframes popIn {
+	from { opacity: 0; transform: translateY(12px) scale(0.98); }
+	to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.pop-in {
+	animation-name: popIn;
+	animation-duration: 420ms;
+	animation-timing-function: cubic-bezier(.2,.9,.2,1);
+	animation-fill-mode: forwards;
+	animation-delay: 120ms;
+}
 </style>
 

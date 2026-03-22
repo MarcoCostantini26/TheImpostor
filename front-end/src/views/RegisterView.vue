@@ -30,7 +30,7 @@ const handleRegister = async () => {
   })
 
   if (result && result.success) {
-    router.push('/')
+    router.push('/home')
   } else {
     error.value = result?.error || 'Registration failed'
   }
@@ -42,7 +42,7 @@ const handleRegister = async () => {
 <template>
   <div class="min-h-screen flex items-center justify-center px-4">
     <div class="w-full max-w-6xl p-6 md:p-8 rounded-2xl bg-[rgba(48,48,48,0.85)] shadow-[0_20px_60px_rgba(0,0,0,0.6)] grid grid-cols-1 md:grid-cols-2 gap-0 items-center">
-      <div class="max-w-md w-full space-y-8 bg-[rgba(18,18,18,0.95)] p-8 rounded-xl shadow-md border border-transparent order-2 md:order-1">
+      <div class="card pop-in max-w-md w-full space-y-8 bg-[rgba(18,18,18,0.95)] p-8 rounded-xl shadow-md border border-transparent order-2 md:order-1">
         <div>
           <h2 class="text-3xl font-bold text-white">REGISTER</h2>
         </div>
@@ -105,4 +105,20 @@ const handleRegister = async () => {
 <style scoped>
 .hidden-md { display: none; }
 @media (min-width: 768px) { .hidden-md { display: block; } }
+
+/* pop-in animation */
+.card { opacity: 0; transform: translateY(8px) scale(0.995); }
+
+@keyframes popIn {
+  from { opacity: 0; transform: translateY(12px) scale(0.98); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.pop-in {
+  animation-name: popIn;
+  animation-duration: 420ms;
+  animation-timing-function: cubic-bezier(.2,.9,.2,1);
+  animation-fill-mode: forwards;
+  animation-delay: 120ms;
+}
 </style>
