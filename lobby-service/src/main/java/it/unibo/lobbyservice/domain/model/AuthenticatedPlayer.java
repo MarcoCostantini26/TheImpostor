@@ -14,7 +14,7 @@ import java.time.Instant;
  */
 @Getter
 @EqualsAndHashCode(callSuper = true)
-@Document(collection = "users")
+@Document(collection = "users") // crea collection o tabella su mongoDB
 public final class AuthenticatedPlayer extends User {
 
     @Id
@@ -25,16 +25,16 @@ public final class AuthenticatedPlayer extends User {
 
     private final String passwordHash;
     private final Instant createdAt;
-    
+
     // Campi profilo opzionali
     private final Integer age;
     private final String country;
     private final String avatarUrl;
     private final String bio;
 
-    public AuthenticatedPlayer(String id, String username, String email, String passwordHash, 
-                               Instant createdAt, Integer age, String country, 
-                               String avatarUrl, String bio) {
+    public AuthenticatedPlayer(String id, String username, String email, String passwordHash,
+            Instant createdAt, Integer age, String country,
+            String avatarUrl, String bio) {
         super(id, username);
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Email cannot be null or empty");
@@ -56,17 +56,17 @@ public final class AuthenticatedPlayer extends User {
      * Factory method per creare un nuovo utente registrato.
      */
     public static AuthenticatedPlayer create(String username, String email, String passwordHash) {
-        return new AuthenticatedPlayer(null, username, email, passwordHash, Instant.now(), 
-                                      null, null, null, null);
+        return new AuthenticatedPlayer(null, username, email, passwordHash, Instant.now(),
+                null, null, null, null);
     }
 
     /**
      * Factory method con profilo completo.
      */
     public static AuthenticatedPlayer createWithProfile(String username, String email, String passwordHash,
-                                                       Integer age, String country, String avatarUrl, String bio) {
-        return new AuthenticatedPlayer(null, username, email, passwordHash, Instant.now(), 
-                                      age, country, avatarUrl, bio);
+            Integer age, String country, String avatarUrl, String bio) {
+        return new AuthenticatedPlayer(null, username, email, passwordHash, Instant.now(),
+                age, country, avatarUrl, bio);
     }
 
     @Override
@@ -74,4 +74,3 @@ public final class AuthenticatedPlayer extends User {
         return true;
     }
 }
-
