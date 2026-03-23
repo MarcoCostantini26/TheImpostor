@@ -1,3 +1,10 @@
+## [1.6.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.5.0...1.6.0) (2026-03-23)
+
+### Features
+
+* **engine:** add game behavior for voting, phase transitions, and game end ([02cfce4](https://github.com/MarcoCostantini26/TheImpostor/commit/02cfce4fd361c7c6b82f9d0adaa8972e69ba4ab5))
+* **engine:** add game behavior for voting, phase transitions, and game end ([0050f76](https://github.com/MarcoCostantini26/TheImpostor/commit/0050f76c32baa49b7f212c7e512ba7ea4d3e1bf4))
+
 ## [1.5.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.4.3...1.5.0) (2026-03-23)
 
 ### Features
