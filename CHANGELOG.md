@@ -1,3 +1,11 @@
+## [1.10.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.9.0...1.10.0) (2026-03-23)
+
+### Features
+
+* **comms:** add Message and Event value objects for input validation ([e9a2fcb](https://github.com/MarcoCostantini26/TheImpostor/commit/e9a2fcbd4fa89919cb94737c9ff87eff18022190))
+* **comms:** complete gateway infrastructure with heartbeat and graceful shutdown ([8198cdf](https://github.com/MarcoCostantini26/TheImpostor/commit/8198cdf785f63839d4cd22cdd5e9ce0ff7e5b964))
+* **comms:** implement websocket heartbeat to drop dead connections ([91e2855](https://github.com/MarcoCostantini26/TheImpostor/commit/91e2855e748f77ee5ad4ebb16d894220de3a9aa1))
+
 ## [1.9.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.8.0...1.9.0) (2026-03-23)
 
 ### Features
