@@ -47,3 +47,23 @@ type GameEnded struct {
 }
 
 func (e GameEnded) EventName() string { return "GameEnded" }
+
+// PhaseChanged viene emesso quando si passa da Discussione a Votazione
+type PhaseChanged struct {
+	BaseEvent
+	GameID   string
+	NewPhase string // es. "VOTING"
+	Timer    int    // I secondi a disposizione per questa nuova fase
+}
+
+func (e PhaseChanged) EventName() string { return "PhaseChanged" }
+
+// PlayerVoted viene emesso quando qualcuno esprime un voto in segreto.
+// (Il Frontend userà questo evento per mostrare la spunta "ha votato" vicino al nome del giocatore)
+type PlayerVoted struct {
+	BaseEvent
+	GameID  string
+	VoterID string
+}
+
+func (e PlayerVoted) EventName() string { return "PlayerVoted" }
