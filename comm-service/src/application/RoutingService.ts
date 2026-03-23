@@ -5,7 +5,7 @@ import { Event } from '../domain/Event';
 export class RoutingService {
     constructor(
         private sessionRepository: SessionRepository,
-        private engineGateway: EngineGateway
+        private engineGateway: EngineGateway // Iniettiamo la porta 
     ) {}
 
     async handleClientEvent(userId: string, event: Event): Promise<void> {
