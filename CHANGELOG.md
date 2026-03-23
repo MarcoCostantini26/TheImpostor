@@ -1,3 +1,9 @@
+## [1.5.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.4.3...1.5.0) (2026-03-23)
+
+### Features
+
+* **engine:** finalize factory dynamic rules and core domain events ([5db2ef8](https://github.com/MarcoCostantini26/TheImpostor/commit/5db2ef8516b765540265db4eb40ba480bd116032))
+
 ## [1.4.3](https://github.com/MarcoCostantini26/TheImpostor/compare/1.4.2...1.4.3) (2026-03-23)
 
 ### Dependency updates
