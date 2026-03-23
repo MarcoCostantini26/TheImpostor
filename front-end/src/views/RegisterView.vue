@@ -84,7 +84,7 @@ const handleRegister = async () => {
 
           <div>
             <button type="submit" :disabled="loading"
-              class="block w-full text-center py-3 rounded-full text-white bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 disabled:opacity-50 disabled:cursor-not-allowed">
+              class="block w-full text-center py-3 rounded-full text-white bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">
               {{ loading ? 'Creating...' : 'Create Account' }}
             </button>
           </div>

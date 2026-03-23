@@ -35,8 +35,8 @@ const username = computed(() => {
             <p class="text-gray-400 text-center mt-4">Become host and invite your friends!</p>
           </div>
 
-          <div class="mt-8 flex justify-center">
-            <button class="px-8 py-3 rounded-full border-2 border-emerald-400 text-emerald-400 hover:bg-emerald-700/10">NEW ROOM</button>
+            <div class="mt-8 flex justify-center">
+            <button class="px-8 py-3 rounded-full border-2 border-emerald-400 text-emerald-400 hover:bg-emerald-700/10 cursor-pointer">New Room</button>
           </div>
 
         </div>
@@ -53,7 +53,7 @@ const username = computed(() => {
           </div>
 
           <div class="mt-8 flex justify-center">
-            <button class="px-10 py-3 rounded-full text-white bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 disabled:opacity-50 disabled:cursor-not-allowed">JOIN</button>
+            <button class="px-10 py-3 rounded-full text-white bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">Join</button>
           </div>
         </div>
 
