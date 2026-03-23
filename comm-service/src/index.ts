@@ -4,6 +4,8 @@ import { InMemorySessionRepository } from './infrastructure/InMemorySessionRepos
 import { RoutingService } from './application/RoutingService';
 import { ChatAndSignalingService } from './application/ChatAndSignalingService';
 import { Session, Connection } from './domain/Session';
+import { Message } from './domain/Message';
+import { Event } from './domain/Event';
 
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
 const wss = new WebSocketServer({ port });
@@ -15,7 +17,6 @@ const chatAndSignalingService = new ChatAndSignalingService(sessionRepository);
 const activeSockets = new Map<string, WebSocket>();
 
 wss.on('connection', async (ws: WebSocket) => {
-    //qui simuliamo un processo di autenticazione e autorizzazione assegnando un ID utente temporaneo
     const temporaryUserId = randomUUID();
     const socketId = randomUUID();
 
@@ -26,23 +27,30 @@ wss.on('connection', async (ws: WebSocket) => {
     session.addConnection(connection);
 
     await sessionRepository.save(session);
+    console.log(`[Gateway] Client connesso: ${temporaryUserId} (Socket ID: ${socketId})`);
 
     ws.on('message', async (data: RawData) => {
         try {
             const parsedData = JSON.parse(data.toString());
 
             if (parsedData.type === 'CHAT') {
-                const message = { roomId: parsedData.roomId, senderId: temporaryUserId, content: parsedData.content };
+                //Validazione tramite Value Object Message
+                const message = new Message(parsedData.roomId, temporaryUserId, parsedData.content);
                 await chatAndSignalingService.processChatMessage(message);
+
             } else if (parsedData.type === 'WEBRTC') {
-                const message = { roomId: parsedData.roomId, senderId: temporaryUserId, content: parsedData.content };
+                //Validazione tramite Value Object Message
+                const message = new Message(parsedData.roomId, temporaryUserId, parsedData.content);
                 await chatAndSignalingService.processWebRTCSignaling(message);
+
             } else {
-                const event = { type: parsedData.type, payload: parsedData.payload || parsedData };
+                //Validazione tramite Value Object Event
+                const eventPayload = parsedData.payload || parsedData;
+                const event = new Event(parsedData.type, eventPayload);
                 await routingService.handleClientEvent(temporaryUserId, event);
             }
-        } catch (error) {
-            console.error('Errore: Il messaggio ricevuto non è un JSON valido.');
+        } catch (error: any) {
+            console.error(`[Gateway] Errore elaborazione messaggio da ${temporaryUserId}: ${error.message}`);
         }
     });
 
@@ -50,7 +58,7 @@ wss.on('connection', async (ws: WebSocket) => {
         await sessionRepository.remove(temporaryUserId);
         
         activeSockets.delete(socketId);
-        console.log(`Client ${temporaryUserId} disconnesso dal Gateway.`);
+        console.log(`[Gateway] Client disconnesso: ${temporaryUserId}`);
     });
 });
 
