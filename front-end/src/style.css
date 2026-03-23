@@ -1,0 +1,60 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+@import "tailwindcss";
+
+:root {
+    --color-cyber-black: rgba(22, 21, 21, 0.8);
+    --color-cyber-dark: rgba(22, 21, 21, 0.9);
+    --color-cyber-gray: rgba(22, 21, 21, 0.7);
+    --color-cyber-primary: #5fbfbb;
+    --color-cyber-secondary: #5fbfbb;
+    --color-cyber-accent: #5fbfbb;
+    --color-cyber-success: #5fbfbb;
+    --color-cyber-warning: #f59e0b;
+    --color-cyber-danger: #ef4444;
+}
+
+html, body {
+    height: 100%;
+    background: #161515;
+    color-scheme: dark;
+}
+
+body {
+    color: #f3f4f6; /* text-gray-100 */
+    font-family: 'Inter', ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Simple Card Utility */
+.glass-card {
+    background: rgba(22,21,21,0.8);
+    border: 1px solid #5fbfbb;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05);
+    padding: 1rem;
+}
+
+.Vue-Toastification__toast {
+  background-color: rgba(22, 21, 21, 0.95) !important;
+  border: 1px solid #5fbfbb !important;
+  backdrop-filter: blur(8px);
+}
+
+.Vue-Toastification__toast--success {
+  border-color: #5fbfbb !important;
+}
+
+.Vue-Toastification__toast--error {
+  border-color: #ef4444 !important;
+}
+
+.Vue-Toastification__toast--warning {
+  border-color: #f59e0b !important;
+}
+
+.Vue-Toastification__toast--info {
+  border-color: #5fbfbb !important;
+}
+
+.Vue-Toastification__progress-bar {
+  background-color: #5fbfbb !important;
+}

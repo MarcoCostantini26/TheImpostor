@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Custom utilities or overrides (optional) */
+html, body { height: 100%; }
+body {
+	background: radial-gradient(ellipse at center, #0f0f10 0%, #080808 45%);
+	color-scheme: dark;
+}
+
+/* Provide a subtle page-level container for the login panel */
+.page-bg-overlay {
+	background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+}
