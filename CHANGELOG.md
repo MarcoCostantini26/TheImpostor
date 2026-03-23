@@ -1,3 +1,18 @@
+## [1.4.3](https://github.com/MarcoCostantini26/TheImpostor/compare/1.4.2...1.4.3) (2026-03-23)
+
+### Dependency updates
+
+* **deps:** update dependency eslint to v10.1.0 ([#52](https://github.com/MarcoCostantini26/TheImpostor/issues/52)) ([d3ffa39](https://github.com/MarcoCostantini26/TheImpostor/commit/d3ffa39f5cc7a138bf1cb28d26af41c4dd8cec94))
+* **deps:** update gradle to v9.4.1 ([#46](https://github.com/MarcoCostantini26/TheImpostor/issues/46)) ([870d82d](https://github.com/MarcoCostantini26/TheImpostor/commit/870d82da2210b199ac2f9053ae4536db13bc332d))
+
+### Bug Fixes
+
+* **deps:** lint dependencies added ([1ccb709](https://github.com/MarcoCostantini26/TheImpostor/commit/1ccb709bb15aca85b067a35b5b48b100d3740ae0))
+
+### General maintenance
+
+* **feat:** login register and home pages ([d85be4c](https://github.com/MarcoCostantini26/TheImpostor/commit/d85be4c52918691203450faa44a6efcf03365fef))
+
 ## [1.4.2](https://github.com/MarcoCostantini26/TheImpostor/compare/1.4.1...1.4.2) (2026-03-22)
 
 ### Dependency updates
