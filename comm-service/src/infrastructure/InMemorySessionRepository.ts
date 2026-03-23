@@ -1,20 +1,21 @@
-import { SessionRepository } from '../domain/SessionRepository';
 import { Session } from '../domain/Session';
+import { SessionRepository } from '../domain/SessionRepository';
 
 export class InMemorySessionRepository implements SessionRepository {
-    private sessions: Map<string, Session> = new Map();
+    private sessions = new Map<string, Session>();
 
     async save(session: Session): Promise<void> {
         this.sessions.set(session.userId, session);
-        console.log(`Sessione salvata per l'utente ${session.userId}`);
+        console.log(`[Repository] Sessione salvata per: ${session.userId}`);
     }
 
     async findByUserId(userId: string): Promise<Session | null> {
-        return this.sessions.get(userId) || null;
+        const session = this.sessions.get(userId);
+        return session ? session : null;
     }
 
     async remove(userId: string): Promise<void> {
         this.sessions.delete(userId);
-        console.log(`Sessione rimossa per l'utente ${userId}`);
+        console.log(`[Repository] Sessione rimossa per: ${userId}`);
     }
 }
