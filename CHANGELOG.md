@@ -1,3 +1,9 @@
+## [1.9.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.8.0...1.9.0) (2026-03-23)
+
+### Features
+
+* **comms:** implement incoming message routing and service dispatch ([471d49b](https://github.com/MarcoCostantini26/TheImpostor/commit/471d49b6c2af6b0a458f5e920b8af3c3492a8c81))
+
 ## [1.8.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.7.0...1.8.0) (2026-03-23)
 
 ### Features
