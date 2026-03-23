@@ -1,6 +1,9 @@
 package aggregate
 
 import (
+	"errors"
+	"time"
+
 	"game-engine/internal/domain/entity"
 	"game-engine/internal/domain/event"
 	"game-engine/internal/domain/valueobject"
@@ -147,6 +150,78 @@ func (g *Game) EndGame(winningTeam string) error {
 		BaseEvent:   event.BaseEvent{OccurredAt: time.Now()},
 		GameID:      g.ID,
 		WinningTeam: winningTeam,
+	})
+
+	return nil
+}
+
+// ResolveVoting chiude la fase di voto, conta i voti e (se c'è una maggioranza) elimina un giocatore.
+// Restituisce l'ID del giocatore eliminato, oppure una stringa vuota se c'è stato un pareggio o uno skip.
+func (g *Game) ResolveVoting() (string, error) {
+	if g.State != StatePlaying {
+		return "", errors.New("la partita non è in corso")
+	}
+	if g.CurrentTurn.Phase != valueobject.PhaseVoting {
+		return "", errors.New("non siamo in fase di votazione")
+	}
+
+	// 1. Contiamo i voti usando una Mappa
+	voteCounts := make(map[string]int)
+	for _, v := range g.Votes {
+		target := v.TargetID
+		if target == "" {
+			target = "SKIP" // Consideriamo i voti vuoti come "Skip"
+		}
+		voteCounts[target]++
+	}
+
+	// 2. Troviamo chi ha preso più voti
+	var maxVotes int
+	var candidates []string
+
+	for target, count := range voteCounts {
+		if count > maxVotes {
+			maxVotes = count
+			candidates = []string{target} // Nuovo leader assoluto
+		} else if count == maxVotes {
+			candidates = append(candidates, target) // Pareggio temporaneo
+		}
+	}
+
+	// 3. Gestiamo i pareggi o le vittorie dello SKIP
+	// Se l'array ha più di un elemento (pareggio perfetto) o se ha vinto lo SKIP, non muore nessuno.
+	if len(candidates) != 1 || candidates[0] == "SKIP" {
+		return "", nil
+	}
+
+	// 4. Abbiamo un condannato!
+	eliminatedID := candidates[0]
+	err := g.eliminatePlayer(eliminatedID)
+	if err != nil {
+		return "", err
+	}
+
+	return eliminatedID, nil
+}
+
+// eliminatePlayer è un metodo privato che uccide il giocatore ed emette l'evento
+func (g *Game) eliminatePlayer(playerID string) error {
+	idx := g.getPlayerIndex(playerID)
+	if idx == -1 {
+		return errors.New("giocatore da eliminare non trovato")
+	}
+	if g.Players[idx].Status == "DEAD" {
+		return errors.New("il giocatore è già morto")
+	}
+
+	// Cambiamo lo stato interno
+	g.Players[idx].Status = "DEAD"
+
+	// Avvisiamo il mondo esterno
+	g.RecordEvent(event.PlayerEliminated{
+		BaseEvent: event.BaseEvent{OccurredAt: time.Now()},
+		GameID:    g.ID,
+		PlayerID:  playerID,
 	})
 
 	return nil

@@ -5,6 +5,12 @@ import (
 	"game-engine/internal/domain/valueobject"
 )
 
+const (
+	WinCrewmates = "CREWMATES_WIN"
+	WinImpostors = "IMPOSTOR_WINS"
+	WinNone      = "NONE"
+)
+
 type GameRulesService struct{}
 
 func NewGameRulesService() *GameRulesService {
@@ -27,14 +33,14 @@ func (s *GameRulesService) CheckWinCondition(game *aggregate.Game) string {
 
 	// Regola 1: Se l'impostore muore, vincono i Crewmate
 	if impostorsAlive == 0 {
-		return "CREWMATES_WIN"
+		return WinCrewmates
 	}
 
 	// Regola 2: Se i Crewmate vivi sono <= degli Impostori, vince l'Impostore
 	if crewmatesAlive <= impostorsAlive {
-		return "IMPOSTOR_WINS"
+		return WinImpostors
 	}
 
 	// Nessuno ha ancora vinto
-	return "NONE"
+	return WinNone
 }

@@ -67,3 +67,13 @@ type PlayerVoted struct {
 }
 
 func (e PlayerVoted) EventName() string { return "PlayerVoted" }
+
+// PlayerEliminated viene emesso quando un giocatore viene esiliato dopo le votazioni
+// o (in futuro) ucciso dall'impostore.
+type PlayerEliminated struct {
+	BaseEvent
+	GameID   string
+	PlayerID string
+}
+
+func (e PlayerEliminated) EventName() string { return "PlayerEliminated" }
