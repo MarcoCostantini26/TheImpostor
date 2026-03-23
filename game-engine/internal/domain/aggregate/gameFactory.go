@@ -10,8 +10,20 @@ import (
 	"game-engine/internal/domain/valueobject"
 )
 
-// ErrNotEnoughPlayers viene restituito se si tenta di avviare una partita con meno di 4 giocatori
-var ErrNotEnoughPlayers = errors.New("una partita richiede almeno 4 giocatori")
+var (
+	ErrNotEnoughPlayers     = errors.New("una partita richiede almeno 4 giocatori")
+	ErrTooManyPlayers       = errors.New("una partita non può avere più di 8 giocatori")
+	ErrInvalidImpostorCount = errors.New("numero di impostori richiesto non consentito per questo numero di giocatori")
+)
+
+// CalculateMaxImpostors restituisce il numero massimo di impostori consentito 
+// in base al numero di giocatori presenti.
+func CalculateMaxImpostors(playerCount int) int {
+	if playerCount >= 6 {
+		return 2
+	}
+	return 1 // Per 4 o 5 giocatori, massimo 1 impostore
+}
 
 // GameFactory espone i metodi per creare partite valide rispettando le regole di dominio
 type GameFactory struct{}
@@ -21,32 +33,53 @@ func NewGameFactory() *GameFactory {
 	return &GameFactory{}
 }
 
-// CreateGame inizializza un nuovo Game Aggregate, assegna i ruoli e genera l'evento di inizio partita
-func (f *GameFactory) CreateGame(gameID string, playerIDs []string) (*Game, error) {
-	// 1. Validazione delle Invarianti (minimo 4 giocatori)
-	if len(playerIDs) < 4 {
+func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImpostors int) (*Game, error) {
+	numPlayers := len(playerIDs)
+
+	// 1. Validazione Invarianti base (minimo 4, massimo 8)
+	if numPlayers < 4 {
 		return nil, ErrNotEnoughPlayers
 	}
+	if numPlayers > 8 {
+		return nil, ErrTooManyPlayers
+	}
 
-	// 2. Assegnazione casuale dei ruoli
-	// (In Go 1.24+ il generatore math/rand è già inizializzato in automatico in modo sicuro)
-	impostorIndex := rand.Intn(len(playerIDs))
+	// 2. Calcoliamo il massimo consentito
+	maxImpostors := CalculateMaxImpostors(numPlayers)
 
+	// 3. Validazione della richiesta della Lobby
+	if requestedImpostors < 1 || requestedImpostors > maxImpostors {
+		return nil, ErrInvalidImpostorCount
+	}
+
+	// 4. Selezione casuale
+	shuffledIndices := rand.Perm(numPlayers)
+	impostorIndices := shuffledIndices[:requestedImpostors]
+
+	isImpostor := func(index int) bool {
+		for _, v := range impostorIndices {
+			if v == index {
+				return true
+			}
+		}
+		return false
+	}
+
+	// 5. Creazione giocatori
 	var players []entity.Player
 	for i, pid := range playerIDs {
 		role := valueobject.RoleCrewmate
-		if i == impostorIndex {
+		if isImpostor(i) {
 			role = valueobject.RoleImpostor
 		}
-
 		players = append(players, entity.Player{
 			ID:     pid,
-			Status: "ALIVE", // Stato iniziale standard
+			Status: "ALIVE",
 			Role:   role,
 		})
 	}
 
-	// 3. Creazione dell'Aggregate Root nel suo stato iniziale
+	// 6. Creazione Aggregate
 	game := &Game{
 		ID:      gameID,
 		State:   StatePlaying,
@@ -54,19 +87,16 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string) (*Game, erro
 		CurrentTurn: valueobject.Turn{
 			RoundNumber: 1,
 			Phase:       valueobject.PhaseDiscussion,
-			Timer:       120, // Esempio: 120 secondi per la fase di discussione
+			Timer:       120,
 		},
 		Votes: make([]valueobject.Vote, 0),
-		// domainEvents è inizializzato a nil di default, va benissimo così
 	}
 
-	// 4. Generazione e registrazione del Domain Event "GameStarted"
+	// 7. Evento
 	startedEvent := event.GameStarted{
 		BaseEvent: event.BaseEvent{OccurredAt: time.Now()},
 		GameID:    game.ID,
 	}
-	
-	// Il gioco si "appunta" l'evento appena nato
 	game.RecordEvent(startedEvent)
 
 	return game, nil
