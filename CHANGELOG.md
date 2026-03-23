@@ -1,3 +1,9 @@
+## [1.8.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.7.0...1.8.0) (2026-03-23)
+
+### Features
+
+* **http:** add GameController with basic endpoints ([df5ab74](https://github.com/MarcoCostantini26/TheImpostor/commit/df5ab74fcf799e98e17e3c18ce52a64efa8ef68a))
+
 ## [1.7.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.6.0...1.7.0) (2026-03-23)
 
 ### Features
