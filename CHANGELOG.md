@@ -1,3 +1,9 @@
+## [1.7.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.6.0...1.7.0) (2026-03-23)
+
+### Features
+
+* **application:** add GameAppService to orchestrate game use cases ([2c7185e](https://github.com/MarcoCostantini26/TheImpostor/commit/2c7185eeb689fcd0ca4524dbc77594b359b51835))
+
 ## [1.6.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.5.0...1.6.0) (2026-03-23)
 
 ### Features
