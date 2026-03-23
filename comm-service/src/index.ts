@@ -1,6 +1,7 @@
 import { WebSocketServer, WebSocket, RawData } from 'ws';
 import { randomUUID } from 'crypto';
 import { InMemorySessionRepository } from './infrastructure/InMemorySessionRepository';
+import { HttpEngineAdapter } from './infrastructure/HttpEngineAdapter'; 
 import { RoutingService } from './application/RoutingService';
 import { ChatAndSignalingService } from './application/ChatAndSignalingService';
 import { Session, Connection } from './domain/Session';
@@ -15,7 +16,9 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
 const wss = new WebSocketServer({ port });
 
 const sessionRepository = new InMemorySessionRepository();
-const routingService = new RoutingService(sessionRepository);
+const engineAdapter = new HttpEngineAdapter(); 
+
+const routingService = new RoutingService(sessionRepository, engineAdapter);
 const chatAndSignalingService = new ChatAndSignalingService(sessionRepository);
 
 const activeSockets = new Map<string, WebSocket>();
@@ -67,6 +70,7 @@ wss.on('connection', async (ws: WebSocket) => {
 
     ws.on('close', async () => {
         await sessionRepository.remove(temporaryUserId);
+        
         activeSockets.delete(socketId);
         console.log(`[Gateway] Client disconnesso: ${temporaryUserId}`);
     });
@@ -76,7 +80,7 @@ wss.on('connection', async (ws: WebSocket) => {
     });
 });
 
-//HEARTBEAT
+// HEARTBEAT
 const interval = setInterval(() => {
     wss.clients.forEach((ws) => {
         const extWs = ws as AliveWebSocket;
@@ -91,7 +95,7 @@ const interval = setInterval(() => {
     });
 }, 30000);
 
-//DOCKER
+// DOCKER
 const shutdown = () => {
     console.log('[Gateway] Ricevuto segnale di spegnimento. Chiusura in corso...');
     
@@ -108,7 +112,7 @@ const shutdown = () => {
     }, 10000);
 };
 
-//segnali di sistema per lo spegnimento dei container Docker
+// Segnali di sistema per lo spegnimento dei container Docker
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
