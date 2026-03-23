@@ -7,6 +7,10 @@ import { Session, Connection } from './domain/Session';
 import { Message } from './domain/Message';
 import { Event } from './domain/Event';
 
+interface AliveWebSocket extends WebSocket {
+    isAlive?: boolean;
+}
+
 const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
 const wss = new WebSocketServer({ port });
 
@@ -17,6 +21,13 @@ const chatAndSignalingService = new ChatAndSignalingService(sessionRepository);
 const activeSockets = new Map<string, WebSocket>();
 
 wss.on('connection', async (ws: WebSocket) => {
+    const extWs = ws as AliveWebSocket;
+    extWs.isAlive = true;
+
+    extWs.on('pong', () => {
+        extWs.isAlive = true;
+    });
+
     const temporaryUserId = randomUUID();
     const socketId = randomUUID();
 
@@ -56,10 +67,32 @@ wss.on('connection', async (ws: WebSocket) => {
 
     ws.on('close', async () => {
         await sessionRepository.remove(temporaryUserId);
-        
         activeSockets.delete(socketId);
         console.log(`[Gateway] Client disconnesso: ${temporaryUserId}`);
     });
+
+    ws.on('error', (error) => {
+        console.error(`[Gateway] Errore socket per ${temporaryUserId}:`, error);
+    });
+});
+
+//HEARTBEAT
+const interval = setInterval(() => {
+    wss.clients.forEach((ws) => {
+        const extWs = ws as AliveWebSocket;
+        
+        if (extWs.isAlive === false) {
+            console.log(`[Gateway] Connessione fantasma rilevata, terminazione forzata.`);
+            return extWs.terminate();
+        }
+
+        extWs.isAlive = false;
+        extWs.ping();
+    });
+}, 30000);
+
+wss.on('close', () => {
+    clearInterval(interval);
 });
 
 console.log(`Comms Gateway avviato sulla porta ${port}`);
