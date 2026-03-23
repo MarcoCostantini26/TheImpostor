@@ -1,20 +1,21 @@
-import { Event } from '../domain/ValueObjects';
 import { SessionRepository } from '../domain/SessionRepository';
+import { EngineGateway } from '../domain/EngineGateway';
+import { Event } from '../domain/Event';
 
 export class RoutingService {
-    constructor(private sessionRepository: SessionRepository) {}
+    constructor(
+        private sessionRepository: SessionRepository,
+        private engineGateway: EngineGateway // Iniettiamo la porta 
+    ) {}
 
     async handleClientEvent(userId: string, event: Event): Promise<void> {
-        const session = await this.sessionRepository.findByUserId(userId);
-        
-        if (!session) {
-            console.warn(`Nessuna sessione trovata per l'utente ${userId}`);
-            return;
-        }
+        // Definiamo quali eventi devono andare verso il modulo Engine (Go) [cite: 174]
+        const gameActions = ['SUBMIT_CLUE', 'CAST_VOTE', 'START_GAME'];
 
-        console.log(`Ricevuto evento [${event.type}] dall'utente ${userId}. Pronto per il routing verso i servizi di backend.`);
-        
-        // Nel livello Infrastructure, questo metodo invocherà le chiamate HTTP (REST/JSON)
-        // verso i contesti Lobby (Java) o Engine (Go).
+        if (gameActions.includes(event.type)) {
+            await this.engineGateway.sendGameAction(userId, event);
+        } else {
+            console.log(`[Routing] Evento ${event.type} ricevuto, ma non destinato all'Engine.`);
+        }
     }
 }
