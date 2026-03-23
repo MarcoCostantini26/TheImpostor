@@ -91,8 +91,25 @@ const interval = setInterval(() => {
     });
 }, 30000);
 
-wss.on('close', () => {
+//DOCKER
+const shutdown = () => {
+    console.log('[Gateway] Ricevuto segnale di spegnimento. Chiusura in corso...');
+    
     clearInterval(interval);
-});
+    
+    wss.close(() => {
+        console.log('[Gateway] Server WebSocket chiuso.');
+        process.exit(0);
+    });
+
+    setTimeout(() => {
+        console.error('[Gateway] Chiusura forzata dopo timeout.');
+        process.exit(1);
+    }, 10000);
+};
+
+//segnali di sistema per lo spegnimento dei container Docker
+process.on('SIGTERM', shutdown);
+process.on('SIGINT', shutdown);
 
 console.log(`Comms Gateway avviato sulla porta ${port}`);
