@@ -51,7 +51,7 @@ Il Lobby Service espone un'interfaccia interattiva Swagger UI che documenta tutt
 Per consultare le API:
 1. Assicurati che il server sia in esecuzione (vedi sezione precedente).
 2. Apri il browser al seguente indirizzo:
-   **http://localhost:8080/swagger-ui.html**
+   **http://localhost:8080/swagger-ui/index.html**
 
 Per consultare il file OpenAPI in formato JSON nudo:
 - **http://localhost:8080/v3/api-docs**

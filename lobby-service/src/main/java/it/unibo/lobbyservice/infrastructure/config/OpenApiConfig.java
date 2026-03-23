@@ -12,7 +12,7 @@ import java.util.List;
 /**
  * Configurazione Swagger/OpenAPI per documentazione automatica delle API.
  * 
- * Swagger UI disponibile su: http://localhost:8080/swagger-ui.html
+ * Swagger UI disponibile su: http://localhost:8080/swagger-ui/index.html
  * OpenAPI JSON: http://localhost:8080/v3/api-docs
  */
 @Configuration
