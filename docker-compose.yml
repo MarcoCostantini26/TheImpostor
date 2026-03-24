@@ -11,6 +11,7 @@ services:
       - game-network
     environment:
       - SPRING_PROFILES_ACTIVE=dev
+      - MONGODB_URI=${MONGODB_URI}
 
   # 2. GAME ENGINE (Go 1.24)
   game-engine:
