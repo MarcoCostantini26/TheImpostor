@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
+import { checkUsername, checkEmail } from '../services/authService'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -12,6 +13,38 @@ const password = ref('')
 const confirmPassword = ref('')
 const error = ref('')
 const loading = ref(false)
+const usernameAvailable = ref(null) 
+const emailAvailable = ref(null)
+const usernameMsg = ref('')
+const emailMsg = ref('')
+
+async function checkUsernameAvailability() {
+  usernameMsg.value = ''
+  usernameAvailable.value = null
+  if (!username.value) return
+  try {
+    const ok = await checkUsername(username.value)
+    usernameAvailable.value = ok
+    usernameMsg.value = ok ? 'Username available' : 'Username already taken'
+  } catch (e) {
+    usernameAvailable.value = null
+    usernameMsg.value = 'Unable to check username'
+  }
+}
+
+async function checkEmailAvailability() {
+  emailMsg.value = ''
+  emailAvailable.value = null
+  if (!email.value) return
+  try {
+    const ok = await checkEmail(email.value)
+    emailAvailable.value = ok
+    emailMsg.value = ok ? 'Email available' : 'Email already registered'
+  } catch (e) {
+    emailAvailable.value = null
+    emailMsg.value = 'Unable to check email'
+  }
+}
 
 const handleRegister = async () => {
   loading.value = true
@@ -19,6 +52,18 @@ const handleRegister = async () => {
 
   if (password.value !== confirmPassword.value) {
     error.value = 'Passwords do not match'
+    loading.value = false
+    return
+  }
+
+  if (usernameAvailable.value === false) {
+    error.value = 'Username already taken'
+    loading.value = false
+    return
+  }
+
+  if (emailAvailable.value === false) {
+    error.value = 'Email already registered'
     loading.value = false
     return
   }
@@ -47,16 +92,18 @@ const handleRegister = async () => {
           <div class="rounded-md shadow-sm -space-y-px">
             <div class="mb-4">
               <label for="username" class="block text-sm font-medium text-gray-400 mb-1">USERNAME</label>
-              <input id="username" name="username" type="text" autocomplete="username" required v-model="username"
+              <input id="username" name="username" type="text" autocomplete="username" required v-model="username" @blur="checkUsernameAvailability"
                 class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-700 bg-[rgba(255,255,255,0.02)] placeholder-gray-500 text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-sm"
               >
+              <div class="text-xs mt-1" :class="usernameAvailable === false ? 'text-red-300' : 'text-green-300'">{{ usernameMsg }}</div>
             </div>
 
             <div class="mb-4">
               <label for="email-address" class="block text-sm font-medium text-gray-400 mb-1">EMAIL ADDRESS</label>
-              <input id="email-address" name="email" type="email" autocomplete="email" required v-model="email"
+              <input id="email-address" name="email" type="email" autocomplete="email" required v-model="email" @blur="checkEmailAvailability"
                 class="appearance-none rounded-md relative block w-full px-3 py-2 border border-gray-700 bg-[rgba(255,255,255,0.02)] placeholder-gray-500 text-gray-100 focus:outline-none focus:ring-2 focus:ring-violet-500 focus:border-violet-500 sm:text-sm"
               >
+              <div class="text-xs mt-1" :class="emailAvailable === false ? 'text-red-300' : 'text-green-300'">{{ emailMsg }}</div>
             </div>
 
             <div class="mb-4">
