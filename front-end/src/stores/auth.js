@@ -10,13 +10,11 @@ export const useAuthStore = defineStore('auth', () => {
         try {
             const data = await authService.login(email, password)
 
-            user.value = data.user || data
-            token.value = data.token || null
+            user.value = data || null
+            token.value = null
 
             localStorage.setItem('user', JSON.stringify(user.value))
-            if (token.value) {
-                localStorage.setItem('token', token.value)
-            }
+            localStorage.removeItem('token')
 
             return { success: true }
         } catch (error) {
@@ -28,13 +26,11 @@ export const useAuthStore = defineStore('auth', () => {
         try {
             const data = await authService.register(username, email, password)
 
-            user.value = data.user || data
-            token.value = data.token || null
+            user.value = data || null
+            token.value = null
 
             localStorage.setItem('user', JSON.stringify(user.value))
-            if (token.value) {
-                localStorage.setItem('token', token.value)
-            }
+            localStorage.removeItem('token')
 
             return { success: true }
         } catch (error) {
@@ -57,6 +53,24 @@ export const useAuthStore = defineStore('auth', () => {
         localStorage.removeItem('token')
         window.location.href = '/'
     }
+
+    // If a token exists on load, try to validate and fetch the user
+    ;(async () => {
+        const stored = JSON.parse(localStorage.getItem('user') || 'null')
+        const id = stored?.id
+        if (id) {
+            try {
+                const data = await authService.me(id)
+                user.value = data || null
+                localStorage.setItem('user', JSON.stringify(user.value))
+            } catch {
+                token.value = null
+                localStorage.removeItem('token')
+                user.value = null
+                localStorage.removeItem('user')
+            }
+        }
+    })()
 
     return { user, token, login, register, logout, guest }
 })

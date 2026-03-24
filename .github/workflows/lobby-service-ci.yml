@@ -1,0 +1,49 @@
+name: Lobby Service CI
+
+on:
+  push:
+    branches:
+      - 'feat/lobby-service'
+    paths:
+      - 'lobby-service/**'
+      - '.github/workflows/lobby-service-ci.yml'
+  pull_request:
+    branches:
+      - feat/lobby-service
+    paths:
+      - 'lobby-service/**'
+
+jobs:
+  build-and-test:
+    name: Build & Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: 'gradle'
+
+      - name: Grant execute permission to gradlew
+        run: chmod +x ./gradlew
+        working-directory: lobby-service
+
+      - name: Build
+        run: ./gradlew build -x test
+        working-directory: lobby-service
+
+      - name: Run tests
+        run: ./gradlew test
+        working-directory: lobby-service
+
+      - name: Upload test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-report
+          path: lobby-service/build/reports/tests/test/
