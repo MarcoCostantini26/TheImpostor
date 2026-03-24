@@ -63,7 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
                 const data = await authService.me(id)
                 user.value = data || null
                 localStorage.setItem('user', JSON.stringify(user.value))
-            } catch (e) {
+            } catch {
                 token.value = null
                 localStorage.removeItem('token')
                 user.value = null

@@ -26,7 +26,7 @@ async function checkUsernameAvailability() {
     const ok = await checkUsername(username.value)
     usernameAvailable.value = ok
     usernameMsg.value = ok ? 'Username available' : 'Username already taken'
-  } catch (e) {
+  } catch {
     usernameAvailable.value = null
     usernameMsg.value = 'Unable to check username'
   }
@@ -40,7 +40,7 @@ async function checkEmailAvailability() {
     const ok = await checkEmail(email.value)
     emailAvailable.value = ok
     emailMsg.value = ok ? 'Email available' : 'Email already registered'
-  } catch (e) {
+  } catch {
     emailAvailable.value = null
     emailMsg.value = 'Unable to check email'
   }
