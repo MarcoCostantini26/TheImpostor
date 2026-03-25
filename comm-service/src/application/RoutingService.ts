@@ -9,38 +9,39 @@ export class RoutingService {
     ) {}
 
     async handleClientEvent(userId: string, event: Event): Promise<void> {
+        console.log(`[Routing] ⚙️ Inizio "${event.type}" per: ${userId}`);
         const payload = event.payload || {};
 
-        switch (event.type) {
-            case 'START_GAME':
-                const impostorsCount = parseInt(payload.requestedImpostors, 10) || 1;
-                const players = Array.isArray(payload.playerIds) ? payload.playerIds : [];
-                
-                await this.engineGateway.createGame(
-                    String(payload.gameId),
-                    players,
-                    impostorsCount
-                );
-                break;
+        try {
+            switch (event.type) {
+                case 'START_GAME':
+                    await this.engineGateway.createGame(
+                        String(payload.gameId),
+                        Array.isArray(payload.playerIds) ? payload.playerIds : [],
+                        Number(payload.requestedImpostors) || 1
+                    );
+                    break;
 
-            case 'CAST_VOTE':
-                await this.engineGateway.castVote(
-                    String(payload.gameId),
-                    userId, 
-                    payload.targetId ? String(payload.targetId) : "" 
-                );
-                break;
+                case 'CAST_VOTE':
+                    await this.engineGateway.castVote(
+                        String(payload.gameId),
+                        userId, 
+                        String(payload.targetId || "")
+                    );
+                    break;
 
-            case 'ADVANCE_PHASE':
-                await this.engineGateway.advanceToVoting(String(payload.gameId));
-                break;
+                case 'ADVANCE_PHASE':
+                    await this.engineGateway.advanceToVoting(String(payload.gameId));
+                    break;
 
-            case 'END_VOTING':
-                await this.engineGateway.resolveVoting(String(payload.gameId));
-                break;
-
-            default:
-                console.log(`[Routing] Evento ${event.type} ignorato o non destinato a Go.`);
+                default:
+                    console.log(`[Routing] ⚠️ Evento non gestito: ${event.type}`);
+            }
+            // Questo log ti conferma che l'adapter ha FINITO
+            console.log(`[Routing] ✅ Operazione "${event.type}" completata.`);
+        } catch (error: any) {
+            console.error(`[Routing] ❌ Errore durante "${event.type}": ${error.message}`);
+            throw error;
         }
     }
 }
