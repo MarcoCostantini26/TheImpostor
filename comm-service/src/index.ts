@@ -31,16 +31,25 @@ const server = createServer((req, res) => {
         req.on('end', () => {
             try {
                 const engineEvent = JSON.parse(body);
-                // I nomi degli eventi arriveranno come "GameStarted", "PlayerVoted" ecc.
-                console.log(`[Webhook] Ricevuto evento da Go: ${engineEvent.EventName || engineEvent.eventName}`);
+                console.log(`[Webhook] 📢 Ricevuto da Go: ${engineEvent.eventName || engineEvent.EventName}`);
                 
-                // TODO: Logica per inviare questo evento ai client WebSocket connessi tramite activeSockets
+                // BROADCAST: Invia l'evento a tutti i client WebSocket connessi
+                const messageToBroadcast = JSON.stringify({
+                    type: 'ENGINE_EVENT',
+                    payload: engineEvent
+                });
+
+                wss.clients.forEach(client => {
+                    if (client.readyState === WebSocket.OPEN) {
+                        client.send(messageToBroadcast);
+                    }
+                });
                 
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ status: 'Event received and processing' }));
+                res.end(JSON.stringify({ status: 'Broadcast completato' }));
             } catch (e) {
                 res.writeHead(400);
-                res.end('Invalid JSON payload');
+                res.end('Invalid JSON');
             }
         });
     } else {
@@ -60,91 +69,93 @@ wss.on('connection', async (ws: WebSocket) => {
         extWs.isAlive = true;
     });
 
-    const temporaryUserId = randomUUID();
+    // Inizialmente usiamo un ID temporaneo
+    let currentUserId = `temp-${randomUUID()}`;
     const socketId = randomUUID();
 
     activeSockets.set(socketId, ws);
 
-    const session = new Session(temporaryUserId);
-    const connection = new Connection(socketId);
-    session.addConnection(connection);
-
+    // Creiamo la sessione iniziale nel repository (Usando Connection come richiesto)
+    const session = new Session(currentUserId);
+    session.addConnection(new Connection(socketId));
     await sessionRepository.save(session);
-    console.log(`[Gateway] Client connesso: ${temporaryUserId} (Socket ID: ${socketId})`);
+
+    console.log(`[Gateway] 🔌 Nuova connessione. ID provvisorio: ${currentUserId}`);
 
     ws.on('message', async (data: RawData) => {
         try {
             const parsedData = JSON.parse(data.toString());
+            console.log(`[Gateway] 📥 Ricevuto evento: ${parsedData.type}`);
 
+            // --- LOGICA DI IDENTIFICAZIONE ---
+            if (parsedData.type === 'IDENTIFY') {
+                const newUserId = parsedData.payload.userId;
+                console.log(`[Gateway] 🆔 Cambio identità: ${currentUserId} -> ${newUserId}`);
+                
+                await sessionRepository.remove(currentUserId);
+                currentUserId = newUserId;
+                
+                const newSession = new Session(currentUserId);
+                newSession.addConnection(new Connection(socketId));
+                await sessionRepository.save(newSession);
+                return;
+            }
+
+            // Gestione messaggi di Chat e Signaling
             if (parsedData.type === 'CHAT') {
-                //Validazione tramite Value Object Message
-                const message = new Message(parsedData.roomId, temporaryUserId, parsedData.content);
+                const message = new Message(parsedData.roomId, currentUserId, parsedData.content);
                 await chatAndSignalingService.processChatMessage(message);
-
             } else if (parsedData.type === 'WEBRTC') {
-                //Validazione tramite Value Object Message
-                const message = new Message(parsedData.roomId, temporaryUserId, parsedData.content);
+                const message = new Message(parsedData.roomId, currentUserId, parsedData.content);
                 await chatAndSignalingService.processWebRTCSignaling(message);
-
             } else {
-                //Validazione tramite Value Object Event
+                // Eventi di gioco (START_GAME, CAST_VOTE, etc.)
                 const eventPayload = parsedData.payload || parsedData;
                 const event = new Event(parsedData.type, eventPayload);
-                await routingService.handleClientEvent(temporaryUserId, event);
+                await routingService.handleClientEvent(currentUserId, event);
             }
         } catch (error: any) {
-            console.error(`[Gateway] Errore elaborazione messaggio da ${temporaryUserId}: ${error.message}`);
+            console.error(`[Gateway] ❌ Errore elaborazione messaggio da ${currentUserId}: ${error.message}`);
         }
     });
 
     ws.on('close', async () => {
-        await sessionRepository.remove(temporaryUserId);
+        await sessionRepository.remove(currentUserId);
         activeSockets.delete(socketId);
-        console.log(`[Gateway] Client disconnesso: ${temporaryUserId}`);
+        console.log(`[Gateway] 🚪 Client disconnesso: ${currentUserId}`);
     });
 
     ws.on('error', (error) => {
-        console.error(`[Gateway] Errore socket per ${temporaryUserId}:`, error);
+        console.error(`[Gateway] 🔥 Errore socket per ${currentUserId}:`, error);
     });
 });
 
-//HEARTBEAT
+// HEARTBEAT: Pulisce le connessioni "morte" ogni 30 secondi
 const interval = setInterval(() => {
     wss.clients.forEach((ws) => {
         const extWs = ws as AliveWebSocket;
-        
         if (extWs.isAlive === false) {
             console.log(`[Gateway] Connessione fantasma rilevata, terminazione forzata.`);
             return extWs.terminate();
         }
-
         extWs.isAlive = false;
         extWs.ping();
     });
 }, 30000);
 
-//DOCKER
+// SHUTDOWN LOGIC: Gestione SIGTERM/SIGINT
 const shutdown = () => {
     console.log('[Gateway] Ricevuto segnale di spegnimento. Chiusura in corso...');
-    
     clearInterval(interval);
-    
     server.close(() => {
         console.log('[Gateway] Server HTTP/WebSocket chiuso.');
         process.exit(0);
     });
-
-    setTimeout(() => {
-        console.error('[Gateway] Chiusura forzata dopo timeout.');
-        process.exit(1);
-    }, 10000);
 };
 
-//segnali di sistema per lo spegnimento dei container Docker
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
-// AVVIO DEL SERVER IBRIDO
-server.listen(port, () => {
-    console.log(`Comms Gateway avviato. Webhook e WebSocket in ascolto sulla porta ${port}`);
+server.listen(port, '0.0.0.0', () => {
+    console.log(`🚀 Gateway pronto sulla porta ${port}`);
 });
