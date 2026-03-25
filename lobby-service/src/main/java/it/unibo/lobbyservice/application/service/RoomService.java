@@ -148,5 +148,22 @@ public class RoomService {
         room.endGame();
         return roomRepository.save(room);
     }
+    /**
+     * Aggiorna le impostazioni della stanza (solo host).
+     */
+    public Room updateSettings(String roomCode, String requesterId, int impostors, int discussionTime) {
+        Objects.requireNonNull(roomCode, "Room code cannot be null");
+        Objects.requireNonNull(requesterId, "Requester ID cannot be null");
+        
+        Room room = roomRepository.findByCode(RoomCode.of(roomCode))
+                .orElseThrow(() -> new RoomNotFoundException("Room with code " + roomCode + " not found"));
+        
+        if (!room.isHost(requesterId)) {
+            throw new IllegalStateException("Only the host can update settings");
+        }
+        
+        room.updateSettings(impostors, discussionTime);
+        return roomRepository.save(room);
+    }
 }
 

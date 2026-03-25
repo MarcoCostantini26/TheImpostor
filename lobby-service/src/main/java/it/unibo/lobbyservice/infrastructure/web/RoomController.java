@@ -61,9 +61,18 @@ public class RoomController {
      * Lascia una stanza (UC-03).
      */
     @PostMapping("/{code}/leave")
-    public ResponseEntity<Void> leaveRoom(@PathVariable String code, @RequestBody LeaveRoomRequest request) {
+    public ResponseEntity<?> leaveRoom(@PathVariable String code, @RequestBody LeaveRoomRequest request) {
+        Room room = roomService.getRoomByCode(code);
         roomService.leaveRoom(code, request.playerId());
-        return ResponseEntity.noContent().build();
+        
+        // Se l'host esce la stanza viene eliminata -> 204
+        if (request.playerId().equals(room.getHostId())) {
+            return ResponseEntity.noContent().build();
+        }
+        
+        // Altrimenti restituisci la stanza aggiornata
+        Room updatedRoom = roomService.getRoomByCode(code);
+        return ResponseEntity.ok(RoomResponse.from(updatedRoom));
     }
 
     /**
@@ -119,6 +128,31 @@ public class RoomController {
         return ResponseEntity.ok(RoomResponse.from(room));
     }
 
+    /**
+     * PUT /api/rooms/{code}/settings
+     * Aggiorna le impostazioni della stanza (solo host).
+     */
+    @PutMapping("/{code}/settings")
+    @Operation(summary = "Aggiorna le impostazioni della stanza", description = "Solo l'host può modificare le impostazioni")
+    public ResponseEntity<RoomResponse> updateSettings(@PathVariable String code, @RequestBody UpdateSettingsRequest request) {
+        Room room = roomService.updateSettings(code, request.hostId(), request.impostors(), request.discussionTime());
+        return ResponseEntity.ok(RoomResponse.from(room));
+    }
+
+    /**
+     * GET /api/rooms/{code}/players
+     * Restituisce la lista dei giocatori nella stanza.
+     */
+    @GetMapping("/{code}/players")
+    @Operation(summary = "Lista giocatori della stanza")
+    public ResponseEntity<List<PlayerInfo>> getPlayers(@PathVariable String code) {
+        Room room = roomService.getRoomByCode(code);
+        List<PlayerInfo> players = room.getPlayers().stream()
+                .map(player -> new PlayerInfo(player.getId(), player.getUsername(), player.isAuthenticated()))
+                .toList();
+        return ResponseEntity.ok(players);
+    }
+
     // Helper method per creare User dal request
     private User createUserFromRequest(String username, String userId, boolean isAuthenticated) {
         if (isAuthenticated && userId != null) {
@@ -134,6 +168,7 @@ public class RoomController {
     public record LeaveRoomRequest(String playerId) {}
     public record StartGameRequest(String hostId) {}
     public record NextRoundRequest(String hostId) {}
+    public record UpdateSettingsRequest(String hostId, int impostors, int discussionTime) {}
 
     public record RoomResponse(
             String code,
@@ -143,7 +178,9 @@ public class RoomController {
             int currentRound,
             String createdAt,
             String startedAt,
-            boolean canStart
+            boolean canStart,
+            int impostors,
+            int discussionTime
     ) {
         public static RoomResponse from(Room room) {
             List<PlayerInfo> players = room.getPlayers().stream()
@@ -158,7 +195,9 @@ public class RoomController {
                     room.getCurrentRound(),
                     room.getCreatedAt().toString(),
                     room.getStartedAt() != null ? room.getStartedAt().toString() : null,
-                    room.canStart()
+                    room.canStart(),
+                    room.getImpostors(),
+                    room.getDiscussionTime()
             );
         }
     }
