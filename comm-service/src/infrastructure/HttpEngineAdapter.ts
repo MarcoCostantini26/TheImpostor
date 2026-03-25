@@ -8,18 +8,12 @@ export class HttpEngineAdapter implements EngineGateway {
     }
 
     async createGame(gameId: string, playerIds: string[], requestedImpostors: number): Promise<void> {
-        await this.post(`/games/create`, {
-            gameId: gameId,
-            playerIds: playerIds,
-            requestedImpostors: requestedImpostors
-        });
+        await this.post(`/games/create`, { gameId, playerIds, requestedImpostors });
     }
 
     async castVote(gameId: string, voterId: string, targetId: string): Promise<void> {
-        await this.post(`/games/vote?gameId=${gameId}`, {
-            voterId: voterId,
-            targetId: targetId
-        });
+        // gameId nell'URL (Query Param) come vuole Go, il resto nel Body
+        await this.post(`/games/vote?gameId=${gameId}`, { voterId, targetId });
     }
 
     async advanceToVoting(gameId: string): Promise<void> {
@@ -30,25 +24,27 @@ export class HttpEngineAdapter implements EngineGateway {
         await this.post(`/games/resolve-voting?gameId=${gameId}`, {});
     }
 
-    async checkHealth(): Promise<boolean> {
-        try {
-            const response = await fetch(`${this.engineUrl}/health`);
-            return response.status === 200;
-        } catch (error) {
-            return false;
-        }
-    }
-
     private async post(path: string, body: any): Promise<void> {
-        const response = await fetch(`${this.engineUrl}${path}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
+        const url = `${this.engineUrl}${path}`;
+        console.log(`[Adapter] 📡 INVIO a Go: ${url}`); 
+        
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
 
-        if (!response.ok) {
-            const errorMsg = await response.text();
-            throw new Error(`Engine Error (${response.status}): ${errorMsg}`);
+            // Se vedi questo log, Go ha risposto. Se non lo vedi, Go è bloccato.
+            console.log(`[Adapter] 📥 RISPOSTA da Go: ${response.status} ${response.statusText}`);
+
+            if (!response.ok) {
+                const errorMsg = await response.text();
+                throw new Error(`Engine Error (${response.status}): ${errorMsg}`);
+            }
+        } catch (error: any) {
+            console.error(`[Adapter] ❌ ERRORE FISICO: Go è acceso sulla 8081? -> ${error.message}`);
+            throw error;
         }
     }
 }
