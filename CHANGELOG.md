@@ -1,3 +1,9 @@
+## [1.12.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.11.1...1.12.0) (2026-03-25)
+
+### Features
+
+* **infrastructure:** add thread-safe in-memory game repository ([fc12c42](https://github.com/MarcoCostantini26/TheImpostor/commit/fc12c42c7c05b4046351740d9846f8be8fbd0871))
+
 ## [1.11.1](https://github.com/MarcoCostantini26/TheImpostor/compare/1.11.0...1.11.1) (2026-03-25)
 
 ### Bug Fixes
