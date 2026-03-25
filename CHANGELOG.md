@@ -1,3 +1,9 @@
+## [1.15.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.14.0...1.15.0) (2026-03-25)
+
+### Features
+
+* **lobby-service:** fixed version openapi ([62de1e0](https://github.com/MarcoCostantini26/TheImpostor/commit/62de1e014653798b17d17cb5fa9b71995d94f1c1))
+
 ## [1.14.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.13.0...1.14.0) (2026-03-25)
 
 ### Features
