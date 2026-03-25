@@ -1,3 +1,11 @@
+## [1.14.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.13.0...1.14.0) (2026-03-25)
+
+### Features
+
+* **comms:** complete overhaul of engine communication ([d3c12a8](https://github.com/MarcoCostantini26/TheImpostor/commit/d3c12a85f1cb27796dedd59dd71a77e6111ac5ef))
+* **comms:** define EngineGateway port and update RoutingService ([73ca936](https://github.com/MarcoCostantini26/TheImpostor/commit/73ca9365810121e231d14fd08c355a0b205be2c2))
+* **comms:** integrate game engine module ([f7accb0](https://github.com/MarcoCostantini26/TheImpostor/commit/f7accb09223503dcbc329dc7225a6a844abbe924))
+
 ## [1.13.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.12.0...1.13.0) (2026-03-25)
 
 ### Features
