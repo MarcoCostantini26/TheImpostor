@@ -231,7 +231,7 @@ wss.on('connection', async (ws: WebSocket) => {
     });
 });
 
-// HEARTBEAT
+//HEARTBEAT
 const interval = setInterval(() => {
     wss.clients.forEach((ws) => {
         const extWs = ws as AliveWebSocket;
@@ -244,7 +244,7 @@ const interval = setInterval(() => {
     });
 }, 30000);
 
-// DOCKER
+//DOCKER
 const shutdown = () => {
     console.log('[Gateway] Ricevuto segnale di spegnimento. Chiusura in corso...');
     clearInterval(interval);
@@ -254,7 +254,7 @@ const shutdown = () => {
     });
 };
 
-// Segnali di sistema per lo spegnimento dei container Docker
+//segnali di sistema per lo spegnimento dei container Docker
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
