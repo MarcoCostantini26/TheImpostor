@@ -5,17 +5,42 @@ import { Event } from '../domain/Event';
 export class RoutingService {
     constructor(
         private sessionRepository: SessionRepository,
-        private engineGateway: EngineGateway // Iniettiamo la porta 
+        private engineGateway: EngineGateway
     ) {}
 
     async handleClientEvent(userId: string, event: Event): Promise<void> {
-        // Definiamo quali eventi devono andare verso il modulo Engine (Go) [cite: 174]
-        const gameActions = ['SUBMIT_CLUE', 'CAST_VOTE', 'START_GAME'];
+        const payload = event.payload || {};
 
-        if (gameActions.includes(event.type)) {
-            await this.engineGateway.sendGameAction(userId, event);
-        } else {
-            console.log(`[Routing] Evento ${event.type} ricevuto, ma non destinato all'Engine.`);
+        switch (event.type) {
+            case 'START_GAME':
+                const impostorsCount = parseInt(payload.requestedImpostors, 10) || 1;
+                const players = Array.isArray(payload.playerIds) ? payload.playerIds : [];
+                
+                await this.engineGateway.createGame(
+                    String(payload.gameId),
+                    players,
+                    impostorsCount
+                );
+                break;
+
+            case 'CAST_VOTE':
+                await this.engineGateway.castVote(
+                    String(payload.gameId),
+                    userId, 
+                    payload.targetId ? String(payload.targetId) : "" 
+                );
+                break;
+
+            case 'ADVANCE_PHASE':
+                await this.engineGateway.advanceToVoting(String(payload.gameId));
+                break;
+
+            case 'END_VOTING':
+                await this.engineGateway.resolveVoting(String(payload.gameId));
+                break;
+
+            default:
+                console.log(`[Routing] Evento ${event.type} ignorato o non destinato a Go.`);
         }
     }
 }
