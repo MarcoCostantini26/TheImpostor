@@ -1,3 +1,9 @@
+## [1.13.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.12.0...1.13.0) (2026-03-25)
+
+### Features
+
+* **server:** add main entry point to wire and start the engine ([3f12663](https://github.com/MarcoCostantini26/TheImpostor/commit/3f1266331d72e88bf7c2af42d8abb5c2d0915766))
+
 ## [1.12.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.11.1...1.12.0) (2026-03-25)
 
 ### Features
