@@ -1,3 +1,44 @@
+## [1.11.1](https://github.com/MarcoCostantini26/TheImpostor/compare/1.11.0...1.11.1) (2026-03-25)
+
+### Bug Fixes
+
+* **deps:** update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v2.8.16 ([#66](https://github.com/MarcoCostantini26/TheImpostor/issues/66)) ([1365902](https://github.com/MarcoCostantini26/TheImpostor/commit/1365902d2e396b2d379dfc649b3e881385f1f45f))
+
+## [1.11.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.10.0...1.11.0) (2026-03-24)
+
+### Features
+
+* **auth:** used auth APIs exposed on swagger ([e2607bb](https://github.com/MarcoCostantini26/TheImpostor/commit/e2607bbb32a19a4e981b19874e9c4b614dd32545))
+* **lobby-service:** created first model classes (USER) ([1c4e1c9](https://github.com/MarcoCostantini26/TheImpostor/commit/1c4e1c91f640a729a336a4971c465141b49ce7b8))
+* **lobby-service:** created model classes for a Room and Round ([b080411](https://github.com/MarcoCostantini26/TheImpostor/commit/b0804112d6c58ee5267b9d742e0e31e252004951))
+* **lobby-service:** created model classes for Game ([ed4fd83](https://github.com/MarcoCostantini26/TheImpostor/commit/ed4fd8344ce1fd30a7b460601315a3b060f62f4b))
+* **lobby-service:** created repositories for every collection in DB and inMemory ([6c6c5ce](https://github.com/MarcoCostantini26/TheImpostor/commit/6c6c5ce525902fc093d625275461c62def18dc0c))
+* **lobby-service:** created repository implementation for Room ([b9fa211](https://github.com/MarcoCostantini26/TheImpostor/commit/b9fa211fdff40fa983bfeeaf838f808d3d64c566))
+* **lobby-service:** creates controllers for users-game services ([e7d68b9](https://github.com/MarcoCostantini26/TheImpostor/commit/e7d68b99bb949b3ecb9b63b9a9fd37df86ed813b))
+* **lobby-service:** creates game services ([fe5960b](https://github.com/MarcoCostantini26/TheImpostor/commit/fe5960bed730a58cc14010980024389889ddfc3f))
+* **lobby-service:** creates user services ([9cc1fa8](https://github.com/MarcoCostantini26/TheImpostor/commit/9cc1fa859cf8481de1d1af0fe80424625a807314))
+* **lobby-service:** implemented connection to mongodb e connections logic cors ([73ddd12](https://github.com/MarcoCostantini26/TheImpostor/commit/73ddd1282df80bf75af073e775963df80b66e3c3))
+* **lobby-service:** updated gradle and readme ([6d29e4b](https://github.com/MarcoCostantini26/TheImpostor/commit/6d29e4b1372694b26d4f4d7c12c348439c152e9d))
+* **lobby-service:** updated gradle and readme ([dd7dfca](https://github.com/MarcoCostantini26/TheImpostor/commit/dd7dfca6b6c9dc28a91109b92d0ee993e782fb6c))
+
+### Dependency updates
+
+* **deps:** update dependency typescript-eslint to v8.57.2 ([#64](https://github.com/MarcoCostantini26/TheImpostor/issues/64)) ([517913f](https://github.com/MarcoCostantini26/TheImpostor/commit/517913f4c2b04c579d680a80d127e56d90303561))
+* **deps:** update dependency vite to v8.0.2 ([#57](https://github.com/MarcoCostantini26/TheImpostor/issues/57)) ([fa0c43e](https://github.com/MarcoCostantini26/TheImpostor/commit/fa0c43e6b136a24f4a6575a6ebfe47fafdd81e43))
+
+### Bug Fixes
+
+* **lint:** removed unused catch params ([d223a8d](https://github.com/MarcoCostantini26/TheImpostor/commit/d223a8d5370b988270f0af78c04afe6568e6b538))
+
+### Build and continuous integration
+
+* **lobby-service:** add GitHub Actions build and test pipeline ([75969a6](https://github.com/MarcoCostantini26/TheImpostor/commit/75969a65667ac140849f23ea079d96bf2ae3eb6c))
+* **lobby-service:** trigger pipeline also on workflow file changes ([06acdbe](https://github.com/MarcoCostantini26/TheImpostor/commit/06acdbedce3ebcffc8e5f475a60f1b7acfec7cfa))
+
+### General maintenance
+
+* refactored name structure java ([c1a7e5a](https://github.com/MarcoCostantini26/TheImpostor/commit/c1a7e5aff807747dcba2f6d042c534479feff3ba))
+
 ## [1.10.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.9.0...1.10.0) (2026-03-23)
 
 ### Features
