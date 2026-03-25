@@ -76,11 +76,13 @@ wss.on('connection', async (ws: WebSocket) => {
         extWs.isAlive = true;
     });
 
+    // Inizialmente usiamo un ID temporaneo
     let currentUserId = `temp-${randomUUID()}`;
     const socketId = randomUUID();
 
     activeSockets.set(socketId, ws);
 
+    // Creiamo la sessione iniziale nel repository (Usando Connection come richiesto)
     const session = new Session(currentUserId);
     session.addConnection(new Connection(socketId));
     await sessionRepository.save(session);
@@ -192,7 +194,9 @@ wss.on('connection', async (ws: WebSocket) => {
                 const message = new Message(roomCode, currentUserId, payload);
                 await chatAndSignalingService.processWebRTCSignaling(message, ws);
             } else {
-                const event = new Event(eventType, payload);
+                // Eventi di gioco (START_GAME, CAST_VOTE, etc.)
+                const eventPayload = parsedData.payload || parsedData;
+                const event = new Event(parsedData.type, eventPayload);
                 await routingService.handleClientEvent(currentUserId, event);
             }
         } catch (error: any) {
@@ -231,7 +235,7 @@ wss.on('connection', async (ws: WebSocket) => {
     });
 });
 
-//HEARTBEAT
+// HEARTBEAT: Pulisce le connessioni "morte" ogni 30 secondi
 const interval = setInterval(() => {
     wss.clients.forEach((ws) => {
         const extWs = ws as AliveWebSocket;
@@ -244,7 +248,7 @@ const interval = setInterval(() => {
     });
 }, 30000);
 
-//DOCKER
+// SHUTDOWN LOGIC: Gestione SIGTERM/SIGINT
 const shutdown = () => {
     console.log('[Gateway] Ricevuto segnale di spegnimento. Chiusura in corso...');
     clearInterval(interval);
@@ -254,7 +258,6 @@ const shutdown = () => {
     });
 };
 
-//segnali di sistema per lo spegnimento dei container Docker
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
