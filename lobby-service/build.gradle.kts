@@ -29,7 +29,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-mongodb")
     implementation("org.springframework.boot:spring-boot-starter-validation")
     implementation("org.springframework.boot:spring-boot-starter-webmvc")
-    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.1")
+    implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.16")
     compileOnly("org.projectlombok:lombok")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     annotationProcessor("org.projectlombok:lombok")
