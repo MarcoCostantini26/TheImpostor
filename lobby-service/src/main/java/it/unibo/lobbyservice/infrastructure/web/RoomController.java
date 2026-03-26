@@ -173,6 +173,7 @@ public class RoomController {
     public record RoomResponse(
             String code,
             String hostId,
+            String hostUsername,
             List<PlayerInfo> players,
             String status,
             int currentRound,
@@ -190,6 +191,7 @@ public class RoomController {
             return new RoomResponse(
                     room.getCode().getValue(),
                     room.getHostId(),
+                    room.getHostUsername(),
                     players,
                     room.getStatus().name(),
                     room.getCurrentRound(),

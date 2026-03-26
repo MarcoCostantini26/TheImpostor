@@ -198,5 +198,13 @@ public final class Room {
     public boolean canStart() {
         return status == RoomStatus.WAITING && players.size() >= MIN_PLAYERS;
     }
+
+    /**
+     * Restituisce lo username dell'host.
+     */
+    public String getHostUsername() {
+        User host = players.get(hostId);
+        return host != null ? host.getUsername() : null;
+    }
 }
 
