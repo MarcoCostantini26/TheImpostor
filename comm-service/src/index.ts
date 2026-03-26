@@ -8,6 +8,7 @@ import { ChatAndSignalingService } from './application/ChatAndSignalingService';
 import { Session, Connection } from './domain/Session';
 import { Message } from './domain/Message';
 import { Event } from './domain/Event';
+import { RoomManager } from './application/RoomManager'; // 🟢 NUOVO IMPORT
 
 interface AliveWebSocket extends WebSocket {
     isAlive?: boolean;
@@ -20,6 +21,7 @@ const engineAdapter = new HttpEngineAdapter();
 
 const routingService = new RoutingService(sessionRepository, engineAdapter);
 const chatAndSignalingService = new ChatAndSignalingService(sessionRepository);
+const roomManager = new RoomManager(); // 🟢 INIZIALIZZAZIONE ROOM MANAGER
 
 const activeSockets = new Map<string, WebSocket>();
 
@@ -34,6 +36,7 @@ const server = createServer((req, res) => {
                 console.log(`[Webhook] 📢 Ricevuto da Go: ${engineEvent.eventName || engineEvent.EventName}`);
                 
                 // BROADCAST: Invia l'evento a tutti i client WebSocket connessi
+                // (In futuro potremo usare roomManager.broadcastToRoom anche qui se Go ci passa il gameId)
                 const messageToBroadcast = JSON.stringify({
                     type: 'ENGINE_EVENT',
                     payload: engineEvent
@@ -101,6 +104,20 @@ wss.on('connection', async (ws: WebSocket) => {
                 return;
             }
 
+            // 🟢 --- NUOVA GESTIONE STANZE ---
+            if (parsedData.type === 'JOIN_ROOM') {
+                const roomId = parsedData.payload.roomId;
+                roomManager.joinRoom(roomId, ws);
+                
+                // Avvisa gli altri nella stanza che questo giocatore è entrato
+                roomManager.broadcastToRoom(roomId, {
+                    type: 'player_joined',
+                    payload: { userId: currentUserId }
+                }, ws); // Passiamo ws per escluderlo dal broadcast
+                return;
+            }
+            // 🟢 -----------------------------
+
             // Gestione messaggi di Chat e Signaling
             if (parsedData.type === 'CHAT') {
                 const message = new Message(parsedData.roomId, currentUserId, parsedData.content);
@@ -120,6 +137,7 @@ wss.on('connection', async (ws: WebSocket) => {
     });
 
     ws.on('close', async () => {
+        roomManager.leaveAllRooms(ws); // 🟢 PULIZIA STANZE ALLA DISCONNESSIONE
         await sessionRepository.remove(currentUserId);
         activeSockets.delete(socketId);
         console.log(`[Gateway] 🚪 Client disconnesso: ${currentUserId}`);
