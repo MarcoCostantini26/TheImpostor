@@ -9,7 +9,7 @@ import { Session, Connection } from './domain/Session';
 import { Message } from './domain/Message';
 import { Event } from './domain/Event';
 import { RoomManager } from './application/RoomManager';
-import { LobbyService } from './application/LobbyService'; // 🟢 NUOVO IMPORT
+import { LobbyService } from './application/LobbyService';
 
 interface AliveWebSocket extends WebSocket {
     isAlive?: boolean;
@@ -20,11 +20,12 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
 const sessionRepository = new InMemorySessionRepository();
 const engineAdapter = new HttpEngineAdapter(); 
 
-const routingService = new RoutingService(sessionRepository, engineAdapter);
-const chatAndSignalingService = new ChatAndSignalingService(sessionRepository);
-
 const roomManager = new RoomManager();
-const lobbyService = new LobbyService(roomManager); // 🟢 INIZIALIZZAZIONE
+const lobbyService = new LobbyService(roomManager); 
+
+const routingService = new RoutingService(sessionRepository, engineAdapter);
+// 🟢 AGGIORNATO: Ora passiamo il roomManager al servizio Chat
+const chatAndSignalingService = new ChatAndSignalingService(sessionRepository, roomManager);
 
 const activeSockets = new Map<string, WebSocket>();
 
@@ -106,7 +107,7 @@ wss.on('connection', async (ws: WebSocket) => {
                 return;
             }
 
-            // --- GESTIONE STANZE (PASSO 1) ---
+            // --- GESTIONE STANZE ---
             if (parsedData.type === 'JOIN_ROOM') {
                 const roomId = parsedData.payload.roomId;
                 roomManager.joinRoom(roomId, ws);
@@ -118,7 +119,7 @@ wss.on('connection', async (ws: WebSocket) => {
                 return;
             }
 
-            // 🟢 --- GESTIONE AZIONI LOBBY (PASSO 2) ---
+            // --- GESTIONE AZIONI LOBBY ---
             if (parsedData.type === 'PLAYER_READY') {
                 await lobbyService.handlePlayerReady(parsedData.payload.roomId, currentUserId);
                 return;
@@ -130,26 +131,24 @@ wss.on('connection', async (ws: WebSocket) => {
             }
 
             if (parsedData.type === 'START_GAME') {
-                // 1. Notifica il lobby-service in REST e fa il broadcast al front-end
                 await lobbyService.handleStartGame(parsedData.payload.roomId, currentUserId);
-                
-                // 2. Invia l'ordine al motore Go (come facevamo prima)
                 const eventPayload = parsedData.payload || parsedData;
                 const event = new Event(parsedData.type, eventPayload);
                 await routingService.handleClientEvent(currentUserId, event);
                 return;
             }
-            // 🟢 ---------------------------------------
 
-            // Gestione messaggi di Chat e Signaling
+            // --- GESTIONE CHAT E SIGNALING ---
             if (parsedData.type === 'CHAT') {
                 const message = new Message(parsedData.roomId, currentUserId, parsedData.content);
-                await chatAndSignalingService.processChatMessage(message);
+                // 🟢 AGGIORNATO: Passiamo 'ws' per il broadcast mirato senza eco
+                await chatAndSignalingService.processChatMessage(message, ws);
             } else if (parsedData.type === 'WEBRTC') {
                 const message = new Message(parsedData.roomId, currentUserId, parsedData.content);
-                await chatAndSignalingService.processWebRTCSignaling(message);
+                // 🟢 AGGIORNATO: Passiamo 'ws' per il WebRTC
+                await chatAndSignalingService.processWebRTCSignaling(message, ws);
             } else {
-                // Altri eventi di gioco (CAST_VOTE, ADVANCE_PHASE, etc.) vanno direttamente a Go
+                // Altri eventi di gioco vanno a Go
                 const eventPayload = parsedData.payload || parsedData;
                 const event = new Event(parsedData.type, eventPayload);
                 await routingService.handleClientEvent(currentUserId, event);
@@ -160,7 +159,7 @@ wss.on('connection', async (ws: WebSocket) => {
     });
 
     ws.on('close', async () => {
-        roomManager.leaveAllRooms(ws); // PULIZIA STANZE ALLA DISCONNESSIONE
+        roomManager.leaveAllRooms(ws); 
         await sessionRepository.remove(currentUserId);
         activeSockets.delete(socketId);
         console.log(`[Gateway] 🚪 Client disconnesso: ${currentUserId}`);
@@ -171,7 +170,7 @@ wss.on('connection', async (ws: WebSocket) => {
     });
 });
 
-// HEARTBEAT: Pulisce le connessioni "morte" ogni 30 secondi
+// HEARTBEAT
 const interval = setInterval(() => {
     wss.clients.forEach((ws) => {
         const extWs = ws as AliveWebSocket;
@@ -184,7 +183,7 @@ const interval = setInterval(() => {
     });
 }, 30000);
 
-// SHUTDOWN LOGIC: Gestione SIGTERM/SIGINT
+// SHUTDOWN LOGIC
 const shutdown = () => {
     console.log('[Gateway] Ricevuto segnale di spegnimento. Chiusura in corso...');
     clearInterval(interval);
