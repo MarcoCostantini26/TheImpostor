@@ -8,7 +8,8 @@ import { ChatAndSignalingService } from './application/ChatAndSignalingService';
 import { Session, Connection } from './domain/Session';
 import { Message } from './domain/Message';
 import { Event } from './domain/Event';
-import { RoomManager } from './application/RoomManager'; // 🟢 NUOVO IMPORT
+import { RoomManager } from './application/RoomManager';
+import { LobbyService } from './application/LobbyService'; // 🟢 NUOVO IMPORT
 
 interface AliveWebSocket extends WebSocket {
     isAlive?: boolean;
@@ -21,7 +22,9 @@ const engineAdapter = new HttpEngineAdapter();
 
 const routingService = new RoutingService(sessionRepository, engineAdapter);
 const chatAndSignalingService = new ChatAndSignalingService(sessionRepository);
-const roomManager = new RoomManager(); // 🟢 INIZIALIZZAZIONE ROOM MANAGER
+
+const roomManager = new RoomManager();
+const lobbyService = new LobbyService(roomManager); // 🟢 INIZIALIZZAZIONE
 
 const activeSockets = new Map<string, WebSocket>();
 
@@ -36,7 +39,6 @@ const server = createServer((req, res) => {
                 console.log(`[Webhook] 📢 Ricevuto da Go: ${engineEvent.eventName || engineEvent.EventName}`);
                 
                 // BROADCAST: Invia l'evento a tutti i client WebSocket connessi
-                // (In futuro potremo usare roomManager.broadcastToRoom anche qui se Go ci passa il gameId)
                 const messageToBroadcast = JSON.stringify({
                     type: 'ENGINE_EVENT',
                     payload: engineEvent
@@ -104,19 +106,40 @@ wss.on('connection', async (ws: WebSocket) => {
                 return;
             }
 
-            // 🟢 --- NUOVA GESTIONE STANZE ---
+            // --- GESTIONE STANZE (PASSO 1) ---
             if (parsedData.type === 'JOIN_ROOM') {
                 const roomId = parsedData.payload.roomId;
                 roomManager.joinRoom(roomId, ws);
                 
-                // Avvisa gli altri nella stanza che questo giocatore è entrato
                 roomManager.broadcastToRoom(roomId, {
                     type: 'player_joined',
                     payload: { userId: currentUserId }
-                }, ws); // Passiamo ws per escluderlo dal broadcast
+                }, ws); 
                 return;
             }
-            // 🟢 -----------------------------
+
+            // 🟢 --- GESTIONE AZIONI LOBBY (PASSO 2) ---
+            if (parsedData.type === 'PLAYER_READY') {
+                await lobbyService.handlePlayerReady(parsedData.payload.roomId, currentUserId);
+                return;
+            }
+
+            if (parsedData.type === 'LEAVE_ROOM') {
+                await lobbyService.handleLeaveRoom(parsedData.payload.roomId, currentUserId, ws);
+                return;
+            }
+
+            if (parsedData.type === 'START_GAME') {
+                // 1. Notifica il lobby-service in REST e fa il broadcast al front-end
+                await lobbyService.handleStartGame(parsedData.payload.roomId, currentUserId);
+                
+                // 2. Invia l'ordine al motore Go (come facevamo prima)
+                const eventPayload = parsedData.payload || parsedData;
+                const event = new Event(parsedData.type, eventPayload);
+                await routingService.handleClientEvent(currentUserId, event);
+                return;
+            }
+            // 🟢 ---------------------------------------
 
             // Gestione messaggi di Chat e Signaling
             if (parsedData.type === 'CHAT') {
@@ -126,7 +149,7 @@ wss.on('connection', async (ws: WebSocket) => {
                 const message = new Message(parsedData.roomId, currentUserId, parsedData.content);
                 await chatAndSignalingService.processWebRTCSignaling(message);
             } else {
-                // Eventi di gioco (START_GAME, CAST_VOTE, etc.)
+                // Altri eventi di gioco (CAST_VOTE, ADVANCE_PHASE, etc.) vanno direttamente a Go
                 const eventPayload = parsedData.payload || parsedData;
                 const event = new Event(parsedData.type, eventPayload);
                 await routingService.handleClientEvent(currentUserId, event);
@@ -137,7 +160,7 @@ wss.on('connection', async (ws: WebSocket) => {
     });
 
     ws.on('close', async () => {
-        roomManager.leaveAllRooms(ws); // 🟢 PULIZIA STANZE ALLA DISCONNESSIONE
+        roomManager.leaveAllRooms(ws); // PULIZIA STANZE ALLA DISCONNESSIONE
         await sessionRepository.remove(currentUserId);
         activeSockets.delete(socketId);
         console.log(`[Gateway] 🚪 Client disconnesso: ${currentUserId}`);
