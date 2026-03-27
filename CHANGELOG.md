@@ -1,3 +1,9 @@
+## [1.17.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.16.0...1.17.0) (2026-03-27)
+
+### Features
+
+* **lobby:** websocket communications and rest api ([be4e03d](https://github.com/MarcoCostantini26/TheImpostor/commit/be4e03d504aebe10ce37e8cea4fd76032b6d32c9))
+
 ## [1.16.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.15.1...1.16.0) (2026-03-27)
 
 ### Features
