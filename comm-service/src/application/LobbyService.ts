@@ -7,30 +7,38 @@ export class LobbyService {
         this.lobbyUrl = process.env.LOBBY_URL || 'http://localhost:3000';
     }
 
-    // GESTIONE: 'PLAYER_READY'
-    async handlePlayerReady(roomId: string, userId: string): Promise<void> {
+    async syncRoomState(roomCode: string): Promise<void> {
+        try {
+            const response = await fetch(`${this.lobbyUrl}/api/internal/rooms/${roomCode}`);
+            if (response.ok) {
+                const roomState = await response.json();
+                this.roomManager.broadcastToRoom(roomCode, { type: 'room_update', payload: roomState });
+            }
+        } catch (error: any) {
+            console.error(`[LobbyService] ❌ Errore syncRoomState per ${roomCode}: ${error.message}`);
+        }
+    }
+
+    async handlePlayerReady(roomId: string, userId: string, ready?: boolean): Promise<void> {
         try {
             await fetch(`${this.lobbyUrl}/api/rooms/${roomId}/ready`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId })
+                body: JSON.stringify({ userId, ready })
             });
 
-            const response = await fetch(`${this.lobbyUrl}/api/internal/rooms/${roomId}`);
-            if (!response.ok) throw new Error(`Lobby Service ha risposto con ${response.status}`);
-            const roomState = await response.json();
-
+            //DOPPIO BROADCAST: Prima il ready granulare, poi tutto lo stato
             this.roomManager.broadcastToRoom(roomId, {
-                type: 'room_update',
-                payload: roomState
+                type: 'player_ready',
+                payload: { userId, ready }
             });
-            console.log(`[LobbyService] 🔄 Stato stanza ${roomId} aggiornato.`);
+            await this.syncRoomState(roomId);
+            console.log(`[LobbyService] 🔄 Stato ready aggiornato per ${userId}.`);
         } catch (error: any) {
             console.error(`[LobbyService] ❌ Errore in handlePlayerReady: ${error.message}`);
         }
     }
 
-    // GESTIONE: 'START_GAME'
     async handleStartGame(roomId: string, userId: string): Promise<void> {
         try {
             const response = await fetch(`${this.lobbyUrl}/api/rooms/${roomId}/start`, {
@@ -45,13 +53,13 @@ export class LobbyService {
                 type: 'game_started',
                 payload: { roomId }
             });
+            await this.syncRoomState(roomId);
             console.log(`[LobbyService] 🚀 Partita ${roomId} avviata! Broadcast inviato.`);
         } catch (error: any) {
             console.error(`[LobbyService] ❌ Errore in handleStartGame: ${error.message}`);
         }
     }
 
-    // GESTIONE: 'LEAVE_ROOM'
     async handleLeaveRoom(roomId: string, userId: string, ws: any): Promise<void> {
         try {
             this.roomManager.leaveRoom(roomId, ws);
@@ -60,16 +68,15 @@ export class LobbyService {
                 type: 'player_left',
                 payload: { userId }
             });
+            await this.syncRoomState(roomId);
             console.log(`[LobbyService] 👋 ${userId} ha lasciato la stanza ${roomId}.`);
         } catch (error: any) {
             console.error(`[LobbyService] ❌ Errore in handleLeaveRoom: ${error.message}`);
         }
     }
 
-    // 🟢 NUOVO: GESTIONE 'UPDATE_SETTINGS'
     async handleUpdateSettings(roomId: string, userId: string, settings: any): Promise<void> {
         try {
-            // 1. Notifica il lobby-service in REST (adatta metodo e path alla tua API)
             const response = await fetch(`${this.lobbyUrl}/api/rooms/${roomId}/settings`, {
                 method: 'PUT', 
                 headers: { 'Content-Type': 'application/json' },
@@ -78,11 +85,11 @@ export class LobbyService {
 
             if (!response.ok) throw new Error('Errore aggiornamento impostazioni nel lobby-service');
 
-            // 2. Broadcast 'update_settings' ai partecipanti della stanza
             this.roomManager.broadcastToRoom(roomId, {
                 type: 'update_settings',
                 payload: settings 
             });
+            await this.syncRoomState(roomId);
             console.log(`[LobbyService] ⚙️ Impostazioni stanza ${roomId} aggiornate da ${userId}.`);
         } catch (error: any) {
             console.error(`[LobbyService] ❌ Errore in handleUpdateSettings: ${error.message}`);

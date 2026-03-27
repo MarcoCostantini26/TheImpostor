@@ -6,22 +6,20 @@ import { WebSocket } from 'ws';
 export class ChatAndSignalingService {
     constructor(
         private sessionRepository: SessionRepository,
-        private roomManager: RoomManager // 🟢 INIETTATO IL ROOM MANAGER
+        private roomManager: RoomManager 
     ) {}
 
     async processChatMessage(message: Message, ws?: WebSocket): Promise<void> {
         try {
-            // Formattiamo l'evento esattamente come lo vuole il front-end
             const chatEvent = {
-                type: 'chat_message',
+                type: 'CHAT',
                 payload: {
                     senderId: message.senderId,
-                    text: message.content,
+                    content: message.content, //(usa content invece di text)
                     timestamp: new Date().toISOString()
                 }
             };
 
-            // Invia solo alla stanza specifica. Se passiamo 'ws', il mittente non riceve un duplicato.
             this.roomManager.broadcastToRoom(message.roomId, chatEvent, ws);
             console.log(`[Chat] 💬 ${message.senderId} -> Stanza ${message.roomId}: ${message.content}`);
         } catch (error: any) {
@@ -32,14 +30,13 @@ export class ChatAndSignalingService {
     async processWebRTCSignaling(message: Message, ws?: WebSocket): Promise<void> {
         try {
             const signalingEvent = {
-                type: 'webrtc_signaling',
+                type: 'WEBRTC', 
                 payload: {
                     senderId: message.senderId,
-                    data: message.content
+                    ...message.content 
                 }
             };
 
-            // Nel WebRTC è FONDAMENTALE escludere il mittente, altrimenti il browser va in palla
             this.roomManager.broadcastToRoom(message.roomId, signalingEvent, ws);
             console.log(`[WebRTC] 📡 Segnale da ${message.senderId} -> Stanza ${message.roomId}`);
         } catch (error: any) {
