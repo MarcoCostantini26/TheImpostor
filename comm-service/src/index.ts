@@ -143,7 +143,8 @@ wss.on('connection', async (ws: WebSocket) => {
             }
 
             if (eventType === 'start_game' || eventType === 'START_GAME') {
-                await lobbyService.handleStartGame(roomCode, currentUserId);
+                const hostId = payload.hostId || currentUserId;
+                await lobbyService.handleStartGame(roomCode, hostId);
                 const event = new Event(eventType, payload);
                 await routingService.handleClientEvent(currentUserId, event);
                 return;

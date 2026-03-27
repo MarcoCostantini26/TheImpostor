@@ -16,6 +16,12 @@ const router = createRouter({
             meta: { requiresAuth: true }
         },
         {
+            path: '/lobby/:code',
+            name: 'lobby',
+            component: () => import('../views/LobbyView.vue'),
+            meta: { requiresAuth: true }
+        },
+        {
             path: '/register',
             name: 'register',
             component: () => import('../views/RegisterView.vue')
