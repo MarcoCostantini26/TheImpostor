@@ -44,7 +44,7 @@ export class LobbyService {
             const response = await fetch(`${this.lobbyUrl}/api/rooms/${roomId}/start`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId })
+                body: JSON.stringify({ hostId: userId }) 
             });
 
             if (!response.ok) throw new Error('Errore avvio partita nel lobby-service');
@@ -76,21 +76,14 @@ export class LobbyService {
     }
 
     async handleUpdateSettings(roomId: string, userId: string, settings: any): Promise<void> {
+        // Game settings (impostors, discussionTime) are not persisted by the lobby-service
+        // (no corresponding endpoint/domain field). We just broadcast them to all clients.
         try {
-            const response = await fetch(`${this.lobbyUrl}/api/rooms/${roomId}/settings`, {
-                method: 'PUT', 
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, settings })
-            });
-
-            if (!response.ok) throw new Error('Errore aggiornamento impostazioni nel lobby-service');
-
             this.roomManager.broadcastToRoom(roomId, {
                 type: 'update_settings',
-                payload: settings 
+                payload: settings
             });
-            await this.syncRoomState(roomId);
-            console.log(`[LobbyService] ⚙️ Impostazioni stanza ${roomId} aggiornate da ${userId}.`);
+            console.log(`[LobbyService] ⚙️ Impostazioni stanza ${roomId} aggiornate da ${userId} (broadcast only).`);
         } catch (error: any) {
             console.error(`[LobbyService] ❌ Errore in handleUpdateSettings: ${error.message}`);
         }
