@@ -24,7 +24,6 @@ const roomManager = new RoomManager();
 const lobbyService = new LobbyService(roomManager); 
 
 const routingService = new RoutingService(sessionRepository, engineAdapter);
-// 🟢 AGGIORNATO: Ora passiamo il roomManager al servizio Chat
 const chatAndSignalingService = new ChatAndSignalingService(sessionRepository, roomManager);
 
 const activeSockets = new Map<string, WebSocket>();
@@ -81,7 +80,7 @@ wss.on('connection', async (ws: WebSocket) => {
 
     activeSockets.set(socketId, ws);
 
-    // Creiamo la sessione iniziale nel repository (Usando Connection come richiesto)
+    // Creiamo la sessione iniziale nel repository
     const session = new Session(currentUserId);
     session.addConnection(new Connection(socketId));
     await sessionRepository.save(session);
@@ -130,6 +129,15 @@ wss.on('connection', async (ws: WebSocket) => {
                 return;
             }
 
+            if (parsedData.type === 'UPDATE_SETTINGS') {
+                await lobbyService.handleUpdateSettings(
+                    parsedData.payload.roomId, 
+                    currentUserId, 
+                    parsedData.payload.settings
+                );
+                return;
+            }
+
             if (parsedData.type === 'START_GAME') {
                 await lobbyService.handleStartGame(parsedData.payload.roomId, currentUserId);
                 const eventPayload = parsedData.payload || parsedData;
@@ -141,14 +149,12 @@ wss.on('connection', async (ws: WebSocket) => {
             // --- GESTIONE CHAT E SIGNALING ---
             if (parsedData.type === 'CHAT') {
                 const message = new Message(parsedData.roomId, currentUserId, parsedData.content);
-                // 🟢 AGGIORNATO: Passiamo 'ws' per il broadcast mirato senza eco
                 await chatAndSignalingService.processChatMessage(message, ws);
             } else if (parsedData.type === 'WEBRTC') {
                 const message = new Message(parsedData.roomId, currentUserId, parsedData.content);
-                // 🟢 AGGIORNATO: Passiamo 'ws' per il WebRTC
                 await chatAndSignalingService.processWebRTCSignaling(message, ws);
             } else {
-                // Altri eventi di gioco vanno a Go
+                // Altri eventi di gioco (CAST_VOTE, ecc.) vanno a Go
                 const eventPayload = parsedData.payload || parsedData;
                 const event = new Event(parsedData.type, eventPayload);
                 await routingService.handleClientEvent(currentUserId, event);
