@@ -1,3 +1,15 @@
+## [1.18.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.17.0...1.18.0) (2026-03-28)
+
+### Features
+
+* **lobby-service:** add hostUsername to RoomResponse and comm-service notifier ([67ea6b8](https://github.com/MarcoCostantini26/TheImpostor/commit/67ea6b83ab5487a7f6670e32e45b17c98883eae0))
+* **lobby-service:** added missing endpoints ([e8518a1](https://github.com/MarcoCostantini26/TheImpostor/commit/e8518a15e45b66525a6af88a6c0584be59b39fb3))
+
+### Dependency updates
+
+* **deps:** update actions/upload-artifact action to v7 ([#69](https://github.com/MarcoCostantini26/TheImpostor/issues/69)) ([da183c8](https://github.com/MarcoCostantini26/TheImpostor/commit/da183c8018dbe7206742fcb950a29c47f9fdccd3))
+* **deps:** update dependency typescript to v6 ([#63](https://github.com/MarcoCostantini26/TheImpostor/issues/63)) ([a150195](https://github.com/MarcoCostantini26/TheImpostor/commit/a1501950afee6eb3401097e68ad9a05f61f98dfa))
+
 ## [1.17.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.16.0...1.17.0) (2026-03-27)
 
 ### Features
