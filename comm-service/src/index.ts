@@ -8,6 +8,8 @@ import { ChatAndSignalingService } from './application/ChatAndSignalingService';
 import { Session, Connection } from './domain/Session';
 import { Message } from './domain/Message';
 import { Event } from './domain/Event';
+import { RoomManager } from './application/RoomManager';
+import { LobbyService } from './application/LobbyService';
 
 interface AliveWebSocket extends WebSocket {
     isAlive?: boolean;
@@ -18,8 +20,11 @@ const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
 const sessionRepository = new InMemorySessionRepository();
 const engineAdapter = new HttpEngineAdapter(); 
 
+const roomManager = new RoomManager();
+const lobbyService = new LobbyService(roomManager); 
+
 const routingService = new RoutingService(sessionRepository, engineAdapter);
-const chatAndSignalingService = new ChatAndSignalingService(sessionRepository);
+const chatAndSignalingService = new ChatAndSignalingService(sessionRepository, roomManager);
 
 const activeSockets = new Map<string, WebSocket>();
 
@@ -33,7 +38,6 @@ const server = createServer((req, res) => {
                 const engineEvent = JSON.parse(body);
                 console.log(`[Webhook] 📢 Ricevuto da Go: ${engineEvent.eventName || engineEvent.EventName}`);
                 
-                // BROADCAST: Invia l'evento a tutti i client WebSocket connessi
                 const messageToBroadcast = JSON.stringify({
                     type: 'ENGINE_EVENT',
                     payload: engineEvent
@@ -58,7 +62,6 @@ const server = createServer((req, res) => {
     }
 });
 
-// SERVER WEBSOCKET: Si aggancia al Server HTTP sulla stessa porta
 const wss = new WebSocketServer({ server });
 
 wss.on('connection', async (ws: WebSocket) => {
@@ -69,13 +72,11 @@ wss.on('connection', async (ws: WebSocket) => {
         extWs.isAlive = true;
     });
 
-    // Inizialmente usiamo un ID temporaneo
     let currentUserId = `temp-${randomUUID()}`;
     const socketId = randomUUID();
 
     activeSockets.set(socketId, ws);
 
-    // Creiamo la sessione iniziale nel repository (Usando Connection come richiesto)
     const session = new Session(currentUserId);
     session.addConnection(new Connection(socketId));
     await sessionRepository.save(session);
@@ -83,13 +84,25 @@ wss.on('connection', async (ws: WebSocket) => {
     console.log(`[Gateway] 🔌 Nuova connessione. ID provvisorio: ${currentUserId}`);
 
     ws.on('message', async (data: RawData) => {
-        try {
-            const parsedData = JSON.parse(data.toString());
-            console.log(`[Gateway] 📥 Ricevuto evento: ${parsedData.type}`);
+        let parsedData;
 
-            // --- LOGICA DI IDENTIFICAZIONE ---
-            if (parsedData.type === 'IDENTIFY') {
-                const newUserId = parsedData.payload.userId;
+        // 🟢 GESTIONE ERRORI JSON (Invia errore al client)
+        try {
+            parsedData = JSON.parse(data.toString());
+        } catch (e) {
+            ws.send(JSON.stringify({ type: 'error', payload: { message: 'Invalid JSON format' } }));
+            return;
+        }
+
+        try {
+            // 🟢 ESTRAZIONE WRAPPER 'EVENT' E NOMENCLATURA
+            const eventType = parsedData.type === 'EVENT' ? parsedData.payload?.action : parsedData.type;
+            const payload = parsedData.type === 'EVENT' ? parsedData.payload : (parsedData.payload || parsedData);
+            
+            console.log(`[Gateway] 📥 Ricevuto evento: ${eventType}`);
+
+            if (eventType === 'IDENTIFY') {
+                const newUserId = payload.userId;
                 console.log(`[Gateway] 🆔 Cambio identità: ${currentUserId} -> ${newUserId}`);
                 
                 await sessionRepository.remove(currentUserId);
@@ -101,25 +114,64 @@ wss.on('connection', async (ws: WebSocket) => {
                 return;
             }
 
-            // Gestione messaggi di Chat e Signaling
-            if (parsedData.type === 'CHAT') {
-                const message = new Message(parsedData.roomId, currentUserId, parsedData.content);
-                await chatAndSignalingService.processChatMessage(message);
-            } else if (parsedData.type === 'WEBRTC') {
-                const message = new Message(parsedData.roomId, currentUserId, parsedData.content);
-                await chatAndSignalingService.processWebRTCSignaling(message);
+            // 🟢 Supporta 'roomCode' (richiesto) o 'roomId' (fallback)
+            const roomCode = payload.roomCode || payload.roomId;
+
+            if (eventType === 'join_room' || eventType === 'JOIN_ROOM') {
+                roomManager.joinRoom(roomCode, ws);
+                roomManager.broadcastToRoom(roomCode, {
+                    type: 'player_joined',
+                    payload: { userId: currentUserId, username: payload.username } // 🟢 Aggiunto username
+                }, ws); 
+                await lobbyService.syncRoomState(roomCode); // 🟢 Doppio broadcast
+                return;
+            }
+
+            if (eventType === 'player_ready' || eventType === 'toggle_ready' || eventType === 'PLAYER_READY') {
+                await lobbyService.handlePlayerReady(roomCode, currentUserId, payload.ready);
+                return;
+            }
+
+            if (eventType === 'leave_room' || eventType === 'LEAVE_ROOM') {
+                await lobbyService.handleLeaveRoom(roomCode, currentUserId, ws);
+                return;
+            }
+
+            if (eventType === 'update_settings' || eventType === 'UPDATE_SETTINGS') {
+                await lobbyService.handleUpdateSettings(roomCode, currentUserId, payload.settings);
+                return;
+            }
+
+            if (eventType === 'start_game' || eventType === 'START_GAME') {
+                const hostId = payload.hostId || currentUserId;
+                await lobbyService.handleStartGame(roomCode, hostId);
+                const event = new Event(eventType, payload);
+                await routingService.handleClientEvent(currentUserId, event);
+                return;
+            }
+
+            if (eventType === 'CHAT') {
+                // 🟢 Passiamo 'content' invece di 'text' come richiesto
+                const message = new Message(roomCode, currentUserId, payload.content);
+                await chatAndSignalingService.processChatMessage(message, ws);
+            } else if (eventType === 'WEBRTC') {
+                // 🟢 Passiamo l'intero payload così viene espanso dal service
+                const message = new Message(roomCode, currentUserId, payload);
+                await chatAndSignalingService.processWebRTCSignaling(message, ws);
             } else {
-                // Eventi di gioco (START_GAME, CAST_VOTE, etc.)
-                const eventPayload = parsedData.payload || parsedData;
-                const event = new Event(parsedData.type, eventPayload);
+                // Altri eventi vanno a Go
+                const event = new Event(eventType, payload);
                 await routingService.handleClientEvent(currentUserId, event);
             }
         } catch (error: any) {
             console.error(`[Gateway] ❌ Errore elaborazione messaggio da ${currentUserId}: ${error.message}`);
+            // 🟢 Ritorna l'errore al frontend
+            ws.send(JSON.stringify({ type: 'error', payload: { message: error.message } })); 
         }
     });
 
     ws.on('close', async () => {
+        roomManager.leaveAllRooms(ws); 
         await sessionRepository.remove(currentUserId);
         activeSockets.delete(socketId);
         console.log(`[Gateway] 🚪 Client disconnesso: ${currentUserId}`);
@@ -130,7 +182,6 @@ wss.on('connection', async (ws: WebSocket) => {
     });
 });
 
-// HEARTBEAT: Pulisce le connessioni "morte" ogni 30 secondi
 const interval = setInterval(() => {
     wss.clients.forEach((ws) => {
         const extWs = ws as AliveWebSocket;
@@ -143,7 +194,6 @@ const interval = setInterval(() => {
     });
 }, 30000);
 
-// SHUTDOWN LOGIC: Gestione SIGTERM/SIGINT
 const shutdown = () => {
     console.log('[Gateway] Ricevuto segnale di spegnimento. Chiusura in corso...');
     clearInterval(interval);

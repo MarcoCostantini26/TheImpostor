@@ -1,11 +1,42 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import { useRouter } from 'vue-router'
+import { createRoom as createRoomService, joinRoom as joinRoomService } from '../services/roomService'
 
 const authStore = useAuthStore()
+const router = useRouter()
+const joinCode = ref('')
+
 const username = computed(() => {
   return authStore.user?.name || authStore.user?.username || (authStore.user ? `${authStore.user.firstName || ''} ${authStore.user.lastName || ''}`.trim() : '') || 'Player'
 })
+
+const createRoom = async () => {
+  const hostName = authStore.user?.username || authStore.user?.name || username.value || 'Host'
+  try {
+    const room = await createRoomService(hostName, authStore.user?.id || null, !!authStore.user?.id)
+    const createdCode = room.code
+    router.push({ name: 'lobby', params: { code: createdCode }, query: { joined: '1' } })
+  } catch (e) {
+    console.error('createRoom failed', e)
+    alert('Unable to create room. Please try again.')
+  }
+}
+
+async function joinRoom() {
+  const code = (joinCode.value || '').toString().trim().toUpperCase()
+  if (!code) return
+
+  try {
+    const displayName = authStore.user?.username || authStore.user?.name || username.value || 'Guest'
+    await joinRoomService(code, displayName, authStore.user?.id || null, !!authStore.user?.id)
+    router.push({ name: 'lobby', params: { code }, query: { joined: '1' } })
+  } catch (e) {
+    console.error('joinRoom failed', e)
+    alert('Room not found or join failed.')
+  }
+}
 </script>
 
 <template>
@@ -36,7 +67,7 @@ const username = computed(() => {
           </div>
 
             <div class="mt-8 flex justify-center">
-            <button class="px-8 py-3 rounded-full border-2 border-emerald-400 text-emerald-400 hover:bg-emerald-700/10 cursor-pointer">New Room</button>
+            <button @click="createRoom" class="px-8 py-3 rounded-full border-2 border-emerald-400 text-emerald-400 hover:bg-emerald-700/10 cursor-pointer">Create Room</button>
           </div>
 
         </div>
@@ -48,12 +79,12 @@ const username = computed(() => {
             <p class="text-gray-400 text-center mt-4">Insert Room Code:</p>
 
             <div class="mt-6 flex justify-center">
-              <input type="text" placeholder="- - - - - -" class="w-3/4 md:w-2/3 px-4 py-3 rounded bg-[rgba(255,255,255,0.02)] border border-gray-700 text-gray-200 placeholder-gray-500 focus:outline-none" />
+              <input v-model="joinCode" type="text" placeholder="- - - - - -" class="w-3/4 md:w-2/3 px-4 py-3 rounded bg-[rgba(255,255,255,0.02)] border border-gray-700 text-gray-200 placeholder-gray-500 focus:outline-none" />
             </div>
           </div>
 
-          <div class="mt-8 flex justify-center">
-            <button class="px-10 py-3 rounded-full text-white bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">Join</button>
+            <div class="mt-8 flex justify-center">
+            <button @click="joinRoom" class="px-10 py-3 rounded-full text-white bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-violet-500 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer">Join</button>
           </div>
         </div>
 

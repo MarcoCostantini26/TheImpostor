@@ -1,3 +1,39 @@
+## [1.17.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.16.0...1.17.0) (2026-03-27)
+
+### Features
+
+* **lobby:** websocket communications and rest api ([be4e03d](https://github.com/MarcoCostantini26/TheImpostor/commit/be4e03d504aebe10ce37e8cea4fd76032b6d32c9))
+
+## [1.16.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.15.1...1.16.0) (2026-03-27)
+
+### Features
+
+* **chat:** route chat and signaling messages exclusively to room participants ([c0d223a](https://github.com/MarcoCostantini26/TheImpostor/commit/c0d223a5093758f782d8be07d9bdccb1db388b88))
+* **lobby:** implement RoomManager for targeted broadcasts and handle JOIN_ROOM ([99bac59](https://github.com/MarcoCostantini26/TheImpostor/commit/99bac5927e453a33d9517b7efb4d2687581b8c0f))
+* **lobby:** integrate LobbyService into gateway and manage START_GAME dual-routing ([ba7617b](https://github.com/MarcoCostantini26/TheImpostor/commit/ba7617bf4bd5bdd9c562022667c7252b177a6ea3))
+* **lobby:** integrate UPDATE_SETTINGS event handling into gateway ([2471a2f](https://github.com/MarcoCostantini26/TheImpostor/commit/2471a2f42bf40a8bbec128ef7c57d95199510c36))
+
+### Dependency updates
+
+* **deps:** update dependency vite to v8.0.3 ([#76](https://github.com/MarcoCostantini26/TheImpostor/issues/76)) ([c3592f7](https://github.com/MarcoCostantini26/TheImpostor/commit/c3592f7dd85e1f880e0b91ad3854c51992c69e92))
+* **deps:** update plugin org.springframework.boot to v4.0.5 ([#77](https://github.com/MarcoCostantini26/TheImpostor/issues/77)) ([0a625ce](https://github.com/MarcoCostantini26/TheImpostor/commit/0a625ced071902af11d7d5e2d5314f51e6e461f0))
+
+### Refactoring
+
+* **comms:** align event names, wrappers and broadcasts with frontend contract safely ([f664656](https://github.com/MarcoCostantini26/TheImpostor/commit/f664656fbf48cbe493a227837de9fd1fa7b2f079))
+
+## [1.15.1](https://github.com/MarcoCostantini26/TheImpostor/compare/1.15.0...1.15.1) (2026-03-26)
+
+### Dependency updates
+
+* **core-deps:** update dependency vue to v3.5.31 ([#73](https://github.com/MarcoCostantini26/TheImpostor/issues/73)) ([b7e97e4](https://github.com/MarcoCostantini26/TheImpostor/commit/b7e97e44a7e4c0126c2864f5e56c72a4aeeabe93))
+
+## [1.15.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.14.0...1.15.0) (2026-03-25)
+
+### Features
+
+* **lobby-service:** fixed version openapi ([62de1e0](https://github.com/MarcoCostantini26/TheImpostor/commit/62de1e014653798b17d17cb5fa9b71995d94f1c1))
+
 ## [1.14.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.13.0...1.14.0) (2026-03-25)
 
 ### Features
