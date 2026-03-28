@@ -151,21 +151,17 @@ wss.on('connection', async (ws: WebSocket) => {
             }
 
             if (eventType === 'CHAT') {
-                // 🟢 Passiamo 'content' invece di 'text' come richiesto
-                const message = new Message(roomCode, currentUserId, payload.content);
+                const message = new Message(roomCode, currentUserId, payload);
                 await chatAndSignalingService.processChatMessage(message, ws);
             } else if (eventType === 'WEBRTC') {
-                // 🟢 Passiamo l'intero payload così viene espanso dal service
                 const message = new Message(roomCode, currentUserId, payload);
                 await chatAndSignalingService.processWebRTCSignaling(message, ws);
             } else {
-                // Altri eventi vanno a Go
                 const event = new Event(eventType, payload);
                 await routingService.handleClientEvent(currentUserId, event);
             }
         } catch (error: any) {
             console.error(`[Gateway] ❌ Errore elaborazione messaggio da ${currentUserId}: ${error.message}`);
-            // 🟢 Ritorna l'errore al frontend
             ws.send(JSON.stringify({ type: 'error', payload: { message: error.message } })); 
         }
     });

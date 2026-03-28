@@ -58,3 +58,39 @@ body {
 .Vue-Toastification__progress-bar {
   background-color: #5fbfbb !important;
 }
+
+button,
+input[type="button"],
+input[type="submit"],
+[role="button"],
+.clickable,
+a.button {
+  cursor: pointer;
+}
+
+button:not(.no-hover),
+input[type="button"]:not(.no-hover),
+input[type="submit"]:not(.no-hover),
+[role="button"]:not(.no-hover),
+.clickable:not(.no-hover),
+.btn:not(.no-hover) {
+  transition: filter 120ms ease, background-color 120ms ease;
+}
+
+button:not(.no-hover):hover,
+input[type="button"]:not(.no-hover):hover,
+input[type="submit"]:not(.no-hover):hover,
+[role="button"]:not(.no-hover):hover,
+.clickable:not(.no-hover):hover,
+.btn:not(.no-hover):hover {
+  filter: brightness(1.06);
+}
+
+/* Keep default cursor for text inputs */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+textarea,
+select {
+  cursor: text;
+}
