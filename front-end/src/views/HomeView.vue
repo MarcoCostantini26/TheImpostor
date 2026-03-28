@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
 import { createRoom as createRoomService, joinRoom as joinRoomService } from '../services/roomService'
+import Avatar from '../components/Avatar.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()
@@ -49,7 +50,7 @@ async function joinRoom() {
       </div>
       <div class="flex items-center gap-3">
         <div class="text-sm text-gray-200">{{ username }}</div>
-        <div class="w-9 h-9 rounded-full bg-violet-300"></div>
+        <Avatar :name="username" />
       </div>
     </header>
 
