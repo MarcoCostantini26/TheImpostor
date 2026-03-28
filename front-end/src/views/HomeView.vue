@@ -3,7 +3,7 @@ import { computed, ref } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useRouter } from 'vue-router'
 import { createRoom as createRoomService, joinRoom as joinRoomService } from '../services/roomService'
-import Avatar from '../components/Avatar.vue'
+import Avatar from '../components/AvatarIcon.vue'
 
 const authStore = useAuthStore()
 const router = useRouter()

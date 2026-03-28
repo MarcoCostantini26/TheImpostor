@@ -191,7 +191,7 @@ export const useRoomStore = defineStore('room', () => {
         const raw = localStorage.getItem(STORAGE_PREFIX + roomCode)
         const parsed = raw ? JSON.parse(raw) : []
         messages.value = Array.isArray(parsed) ? parsed.slice(-MAX_PERSISTED) : []
-      } catch (e) {
+      } catch {
         messages.value = []
       }
     } catch (e) {
@@ -233,6 +233,7 @@ export const useRoomStore = defineStore('room', () => {
       messages.value.push({ sender: senderName, content, senderId: authStore.user?.id, local: true, timestamp: new Date().toISOString() })
       messages.value = messages.value.slice(-MAX_PERSISTED)
     } catch {
+      // void
     }
     const payload = { content, username: authStore.user?.username || authStore.user?.name }
     wsService.send({ type: 'CHAT', roomId: currentRoomCode, ...payload })
@@ -245,9 +246,11 @@ export const useRoomStore = defineStore('room', () => {
         const toStore = (newVal || []).slice(-MAX_PERSISTED)
         localStorage.setItem(STORAGE_PREFIX + currentRoomCode, JSON.stringify(toStore))
       } catch {
+        // void
       }
     }, { deep: true })
   } catch {
+    // void
   }
 
   function setDiscussionTime(val) {

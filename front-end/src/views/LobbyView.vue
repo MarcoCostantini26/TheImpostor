@@ -4,7 +4,7 @@ import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useRoomStore } from '../stores/room'
-import Avatar from '../components/Avatar.vue'
+import Avatar from '../components/AvatarIcon.vue'
 
 const route = useRoute()
 const router = useRouter()
