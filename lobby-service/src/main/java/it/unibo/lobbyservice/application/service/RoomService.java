@@ -2,6 +2,7 @@ package it.unibo.lobbyservice.application.service;
 
 import it.unibo.lobbyservice.domain.model.*;
 import it.unibo.lobbyservice.domain.repository.RoomRepository;
+import it.unibo.lobbyservice.infrastructure.integration.CommServiceNotifier;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,10 +19,12 @@ public class RoomService {
     
     private final RoomRepository roomRepository;
     private final RoomFactory roomFactory;
+    private final CommServiceNotifier commNotifier;
 
-    public RoomService(RoomRepository roomRepository, RoomFactory roomFactory) {
+    public RoomService(RoomRepository roomRepository, RoomFactory roomFactory, CommServiceNotifier commNotifier) {
         this.roomRepository = Objects.requireNonNull(roomRepository, "RoomRepository cannot be null");
         this.roomFactory = Objects.requireNonNull(roomFactory, "RoomFactory cannot be null");
+        this.commNotifier = Objects.requireNonNull(commNotifier, "CommServiceNotifier cannot be null");
     }
 
     /**
@@ -46,7 +49,13 @@ public class RoomService {
                 .orElseThrow(() -> new RoomNotFoundException("Room with code " + roomCode + " not found"));
         
         room.addPlayer(player);
-        return roomRepository.save(room);
+        Room saved = roomRepository.save(room);
+
+        // Notifica comm-service
+        List<String> allPlayerIds = saved.getPlayers().stream().map(User::getId).toList();
+        commNotifier.notifyPlayerJoined(roomCode, player.getId(), player.getUsername(), allPlayerIds);
+
+        return saved;
     }
 
     /**
@@ -61,12 +70,17 @@ public class RoomService {
         
         room.removePlayer(playerId);
         
+        boolean roomDeleted;
         if (room.getStatus() == RoomStatus.ENDED) {
-            // Host ha lasciato: elimina la stanza
             roomRepository.deleteByCode(room.getCode());
+            roomDeleted = true;
         } else {
             roomRepository.save(room);
+            roomDeleted = false;
         }
+
+        // Notifica comm-service
+        commNotifier.notifyPlayerLeft(roomCode, playerId, roomDeleted);
     }
 
     /**
@@ -83,7 +97,6 @@ public class RoomService {
         room.startGame(requesterId);
         roomRepository.save(room);
         
-        // Crea l'evento domain
         List<String> playerIds = room.getPlayers().stream()
                 .map(User::getId)
                 .toList();
@@ -91,6 +104,9 @@ public class RoomService {
         List<String> playerUsernames = room.getPlayers().stream()
                 .map(User::getUsername)
                 .toList();
+
+        // Notifica comm-service
+        commNotifier.notifyGameStarted(roomCode, playerIds, room.getHostId());
         
         return GameStartRequested.create(
                 room.getCode().getValue(),
@@ -148,5 +164,27 @@ public class RoomService {
         room.endGame();
         return roomRepository.save(room);
     }
-}
 
+    /**
+     * Aggiorna le impostazioni della stanza (solo host).
+     */
+    public Room updateSettings(String roomCode, String requesterId, int impostors, int discussionTime) {
+        Objects.requireNonNull(roomCode, "Room code cannot be null");
+        Objects.requireNonNull(requesterId, "Requester ID cannot be null");
+        
+        Room room = roomRepository.findByCode(RoomCode.of(roomCode))
+                .orElseThrow(() -> new RoomNotFoundException("Room with code " + roomCode + " not found"));
+        
+        if (!room.isHost(requesterId)) {
+            throw new IllegalStateException("Only the host can update settings");
+        }
+        
+        room.updateSettings(impostors, discussionTime);
+        Room saved = roomRepository.save(room);
+
+        // Notifica comm-service
+        commNotifier.notifySettingsUpdated(roomCode, impostors, discussionTime);
+
+        return saved;
+    }
+}

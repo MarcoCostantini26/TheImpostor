@@ -19,6 +19,8 @@ import java.util.*;
 public final class Room {
     private static final int MIN_PLAYERS = 4;
     private static final int MAX_PLAYERS = 10;
+    private static final int DEFAULT_IMPOSTORS = 1;
+    private static final int DEFAULT_DISCUSSION_TIME = 60;
 
     @EqualsAndHashCode.Include
     private final RoomCode code;
@@ -30,6 +32,10 @@ public final class Room {
     private final Instant createdAt;
     private Instant startedAt;
 
+    // Game settings
+    private int impostors;
+    private int discussionTime; // secondi
+
     private Room(RoomCode code, String hostId, Map<String, User> players, 
                  RoomStatus status, int currentRound, Instant createdAt, Instant startedAt) {
         this.code = Objects.requireNonNull(code, "Room code cannot be null");
@@ -39,6 +45,8 @@ public final class Room {
         this.currentRound = currentRound;
         this.createdAt = createdAt != null ? createdAt : Instant.now();
         this.startedAt = startedAt;
+        this.impostors = DEFAULT_IMPOSTORS;
+        this.discussionTime = DEFAULT_DISCUSSION_TIME;
     }
 
     /**
@@ -151,6 +159,24 @@ public final class Room {
         startedAt = null;
     }
 
+    /**
+     * Aggiorna le impostazioni della stanza.
+     * Solo quando la stanza è in WAITING.
+     */
+    public void updateSettings(int impostors, int discussionTime) {
+        if (status != RoomStatus.WAITING) {
+            throw new IllegalStateException("Cannot change settings: game already started");
+        }
+        if (impostors < 1) {
+            throw new IllegalArgumentException("At least 1 impostor is required");
+        }
+        if (discussionTime < 10) {
+            throw new IllegalArgumentException("Discussion time must be at least 10 seconds");
+        }
+        this.impostors = impostors;
+        this.discussionTime = discussionTime;
+    }
+
     // Metodi di utilità
 
     public List<User> getPlayers() {
@@ -171,6 +197,14 @@ public final class Room {
 
     public boolean canStart() {
         return status == RoomStatus.WAITING && players.size() >= MIN_PLAYERS;
+    }
+
+    /**
+     * Restituisce lo username dell'host.
+     */
+    public String getHostUsername() {
+        User host = players.get(hostId);
+        return host != null ? host.getUsername() : null;
     }
 }
 

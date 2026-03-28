@@ -12,6 +12,7 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=dev
       - MONGODB_URI=${MONGODB_URI}
+      - COMM_SERVICE_URL=http://comm-service:3000
 
   # 2. GAME ENGINE (Go 1.24)
   game-engine:
