@@ -1,3 +1,13 @@
+## [1.19.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.18.0...1.19.0) (2026-03-28)
+
+### Features
+
+* **lobby:** implemented chat box and player avatar ([e666cf3](https://github.com/MarcoCostantini26/TheImpostor/commit/e666cf3581a05d8e48249b4cba513c3a54e6fae1))
+
+### Bug Fixes
+
+* **lint:** filled empty block statement and fixed avatar filename ([c7207f8](https://github.com/MarcoCostantini26/TheImpostor/commit/c7207f8f45a650dc69ed3f0cc5165ee09e781260))
+
 ## [1.18.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.17.0...1.18.0) (2026-03-28)
 
 ### Features
