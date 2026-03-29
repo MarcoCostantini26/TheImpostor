@@ -25,7 +25,6 @@ export class LobbyService {
                 type: 'player_ready',
                 payload: { userId, ready }
             });
-            await this.syncRoomState(roomId);
             console.log(`[LobbyService] 🔄 Stato ready aggiornato per ${userId}.`);
         } catch (error: any) {
             console.error(`[LobbyService] ❌ Errore in handlePlayerReady: ${error.message}`);
