@@ -23,6 +23,10 @@ const currentPlayer = computed(() => roomStore.currentPlayer)
 const isHost = computed(() => roomStore.isHost)
 const currentReady = computed(() => !!currentPlayer.value && !!currentPlayer.value.ready)
 
+const nonHostPlayers = computed(() => players.value.filter(p => !isPlayerHost(p)))
+const readyCount = computed(() => nonHostPlayers.value.filter(p => p.ready).length)
+const allReady = computed(() => nonHostPlayers.value.length > 0 && readyCount.value === nonHostPlayers.value.length)
+
 function isCurrent(p) {
   const uid = authStore.user?.id
   if (!p) return false
@@ -154,7 +158,7 @@ function sendChat() { if (!newMessage.value) return; roomStore.sendChat(newMessa
         </div>
 
         <div class="mt-6 flex justify-center">
-          <button v-if="isHost" @click="startGame" class="w-full max-w-3xl px-10 py-4 rounded-full bg-violet-500 text-white font-bold">START GAME</button>
+          <button v-if="isHost" @click="startGame" :disabled="!allReady" :class="['w-full max-w-3xl px-10 py-4 rounded-full font-bold', allReady ? 'bg-violet-500 text-white' : 'bg-gray-600 text-gray-400 cursor-not-allowed']">START GAME ({{ readyCount+1 }}/{{ nonHostPlayers.length+1 }} ready)</button>
           <button v-else @click="toggleReady" :class="['w-full max-w-3xl px-10 py-4 rounded-full font-bold', currentReady ? 'bg-emerald-400 text-black' : 'bg-violet-500 text-white']">{{ currentReady ? 'UNREADY' : 'READY' }}</button>
         </div>
       </main>

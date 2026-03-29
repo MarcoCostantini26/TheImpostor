@@ -63,22 +63,13 @@ public class RoomController {
      */
     @PostMapping("/{code}/leave")
     public ResponseEntity<?> leaveRoom(@PathVariable String code, @RequestBody LeaveRoomRequest request) {
-        Room room;
         try {
-            room = roomService.getRoomByCode(code);
+            roomService.leaveRoom(code, request.playerId());
         } catch (RoomNotFoundException e) {
-            return ResponseEntity.noContent().build(); 
-        }
-        
-        boolean wasHost = request.playerId() != null && request.playerId().equals(room.getHostId());
-        roomService.leaveRoom(code, request.playerId());
-        
-        // Se l'host esce la stanza viene eliminata -> 204
-        if (wasHost) {
             return ResponseEntity.noContent().build();
         }
         
-        // Altrimenti restituisci la stanza aggiornata
+        // Restituisci la stanza aggiornata (potrebbe essere stata eliminata se vuota)
         try {
             Room updatedRoom = roomService.getRoomByCode(code);
             return ResponseEntity.ok(RoomResponse.from(updatedRoom));
