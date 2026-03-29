@@ -17,6 +17,9 @@ const createRoom = async () => {
   const hostName = authStore.user?.username || authStore.user?.name || username.value || 'Host'
   try {
     const room = await createRoomService(hostName, authStore.user?.id || null, !!authStore.user?.id)
+    if (!authStore.user?.id && room.hostId) {
+      authStore.setUserId(room.hostId)
+    }
     const createdCode = room.code
     router.push({ name: 'lobby', params: { code: createdCode }, query: { joined: '1' } })
   } catch (e) {
@@ -31,7 +34,11 @@ async function joinRoom() {
 
   try {
     const displayName = authStore.user?.username || authStore.user?.name || username.value || 'Guest'
-    await joinRoomService(code, displayName, authStore.user?.id || null, !!authStore.user?.id)
+    const room = await joinRoomService(code, displayName, authStore.user?.id || null, !!authStore.user?.id)
+    if (!authStore.user?.id && room?.players) {
+      const me = room.players.find(p => p.username === displayName)
+      if (me?.id) authStore.setUserId(me.id)
+    }
     router.push({ name: 'lobby', params: { code }, query: { joined: '1' } })
   } catch (e) {
     console.error('joinRoom failed', e)

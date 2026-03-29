@@ -73,12 +73,13 @@ public final class Room {
             throw new IllegalStateException("Cannot join room: game already started or ended");
         }
         
-        if (players.size() >= MAX_PLAYERS) {
-            throw new IllegalStateException("Room is full (max " + MAX_PLAYERS + " players)");
+        // Idempotent: if player already in room by ID, do nothing
+        if (players.containsKey(player.getId())) {
+            return;
         }
         
-        if (players.containsKey(player.getId())) {
-            throw new IllegalArgumentException("Player already in room");
+        if (players.size() >= MAX_PLAYERS) {
+            throw new IllegalStateException("Room is full (max " + MAX_PLAYERS + " players)");
         }
         
         // Verifica username univoco nella stanza
@@ -97,8 +98,9 @@ public final class Room {
      * Se l'host lascia, la stanza viene chiusa (status -> ENDED).
      */
     public void removePlayer(String playerId) {
+        // Idempotent: if player not in room, do nothing
         if (!players.containsKey(playerId)) {
-            throw new IllegalArgumentException("Player not in room");
+            return;
         }
         
         if (status != RoomStatus.WAITING) {

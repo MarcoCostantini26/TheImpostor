@@ -4,7 +4,7 @@ export class LobbyService {
     private readonly lobbyUrl: string;
 
     constructor(private roomManager: RoomManager) {
-        this.lobbyUrl = process.env.LOBBY_URL || 'http://localhost:3000';
+        this.lobbyUrl = process.env.LOBBY_URL || 'http://localhost:8080';
     }
 
     async syncRoomState(roomCode: string): Promise<void> {
@@ -21,13 +21,6 @@ export class LobbyService {
 
     async handlePlayerReady(roomId: string, userId: string, ready?: boolean): Promise<void> {
         try {
-            await fetch(`${this.lobbyUrl}/api/rooms/${roomId}/ready`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId, ready })
-            });
-
-            //DOPPIO BROADCAST: Prima il ready granulare, poi tutto lo stato
             this.roomManager.broadcastToRoom(roomId, {
                 type: 'player_ready',
                 payload: { userId, ready }
@@ -64,6 +57,16 @@ export class LobbyService {
         try {
             this.roomManager.leaveRoom(roomId, ws);
 
+            try {
+                await fetch(`${this.lobbyUrl}/api/rooms/${roomId}/leave`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ playerId: userId })
+                });
+            } catch (apiError: any) {
+                console.error(`[LobbyService] ⚠️ Could not call leave API for ${userId}: ${apiError.message}`);
+            }
+
             this.roomManager.broadcastToRoom(roomId, {
                 type: 'player_left',
                 payload: { userId }
@@ -76,14 +79,26 @@ export class LobbyService {
     }
 
     async handleUpdateSettings(roomId: string, userId: string, settings: any): Promise<void> {
-        // Game settings (impostors, discussionTime) are not persisted by the lobby-service
-        // (no corresponding endpoint/domain field). We just broadcast them to all clients.
         try {
+            try {
+                await fetch(`${this.lobbyUrl}/api/rooms/${roomId}/settings`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        hostId: userId,
+                        impostors: settings.impostors,
+                        discussionTime: settings.discussionTime
+                    })
+                });
+            } catch (apiError: any) {
+                console.error(`[LobbyService] ⚠️ Could not persist settings for ${roomId}: ${apiError.message}`);
+            }
+
             this.roomManager.broadcastToRoom(roomId, {
                 type: 'update_settings',
                 payload: settings
             });
-            console.log(`[LobbyService] ⚙️ Impostazioni stanza ${roomId} aggiornate da ${userId} (broadcast only).`);
+            console.log(`[LobbyService] ⚙️ Impostazioni stanza ${roomId} aggiornate da ${userId}.`);
         } catch (error: any) {
             console.error(`[LobbyService] ❌ Errore in handleUpdateSettings: ${error.message}`);
         }

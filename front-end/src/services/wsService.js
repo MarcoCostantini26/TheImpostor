@@ -7,7 +7,7 @@ let socket = null
 let listeners = []
 
 function connect() {
-  if (socket && socket.readyState === WebSocket.OPEN) return
+  if (socket && (socket.readyState === WebSocket.OPEN || socket.readyState === WebSocket.CONNECTING)) return
 
   socket = new WebSocket(WS_BASE)
 
@@ -24,6 +24,18 @@ function connect() {
 
   socket.onclose = () => console.log('[ws] closed')
   socket.onerror = (e) => console.error('[ws] error', e)
+}
+
+function disconnect() {
+  if (socket) {
+    socket.onclose = null
+    socket.close()
+    socket = null
+  }
+}
+
+function isConnected() {
+  return socket && socket.readyState === WebSocket.OPEN
 }
 
 function send(obj) {
@@ -47,4 +59,4 @@ function onMessage(cb) {
   }
 }
 
-export { connect, send, sendEvent, onMessage }
+export { connect, disconnect, isConnected, send, sendEvent, onMessage }
