@@ -1,3 +1,16 @@
+## [1.20.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.19.0...1.20.0) (2026-03-30)
+
+### Features
+
+* **lobby:** game settings and start game button based on number of players and imps ([0c0b7a9](https://github.com/MarcoCostantini26/TheImpostor/commit/0c0b7a9172e39646e2b81c454dbe4e48bdda4279))
+* **lobby:** random player becomes host if host leaves the room ([bb14f83](https://github.com/MarcoCostantini26/TheImpostor/commit/bb14f83d9d9c77b2c764351a4df4f5cafdc87641))
+
+### Bug Fixes
+
+* **lobby:** fixed ready/unready button behavior ([39af4d8](https://github.com/MarcoCostantini26/TheImpostor/commit/39af4d8b08afe92357a75c413e13bb401491b4e4))
+* **lobby:** handle players list and leave room ([1b2a25b](https://github.com/MarcoCostantini26/TheImpostor/commit/1b2a25b079734c78e9ea1ecb3f7a8c7ba6bd0a94))
+* **url:** made url more robust and improved responsive design ([7bd9624](https://github.com/MarcoCostantini26/TheImpostor/commit/7bd9624c200340ea41456db4673367c58be84054))
+
 ## [1.19.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.18.0...1.19.0) (2026-03-28)
 
 ### Features
