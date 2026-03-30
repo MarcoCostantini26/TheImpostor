@@ -23,6 +23,14 @@ const currentPlayer = computed(() => roomStore.currentPlayer)
 const isHost = computed(() => roomStore.isHost)
 const currentReady = computed(() => !!currentPlayer.value && !!currentPlayer.value.ready)
 
+const nonHostPlayers = computed(() => players.value.filter(p => !isPlayerHost(p)))
+const readyCount = computed(() => nonHostPlayers.value.filter(p => p.ready).length)
+const allReady = computed(() => nonHostPlayers.value.length > 0 && readyCount.value === nonHostPlayers.value.length)
+const MIN_PLAYERS = 4
+const enoughPlayers = computed(() => players.value.length >= MIN_PLAYERS)
+const canStart = computed(() => allReady.value && enoughPlayers.value)
+const maxImpostors = computed(() => players.value.length >= 6 ? 2 : 1)
+
 function isCurrent(p) {
   const uid = authStore.user?.id
   if (!p) return false
@@ -56,9 +64,8 @@ function statusClass(p) {
 }
 
 onMounted(async () => {
-  const alreadyJoined = route.query?.joined === '1'
   try {
-    await roomStore.join(code, alreadyJoined)
+    await roomStore.join(code)
     await nextTick()
     if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight
   } catch {
@@ -70,6 +77,12 @@ watch(messages, async () => {
   await nextTick()
   if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight
 }, { deep: true })
+
+watch(maxImpostors, (newMax) => {
+  if (impostors.value > newMax) {
+    decrementImpostors()
+  }
+})
 
 onBeforeUnmount(() => {
   roomStore.leave()
@@ -129,8 +142,8 @@ function sendChat() { if (!newMessage.value) return; roomStore.sendChat(newMessa
                 :title="!isHost ? 'Only host can change settings' : 'Decrease impostors'"
                 class="w-10 h-10 rounded-md bg-[rgba(0,0,0,0.4)] border border-gray-700 flex items-center justify-center text-white disabled:opacity-40 disabled:cursor-not-allowed">-</button>
               <div class="text-2xl font-bold text-white">{{ impostors }}</div>
-              <button @click="incrementImpostors" :disabled="!isHost || impostors >= 2"
-                :title="!isHost ? 'Only host can change settings' : 'Increase impostors'"
+              <button @click="incrementImpostors" :disabled="!isHost || impostors >= maxImpostors"
+                :title="!isHost ? 'Only host can change settings' : (impostors >= maxImpostors ? 'Need at least 6 players for 2 impostors' : 'Increase impostors')"
                 class="w-10 h-10 rounded-md bg-violet-500 flex items-center justify-center text-white disabled:opacity-40 disabled:cursor-not-allowed">+</button>
             </div>
             <!-- Discussion time selector -->
@@ -154,7 +167,10 @@ function sendChat() { if (!newMessage.value) return; roomStore.sendChat(newMessa
         </div>
 
         <div class="mt-6 flex justify-center">
-          <button v-if="isHost" @click="startGame" class="w-full max-w-3xl px-10 py-4 rounded-full bg-violet-500 text-white font-bold">START GAME</button>
+          <button v-if="isHost" @click="startGame" :disabled="!canStart" :class="['w-full max-w-3xl px-10 py-4 rounded-full font-bold', canStart ? 'bg-violet-500 text-white' : 'bg-gray-600 text-gray-400 cursor-not-allowed']">
+              <span v-if="!enoughPlayers">Need {{ MIN_PLAYERS - players.length }} more player{{ MIN_PLAYERS - players.length > 1 ? 's' : '' }}!</span>
+              <span v-else>START GAME ({{ readyCount+1 }}/{{ nonHostPlayers.length+1 }} ready)</span>
+            </button>
           <button v-else @click="toggleReady" :class="['w-full max-w-3xl px-10 py-4 rounded-full font-bold', currentReady ? 'bg-emerald-400 text-black' : 'bg-violet-500 text-white']">{{ currentReady ? 'UNREADY' : 'READY' }}</button>
         </div>
       </main>

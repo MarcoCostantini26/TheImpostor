@@ -28,6 +28,10 @@ const chatAndSignalingService = new ChatAndSignalingService(sessionRepository, r
 
 const activeSockets = new Map<string, WebSocket>();
 
+const userRooms = new Map<string, string>();
+const pendingLeaves = new Map<string, NodeJS.Timeout>();
+const LEAVE_GRACE_PERIOD_MS = 15_000;
+
 // SERVER HTTP: Gestisce il Webhook per ascoltare gli eventi di Go
 const server = createServer((req, res) => {
     if (req.method === 'POST' && req.url === '/internal/engine-callback') {
@@ -106,7 +110,22 @@ wss.on('connection', async (ws: WebSocket) => {
                 console.log(`[Gateway] 🆔 Cambio identità: ${currentUserId} -> ${newUserId}`);
                 
                 await sessionRepository.remove(currentUserId);
+
+                // Move room mapping from temp ID to real ID
+                const existingRoom = userRooms.get(currentUserId);
+                if (existingRoom) {
+                    userRooms.delete(currentUserId);
+                    userRooms.set(newUserId, existingRoom);
+                }
+
                 currentUserId = newUserId;
+                
+                // Cancel any pending leave for this user (reconnection after refresh)
+                if (pendingLeaves.has(currentUserId)) {
+                    clearTimeout(pendingLeaves.get(currentUserId)!);
+                    pendingLeaves.delete(currentUserId);
+                    console.log(`[Gateway] 🔄 Pending leave cancelled for reconnected user: ${currentUserId}`);
+                }
                 
                 const newSession = new Session(currentUserId);
                 newSession.addConnection(new Connection(socketId));
@@ -119,11 +138,22 @@ wss.on('connection', async (ws: WebSocket) => {
 
             if (eventType === 'join_room' || eventType === 'JOIN_ROOM') {
                 roomManager.joinRoom(roomCode, ws);
+
+                // Track which room this user is in
+                userRooms.set(currentUserId, roomCode);
+
+                // Cancel any pending leave (reconnection after refresh)
+                if (pendingLeaves.has(currentUserId)) {
+                    clearTimeout(pendingLeaves.get(currentUserId)!);
+                    pendingLeaves.delete(currentUserId);
+                    console.log(`[Gateway] 🔄 Pending leave cancelled on join_room for: ${currentUserId}`);
+                }
+
                 roomManager.broadcastToRoom(roomCode, {
                     type: 'player_joined',
-                    payload: { userId: currentUserId, username: payload.username } // 🟢 Aggiunto username
+                    payload: { userId: currentUserId, username: payload.username }
                 }, ws); 
-                await lobbyService.syncRoomState(roomCode); // 🟢 Doppio broadcast
+                await lobbyService.syncRoomState(roomCode);
                 return;
             }
 
@@ -133,6 +163,11 @@ wss.on('connection', async (ws: WebSocket) => {
             }
 
             if (eventType === 'leave_room' || eventType === 'LEAVE_ROOM') {
+                userRooms.delete(currentUserId);
+                if (pendingLeaves.has(currentUserId)) {
+                    clearTimeout(pendingLeaves.get(currentUserId)!);
+                    pendingLeaves.delete(currentUserId);
+                }
                 await lobbyService.handleLeaveRoom(roomCode, currentUserId, ws);
                 return;
             }
@@ -170,6 +205,24 @@ wss.on('connection', async (ws: WebSocket) => {
         roomManager.leaveAllRooms(ws); 
         await sessionRepository.remove(currentUserId);
         activeSockets.delete(socketId);
+
+        const roomCode = userRooms.get(currentUserId);
+        if (roomCode) {
+            userRooms.delete(currentUserId);
+            const closedUserId = currentUserId;
+            const timeout = setTimeout(async () => {
+                try {
+                    console.log(`[Gateway] ⏰ Grace period expired for ${closedUserId} in room ${roomCode}. Removing from lobby.`);
+                    await lobbyService.handleLeaveRoom(roomCode, closedUserId, ws);
+                } catch (e: any) {
+                    console.error(`[Gateway] ❌ Error during grace period leave: ${e.message}`);
+                }
+                pendingLeaves.delete(closedUserId);
+            }, LEAVE_GRACE_PERIOD_MS);
+            pendingLeaves.set(closedUserId, timeout);
+            console.log(`[Gateway] 🕐 Grace period started for ${currentUserId} (${LEAVE_GRACE_PERIOD_MS}ms).`);
+        }
+
         console.log(`[Gateway] 🚪 Client disconnesso: ${currentUserId}`);
     });
 

@@ -13,6 +13,7 @@ export const useRoomStore = defineStore('room', () => {
   const error = ref(null)
   const roomStatus = ref(null)
   const roomHostId = ref(null)
+  let _joinedViaHome = false
 
   let unsubscribe = null
   let currentRoomCode = null
@@ -175,18 +176,41 @@ export const useRoomStore = defineStore('room', () => {
     unsubscribe = wsService.onMessage(handleIncoming)
   }
 
-  async function join(roomCode, alreadyJoined = false) {
+  function resolveGuestId(playersList, displayName) {
+    if (authStore.user?.id || !playersList) return
+    const me = playersList.find(p => p.username === displayName)
+    if (me?.id) authStore.setUserId(me.id)
+  }
+
+  function markAsJoined() {
+    _joinedViaHome = true
+  }
+
+  async function join(roomCode) {
     loading.value = true
     error.value = null
+    const alreadyJoined = _joinedViaHome
+    _joinedViaHome = false
     try {
       const displayName = authStore.user?.username || authStore.user?.name || 'Guest'
-      if (!alreadyJoined) await roomService.joinRoom(roomCode, displayName, authStore.user?.id || null, !!authStore.user?.id)
+
+      if (!alreadyJoined) {
+        const joinResult = await roomService.joinRoom(roomCode, displayName, authStore.user?.id || null, !!authStore.user?.id)
+        resolveGuestId(joinResult?.players, displayName)
+      }
+
       const room = await roomService.getRoom(roomCode)
       players.value = room.players || []
       roomStatus.value = room.status || room.state || null
       roomHostId.value = room.hostId || room.hostUserId || room.creatorId || null
+      if (room.impostors !== undefined) impostors.value = room.impostors
+      if (room.discussionTime !== undefined) discussionTime.value = room.discussionTime
+
+      resolveGuestId(room.players, displayName)
+
       initWS(roomCode)
       wsService.sendEvent('join_room', { roomCode, userId: authStore.user?.id, username: displayName })
+
       try {
         const raw = localStorage.getItem(STORAGE_PREFIX + roomCode)
         const parsed = raw ? JSON.parse(raw) : []
@@ -204,7 +228,15 @@ export const useRoomStore = defineStore('room', () => {
 
   function leave() {
     if (unsubscribe) unsubscribe()
-    if (currentRoomCode) wsService.sendEvent('leave_room', { roomCode: currentRoomCode })
+    unsubscribe = null
+    if (currentRoomCode) {
+      wsService.sendEvent('leave_room', { roomCode: currentRoomCode, userId: authStore.user?.id })
+      const code = currentRoomCode
+      const pid = authStore.user?.id
+      if (pid) {
+        roomService.leaveRoom(code, pid).catch(() => {})
+      }
+    }
     players.value = []
     messages.value = []
     roomStatus.value = null
@@ -285,6 +317,7 @@ export const useRoomStore = defineStore('room', () => {
     isHost,
     join,
     leave,
+    markAsJoined,
     initWS,
     startGame,
     toggleReady,

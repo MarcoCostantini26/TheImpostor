@@ -1,11 +1,13 @@
 <script setup>
 import { computed, ref } from 'vue'
 import { useAuthStore } from '../stores/auth'
+import { useRoomStore } from '../stores/room'
 import { useRouter } from 'vue-router'
 import { createRoom as createRoomService, joinRoom as joinRoomService } from '../services/roomService'
 import Avatar from '../components/AvatarIcon.vue'
 
 const authStore = useAuthStore()
+const roomStore = useRoomStore()
 const router = useRouter()
 const joinCode = ref('')
 
@@ -17,8 +19,12 @@ const createRoom = async () => {
   const hostName = authStore.user?.username || authStore.user?.name || username.value || 'Host'
   try {
     const room = await createRoomService(hostName, authStore.user?.id || null, !!authStore.user?.id)
+    if (!authStore.user?.id && room.hostId) {
+      authStore.setUserId(room.hostId)
+    }
     const createdCode = room.code
-    router.push({ name: 'lobby', params: { code: createdCode }, query: { joined: '1' } })
+    roomStore.markAsJoined()
+    router.push({ name: 'lobby', params: { code: createdCode } })
   } catch (e) {
     console.error('createRoom failed', e)
     alert('Unable to create room. Please try again.')
@@ -31,8 +37,13 @@ async function joinRoom() {
 
   try {
     const displayName = authStore.user?.username || authStore.user?.name || username.value || 'Guest'
-    await joinRoomService(code, displayName, authStore.user?.id || null, !!authStore.user?.id)
-    router.push({ name: 'lobby', params: { code }, query: { joined: '1' } })
+    const room = await joinRoomService(code, displayName, authStore.user?.id || null, !!authStore.user?.id)
+    if (!authStore.user?.id && room?.players) {
+      const me = room.players.find(p => p.username === displayName)
+      if (me?.id) authStore.setUserId(me.id)
+    }
+    roomStore.markAsJoined()
+    router.push({ name: 'lobby', params: { code } })
   } catch (e) {
     console.error('joinRoom failed', e)
     alert('Room not found or join failed.')

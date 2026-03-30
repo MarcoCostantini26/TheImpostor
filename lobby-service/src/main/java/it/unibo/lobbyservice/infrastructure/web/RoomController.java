@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
+import it.unibo.lobbyservice.application.service.RoomNotFoundException;
 
 /**
  * REST Controller per la gestione delle Room.
@@ -62,17 +63,19 @@ public class RoomController {
      */
     @PostMapping("/{code}/leave")
     public ResponseEntity<?> leaveRoom(@PathVariable String code, @RequestBody LeaveRoomRequest request) {
-        Room room = roomService.getRoomByCode(code);
-        roomService.leaveRoom(code, request.playerId());
-        
-        // Se l'host esce la stanza viene eliminata -> 204
-        if (request.playerId().equals(room.getHostId())) {
+        try {
+            roomService.leaveRoom(code, request.playerId());
+        } catch (RoomNotFoundException e) {
             return ResponseEntity.noContent().build();
         }
         
-        // Altrimenti restituisci la stanza aggiornata
-        Room updatedRoom = roomService.getRoomByCode(code);
-        return ResponseEntity.ok(RoomResponse.from(updatedRoom));
+        // Restituisci la stanza aggiornata (potrebbe essere stata eliminata se vuota)
+        try {
+            Room updatedRoom = roomService.getRoomByCode(code);
+            return ResponseEntity.ok(RoomResponse.from(updatedRoom));
+        } catch (RoomNotFoundException e) {
+            return ResponseEntity.noContent().build();
+        }
     }
 
     /**
