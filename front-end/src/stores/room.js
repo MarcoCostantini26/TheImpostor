@@ -13,6 +13,7 @@ export const useRoomStore = defineStore('room', () => {
   const error = ref(null)
   const roomStatus = ref(null)
   const roomHostId = ref(null)
+  let _joinedViaHome = false
 
   let unsubscribe = null
   let currentRoomCode = null
@@ -181,9 +182,15 @@ export const useRoomStore = defineStore('room', () => {
     if (me?.id) authStore.setUserId(me.id)
   }
 
-  async function join(roomCode, alreadyJoined = false) {
+  function markAsJoined() {
+    _joinedViaHome = true
+  }
+
+  async function join(roomCode) {
     loading.value = true
     error.value = null
+    const alreadyJoined = _joinedViaHome
+    _joinedViaHome = false
     try {
       const displayName = authStore.user?.username || authStore.user?.name || 'Guest'
 
@@ -310,6 +317,7 @@ export const useRoomStore = defineStore('room', () => {
     isHost,
     join,
     leave,
+    markAsJoined,
     initWS,
     startGame,
     toggleReady,

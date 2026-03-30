@@ -83,7 +83,7 @@ const handleRegister = async () => {
 <template>
   <div class="min-h-screen flex items-center justify-center px-4">
     <div class="w-full max-w-6xl p-6 md:p-8 rounded-2xl bg-[rgba(48,48,48,0.85)] shadow-[0_20px_60px_rgba(0,0,0,0.6)] grid grid-cols-1 md:grid-cols-2 gap-0 items-center">
-      <div class="card pop-in max-w-md w-full space-y-8 bg-[rgba(18,18,18,0.95)] p-8 rounded-xl shadow-md border border-transparent order-2 md:order-1">
+      <div class="card pop-in max-w-md w-full mx-auto space-y-8 bg-[rgba(18,18,18,0.95)] p-8 rounded-xl shadow-md border border-transparent order-2 md:order-1">
         <div>
           <h2 class="text-3xl font-bold text-white">REGISTER</h2>
         </div>

@@ -64,9 +64,8 @@ function statusClass(p) {
 }
 
 onMounted(async () => {
-  const alreadyJoined = route.query?.joined === '1'
   try {
-    await roomStore.join(code, alreadyJoined)
+    await roomStore.join(code)
     await nextTick()
     if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight
   } catch {
