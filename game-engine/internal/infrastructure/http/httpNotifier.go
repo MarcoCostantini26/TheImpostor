@@ -21,7 +21,7 @@ func NewHTTPGatewayNotifier(url string) *HTTPGatewayNotifier {
 
 // Struttura fissa che il Node.js si aspetterà di ricevere
 type WebhookMessage struct {
-	Event   string      `json:"event"`
+	Event   string      `json:"eventName"`
 	Payload interface{} `json:"payload"`
 }
 

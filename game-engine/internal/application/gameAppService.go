@@ -19,7 +19,7 @@ func NewGameAppService(
 	repo repository.GameRepository,
 	factory *aggregate.GameFactory,
 	rules *service.GameRulesService,
-	notifier GatewayNotifier, 
+	notifier GatewayNotifier,
 ) *GameAppService {
 	return &GameAppService{
 		gameRepo:    repo,
@@ -95,11 +95,26 @@ func (app *GameAppService) ResolveVotingUseCase(gameID string) error {
 		game.EndGame(winTeam)
 		app.gameRepo.Save(game)
 		// 🔔 TELEFONIAMO A NODE.JS (Partita finita!)
-		app.notifier.NotifyEvent("GameEnded", map[string]string{"gameId": gameID, "winner": winTeam})
+		// Nota: se winTeam è un tipo custom, potrebbe dover fare string(winTeam)
+		app.notifier.NotifyEvent("GameEnded", map[string]string{"gameId": gameID, "winner": string(winTeam)})
 		return nil
 	}
 
 	app.gameRepo.Save(game)
 	app.notifier.NotifyEvent("VotingResolved", map[string]string{"gameId": gameID, "eliminatedId": eliminatedID})
 	return nil
+}
+
+// ==============================================================
+// 🟢 FUNZIONE AGGIUNTA CHE MANCAVA PER IL CONTROLLER
+// ==============================================================
+func (app *GameAppService) GetGameUseCase(gameID string) (interface{}, error) {
+	game, err := app.gameRepo.FindByID(gameID)
+	if err != nil {
+		return nil, err
+	}
+	if game == nil {
+		return nil, errors.New("partita non trovata")
+	}
+	return game, nil
 }
