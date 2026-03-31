@@ -1,3 +1,18 @@
+## [1.21.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.20.0...1.21.0) (2026-03-31)
+
+### Features
+
+* **comms:** complete overhaul of engine communication ([a405d94](https://github.com/MarcoCostantini26/TheImpostor/commit/a405d94a26144ac07953e24ebfe5535bdf40f6c1))
+* **comms:** define EngineGateway port and update RoutingService ([542423b](https://github.com/MarcoCostantini26/TheImpostor/commit/542423bcc8ee09289a8be8bf9a9f9b118a65c51a))
+* **comms:** integrate game engine module ([c887a69](https://github.com/MarcoCostantini26/TheImpostor/commit/c887a69d74a104c21fe5e22fbbcd87565101962e))
+* **notifier:** implement HTTP webhook notifier and update GameAppService ([2dc6ef8](https://github.com/MarcoCostantini26/TheImpostor/commit/2dc6ef8af581bd63cddbe77cf8877797ae39e76b))
+* **webhook:** add HTTP notifier to send async events to Node.js gateway ([13b0b61](https://github.com/MarcoCostantini26/TheImpostor/commit/13b0b613e4aec23b948619e079ad3829e4a3dee2))
+
+### Dependency updates
+
+* **deps:** update dependency @eslint/css to v1.1.0 ([#82](https://github.com/MarcoCostantini26/TheImpostor/issues/82)) ([8e71a8f](https://github.com/MarcoCostantini26/TheImpostor/commit/8e71a8fa3472de4e842c0acda0e3bf05dde7c884))
+* **deps:** update dependency typescript-eslint to v8.58.0 ([#83](https://github.com/MarcoCostantini26/TheImpostor/issues/83)) ([84d69b3](https://github.com/MarcoCostantini26/TheImpostor/commit/84d69b3a50e5eb34ca05cff3ff5bf0c34b110b06))
+
 ## [1.20.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.19.0...1.20.0) (2026-03-30)
 
 ### Features
