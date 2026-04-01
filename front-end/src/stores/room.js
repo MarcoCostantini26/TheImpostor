@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import * as wsService from '../services/wsService'
 import * as roomService from '../services/roomService'
 import { useAuthStore } from './auth'
@@ -13,9 +13,12 @@ export const useRoomStore = defineStore('room', () => {
   const error = ref(null)
   const roomStatus = ref(null)
   const roomHostId = ref(null)
+  let _joinedViaHome = false
 
   let unsubscribe = null
   let currentRoomCode = null
+  const STORAGE_PREFIX = 'theimpostor:chat:'
+  const MAX_PERSISTED = 200
 
   const authStore = useAuthStore()
 
@@ -129,7 +132,31 @@ export const useRoomStore = defineStore('room', () => {
     }
 
     if (msg.type === 'CHAT' || action === 'chat_message' || payload.type === 'CHAT') {
-      messages.value.push(payload)
+      const p = payload || {}
+      const senderId = p.senderId || p.userId || p.fromId || p.from || null
+      let senderName = p.sender || p.displayName || p.username || p.from || null
+
+      if (!senderName && senderId) {
+        const pl = players.value.find(pl => {
+          if (!pl) return false
+          const ids = [pl.id, pl.userId, pl.user_id, pl._id, pl.connectionId, pl.socketId]
+          return ids.some(id => id !== undefined && id !== null && String(id) === String(senderId))
+        })
+        if (pl) senderName = pl.username || pl.displayName || (typeof pl === 'string' ? pl : null)
+      }
+
+      if (!senderName) {
+        senderName = p.username || p.displayName || senderId || 'Player'
+      }
+
+      messages.value.push({
+        sender: senderName,
+        senderId: senderId || null,
+        content: p.content || p.message || '',
+        timestamp: p.timestamp || new Date().toISOString(),
+        _raw: p
+      })
+      messages.value = messages.value.slice(-MAX_PERSISTED)
       return
     }
 
@@ -149,18 +176,48 @@ export const useRoomStore = defineStore('room', () => {
     unsubscribe = wsService.onMessage(handleIncoming)
   }
 
-  async function join(roomCode, alreadyJoined = false) {
+  function resolveGuestId(playersList, displayName) {
+    if (authStore.user?.id || !playersList) return
+    const me = playersList.find(p => p.username === displayName)
+    if (me?.id) authStore.setUserId(me.id)
+  }
+
+  function markAsJoined() {
+    _joinedViaHome = true
+  }
+
+  async function join(roomCode) {
     loading.value = true
     error.value = null
+    const alreadyJoined = _joinedViaHome
+    _joinedViaHome = false
     try {
       const displayName = authStore.user?.username || authStore.user?.name || 'Guest'
-      if (!alreadyJoined) await roomService.joinRoom(roomCode, displayName, authStore.user?.id || null, !!authStore.user?.id)
+
+      if (!alreadyJoined) {
+        const joinResult = await roomService.joinRoom(roomCode, displayName, authStore.user?.id || null, !!authStore.user?.id)
+        resolveGuestId(joinResult?.players, displayName)
+      }
+
       const room = await roomService.getRoom(roomCode)
       players.value = room.players || []
       roomStatus.value = room.status || room.state || null
       roomHostId.value = room.hostId || room.hostUserId || room.creatorId || null
+      if (room.impostors !== undefined) impostors.value = room.impostors
+      if (room.discussionTime !== undefined) discussionTime.value = room.discussionTime
+
+      resolveGuestId(room.players, displayName)
+
       initWS(roomCode)
       wsService.sendEvent('join_room', { roomCode, userId: authStore.user?.id, username: displayName })
+
+      try {
+        const raw = localStorage.getItem(STORAGE_PREFIX + roomCode)
+        const parsed = raw ? JSON.parse(raw) : []
+        messages.value = Array.isArray(parsed) ? parsed.slice(-MAX_PERSISTED) : []
+      } catch {
+        messages.value = []
+      }
     } catch (e) {
       error.value = e.message || 'Join failed'
       throw e
@@ -171,7 +228,15 @@ export const useRoomStore = defineStore('room', () => {
 
   function leave() {
     if (unsubscribe) unsubscribe()
-    if (currentRoomCode) wsService.sendEvent('leave_room', { roomCode: currentRoomCode })
+    unsubscribe = null
+    if (currentRoomCode) {
+      wsService.sendEvent('leave_room', { roomCode: currentRoomCode, userId: authStore.user?.id })
+      const code = currentRoomCode
+      const pid = authStore.user?.id
+      if (pid) {
+        roomService.leaveRoom(code, pid).catch(() => {})
+      }
+    }
     players.value = []
     messages.value = []
     roomStatus.value = null
@@ -195,7 +260,29 @@ export const useRoomStore = defineStore('room', () => {
 
   function sendChat(content) {
     if (!currentRoomCode || !content) return
-    wsService.send({ type: 'CHAT', roomId: currentRoomCode, content })
+    try {
+      const senderName = authStore.user?.username || authStore.user?.name || 'You'
+      messages.value.push({ sender: senderName, content, senderId: authStore.user?.id, local: true, timestamp: new Date().toISOString() })
+      messages.value = messages.value.slice(-MAX_PERSISTED)
+    } catch {
+      // void
+    }
+    const payload = { content, username: authStore.user?.username || authStore.user?.name }
+    wsService.send({ type: 'CHAT', roomId: currentRoomCode, ...payload })
+  }
+
+  try {
+    watch(messages, (newVal) => {
+      try {
+        if (!currentRoomCode) return
+        const toStore = (newVal || []).slice(-MAX_PERSISTED)
+        localStorage.setItem(STORAGE_PREFIX + currentRoomCode, JSON.stringify(toStore))
+      } catch {
+        // void
+      }
+    }, { deep: true })
+  } catch {
+    // void
   }
 
   function setDiscussionTime(val) {
@@ -230,6 +317,7 @@ export const useRoomStore = defineStore('room', () => {
     isHost,
     join,
     leave,
+    markAsJoined,
     initWS,
     startGame,
     toggleReady,

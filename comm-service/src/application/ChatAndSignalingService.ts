@@ -11,17 +11,26 @@ export class ChatAndSignalingService {
 
     async processChatMessage(message: Message, ws?: WebSocket): Promise<void> {
         try {
-            const chatEvent = {
+            let content: any = message.content
+            let senderName: string | undefined = undefined
+            if (content && typeof content === 'object') {
+                senderName = content.username || content.sender || undefined
+                content = content.content ?? content.message ?? ''
+            }
+
+            const chatEvent: any = {
                 type: 'CHAT',
                 payload: {
                     senderId: message.senderId,
-                    content: message.content, //(usa content invece di text)
+                    content: content,
                     timestamp: new Date().toISOString()
                 }
-            };
+            }
+
+            if (senderName) chatEvent.payload.sender = senderName
 
             this.roomManager.broadcastToRoom(message.roomId, chatEvent, ws);
-            console.log(`[Chat] 💬 ${message.senderId} -> Stanza ${message.roomId}: ${message.content}`);
+            console.log(`[Chat] 💬 ${message.senderId} (${senderName || 'unknown'}) -> Stanza ${message.roomId}: ${content}`);
         } catch (error: any) {
             console.error(`[Chat] ❌ Errore processChatMessage: ${error.message}`);
         }

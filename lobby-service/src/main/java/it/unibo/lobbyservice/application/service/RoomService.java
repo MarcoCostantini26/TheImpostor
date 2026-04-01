@@ -65,10 +65,14 @@ public class RoomService {
         Objects.requireNonNull(roomCode, "Room code cannot be null");
         Objects.requireNonNull(playerId, "Player ID cannot be null");
         
-        Room room = roomRepository.findByCode(RoomCode.of(roomCode))
-                .orElseThrow(() -> new RoomNotFoundException("Room with code " + roomCode + " not found"));
+        // Idempotent: if room doesn't exist, nothing to leave
+        var optRoom = roomRepository.findByCode(RoomCode.of(roomCode));
+        if (optRoom.isEmpty()) {
+            return;
+        }
         
-        room.removePlayer(playerId);
+        Room room = optRoom.get();
+        room.removePlayer(playerId); // Now idempotent
         
         boolean roomDeleted;
         if (room.getStatus() == RoomStatus.ENDED) {

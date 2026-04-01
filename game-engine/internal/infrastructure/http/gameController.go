@@ -139,3 +139,26 @@ func (c *GameController) HandleResolveVoting(w http.ResponseWriter, r *http.Requ
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Votazione conclusa. Eventuali giocatori eliminati e condizioni di vittoria controllate."})
 }
+
+
+// HandleGetGameState risponde a GET /games/state?gameId={id}
+func (c *GameController) HandleGetGameState(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Metodo non consentito", http.StatusMethodNotAllowed)
+		return
+	}
+
+	gameID := r.URL.Query().Get("gameId")
+	game, err := c.appService.GetGameUseCase(gameID)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	if game == nil {
+		http.Error(w, "Partita non trovata", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(game)
+}

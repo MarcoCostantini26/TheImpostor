@@ -1,3 +1,53 @@
+## [1.21.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.20.0...1.21.0) (2026-03-31)
+
+### Features
+
+* **comms:** complete overhaul of engine communication ([a405d94](https://github.com/MarcoCostantini26/TheImpostor/commit/a405d94a26144ac07953e24ebfe5535bdf40f6c1))
+* **comms:** define EngineGateway port and update RoutingService ([542423b](https://github.com/MarcoCostantini26/TheImpostor/commit/542423bcc8ee09289a8be8bf9a9f9b118a65c51a))
+* **comms:** integrate game engine module ([c887a69](https://github.com/MarcoCostantini26/TheImpostor/commit/c887a69d74a104c21fe5e22fbbcd87565101962e))
+* **notifier:** implement HTTP webhook notifier and update GameAppService ([2dc6ef8](https://github.com/MarcoCostantini26/TheImpostor/commit/2dc6ef8af581bd63cddbe77cf8877797ae39e76b))
+* **webhook:** add HTTP notifier to send async events to Node.js gateway ([13b0b61](https://github.com/MarcoCostantini26/TheImpostor/commit/13b0b613e4aec23b948619e079ad3829e4a3dee2))
+
+### Dependency updates
+
+* **deps:** update dependency @eslint/css to v1.1.0 ([#82](https://github.com/MarcoCostantini26/TheImpostor/issues/82)) ([8e71a8f](https://github.com/MarcoCostantini26/TheImpostor/commit/8e71a8fa3472de4e842c0acda0e3bf05dde7c884))
+* **deps:** update dependency typescript-eslint to v8.58.0 ([#83](https://github.com/MarcoCostantini26/TheImpostor/issues/83)) ([84d69b3](https://github.com/MarcoCostantini26/TheImpostor/commit/84d69b3a50e5eb34ca05cff3ff5bf0c34b110b06))
+
+## [1.20.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.19.0...1.20.0) (2026-03-30)
+
+### Features
+
+* **lobby:** game settings and start game button based on number of players and imps ([0c0b7a9](https://github.com/MarcoCostantini26/TheImpostor/commit/0c0b7a9172e39646e2b81c454dbe4e48bdda4279))
+* **lobby:** random player becomes host if host leaves the room ([bb14f83](https://github.com/MarcoCostantini26/TheImpostor/commit/bb14f83d9d9c77b2c764351a4df4f5cafdc87641))
+
+### Bug Fixes
+
+* **lobby:** fixed ready/unready button behavior ([39af4d8](https://github.com/MarcoCostantini26/TheImpostor/commit/39af4d8b08afe92357a75c413e13bb401491b4e4))
+* **lobby:** handle players list and leave room ([1b2a25b](https://github.com/MarcoCostantini26/TheImpostor/commit/1b2a25b079734c78e9ea1ecb3f7a8c7ba6bd0a94))
+* **url:** made url more robust and improved responsive design ([7bd9624](https://github.com/MarcoCostantini26/TheImpostor/commit/7bd9624c200340ea41456db4673367c58be84054))
+
+## [1.19.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.18.0...1.19.0) (2026-03-28)
+
+### Features
+
+* **lobby:** implemented chat box and player avatar ([e666cf3](https://github.com/MarcoCostantini26/TheImpostor/commit/e666cf3581a05d8e48249b4cba513c3a54e6fae1))
+
+### Bug Fixes
+
+* **lint:** filled empty block statement and fixed avatar filename ([c7207f8](https://github.com/MarcoCostantini26/TheImpostor/commit/c7207f8f45a650dc69ed3f0cc5165ee09e781260))
+
+## [1.18.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.17.0...1.18.0) (2026-03-28)
+
+### Features
+
+* **lobby-service:** add hostUsername to RoomResponse and comm-service notifier ([67ea6b8](https://github.com/MarcoCostantini26/TheImpostor/commit/67ea6b83ab5487a7f6670e32e45b17c98883eae0))
+* **lobby-service:** added missing endpoints ([e8518a1](https://github.com/MarcoCostantini26/TheImpostor/commit/e8518a15e45b66525a6af88a6c0584be59b39fb3))
+
+### Dependency updates
+
+* **deps:** update actions/upload-artifact action to v7 ([#69](https://github.com/MarcoCostantini26/TheImpostor/issues/69)) ([da183c8](https://github.com/MarcoCostantini26/TheImpostor/commit/da183c8018dbe7206742fcb950a29c47f9fdccd3))
+* **deps:** update dependency typescript to v6 ([#63](https://github.com/MarcoCostantini26/TheImpostor/issues/63)) ([a150195](https://github.com/MarcoCostantini26/TheImpostor/commit/a1501950afee6eb3401097e68ad9a05f61f98dfa))
+
 ## [1.17.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.16.0...1.17.0) (2026-03-27)
 
 ### Features

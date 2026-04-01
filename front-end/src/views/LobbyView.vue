@@ -1,9 +1,10 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, computed } from 'vue'
+import { ref, onMounted, onBeforeUnmount, computed, watch, nextTick } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useRoomStore } from '../stores/room'
+import Avatar from '../components/AvatarIcon.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -17,9 +18,18 @@ const username = computed(() => {
 const roomStore = useRoomStore()
 const { players, messages, impostors, discussionTime } = storeToRefs(roomStore)
 const newMessage = ref('')
+const chatContainer = ref(null)
 const currentPlayer = computed(() => roomStore.currentPlayer)
 const isHost = computed(() => roomStore.isHost)
 const currentReady = computed(() => !!currentPlayer.value && !!currentPlayer.value.ready)
+
+const nonHostPlayers = computed(() => players.value.filter(p => !isPlayerHost(p)))
+const readyCount = computed(() => nonHostPlayers.value.filter(p => p.ready).length)
+const allReady = computed(() => nonHostPlayers.value.length > 0 && readyCount.value === nonHostPlayers.value.length)
+const MIN_PLAYERS = 4
+const enoughPlayers = computed(() => players.value.length >= MIN_PLAYERS)
+const canStart = computed(() => allReady.value && enoughPlayers.value)
+const maxImpostors = computed(() => players.value.length >= 6 ? 2 : 1)
 
 function isCurrent(p) {
   const uid = authStore.user?.id
@@ -54,11 +64,23 @@ function statusClass(p) {
 }
 
 onMounted(async () => {
-  const alreadyJoined = route.query?.joined === '1'
   try {
-    await roomStore.join(code, alreadyJoined)
+    await roomStore.join(code)
+    await nextTick()
+    if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight
   } catch {
     setTimeout(() => router.push({ name: 'home' }), 1400)
+  }
+})
+
+watch(messages, async () => {
+  await nextTick()
+  if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight
+}, { deep: true })
+
+watch(maxImpostors, (newMax) => {
+  if (impostors.value > newMax) {
+    decrementImpostors()
   }
 })
 
@@ -75,30 +97,30 @@ function sendChat() { if (!newMessage.value) return; roomStore.sendChat(newMessa
     <header class="w-full bg-[#171717] px-6 py-4 flex items-center justify-between shadow-md">
       <div class="flex items-center gap-4">
         <router-link to="/">
-          <img src="/logo.png" alt="The Impostor" class="h-20 object-contain" />
+          <img src="/logo.png" alt="The Impostor" class="h-12 md:h-20 object-contain" />
         </router-link>
       </div>
 
       <div class="flex-1 flex justify-center">
-        <div class="px-6 py-2 rounded-full bg-violet-600/20 text-violet-300 font-bold">CODE: {{ code }}</div>
+        <div class="px-3 md:px-6 py-2 rounded-full bg-violet-600/20 text-violet-300 font-bold text-sm md:text-base">CODE: {{ code }}</div>
       </div>
 
       <div class="flex items-center gap-3">
         <div class="text-sm text-gray-200">{{ username }}</div>
-        <div class="w-9 h-9 rounded-full bg-violet-300"></div>
+        <Avatar :name="username" />
       </div>
     </header>
 
-    <div class="p-6 flex-1 min-h-0">
-      <div class="grid grid-cols-12 gap-6 h-full min-h-0">
+    <div class="p-4 md:p-6 flex-1 min-h-0">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 h-full min-h-0">
       <!-- Players column -->
-      <aside class="card pop-in col-span-3 bg-[rgba(24,24,24,0.9)] p-4 rounded flex flex-col h-full min-h-0">
+      <aside class="card pop-in order-2 md:order-none col-span-1 md:col-span-3 bg-[rgba(24,24,24,0.9)] p-3 md:p-4 rounded flex flex-col h-full min-h-0">
         <h3 class="text-sm text-gray-300 font-bold mb-4">PLAYERS ({{ players.length }})</h3>
         <ul class="space-y-3 flex-1 overflow-auto">
-          <li v-for="(p, idx) in players" :key="idx"
-              :class="[ 'flex items-center justify-between py-3 rounded-lg', isCurrent(p) ? 'bg-violet-700/30 ring-1 ring-violet-500' : 'bg-[rgba(0,0,0,0.2)]', 'w-full -mx-4 px-4' ]">
+            <li v-for="(p, idx) in players" :key="idx"
+              :class="[ 'flex items-center justify-between py-3 rounded-lg', isCurrent(p) ? 'bg-violet-700/30 ring-1 ring-violet-500' : 'bg-[rgba(0,0,0,0.2)]', 'w-full px-2 md:px-3' ]">
             <div class="flex items-center gap-3">
-              <div :class="[ 'w-8 h-8 rounded-full flex-shrink-0', isCurrent(p) ? 'bg-violet-400' : 'bg-gray-500' ]"></div>
+              <Avatar :name="p.displayName || p.username || p" :active="isCurrent(p)" size="sm" class="flex-shrink-0" />
               <div class="text-sm">
                 <span :class="isCurrent(p) ? 'font-bold' : ''">{{ p.displayName || p.username || p }}<span v-if="isCurrent(p)" class="font-extrabold"> (You)</span></span>
               </div>
@@ -109,9 +131,9 @@ function sendChat() { if (!newMessage.value) return; roomStore.sendChat(newMessa
       </aside>
 
       <!-- Main settings -->
-      <main class="card pop-in col-span-6 bg-[rgba(18,18,18,0.95)] p-4 rounded flex flex-col h-full min-h-0">
+      <main class="card pop-in order-1 md:order-none col-span-1 md:col-span-6 bg-[rgba(18,18,18,0.95)] p-3 md:p-4 rounded flex flex-col h-full min-h-0">
         <h2 class="text-2xl font-bold mb-4">GAME SETTINGS</h2>
-        <!-- settings UI: number of impostors selector (no central box) -->
+        <!-- settings UI: number of impostors selector -->
         <div class="flex-1">
           <div class="w-full">
             <label class="block text-sm text-gray-400 mb-2 font-semibold">NUMBER OF IMPOSTORS</label>
@@ -120,11 +142,11 @@ function sendChat() { if (!newMessage.value) return; roomStore.sendChat(newMessa
                 :title="!isHost ? 'Only host can change settings' : 'Decrease impostors'"
                 class="w-10 h-10 rounded-md bg-[rgba(0,0,0,0.4)] border border-gray-700 flex items-center justify-center text-white disabled:opacity-40 disabled:cursor-not-allowed">-</button>
               <div class="text-2xl font-bold text-white">{{ impostors }}</div>
-              <button @click="incrementImpostors" :disabled="!isHost || impostors >= 2"
-                :title="!isHost ? 'Only host can change settings' : 'Increase impostors'"
+              <button @click="incrementImpostors" :disabled="!isHost || impostors >= maxImpostors"
+                :title="!isHost ? 'Only host can change settings' : (impostors >= maxImpostors ? 'Need at least 6 players for 2 impostors' : 'Increase impostors')"
                 class="w-10 h-10 rounded-md bg-violet-500 flex items-center justify-center text-white disabled:opacity-40 disabled:cursor-not-allowed">+</button>
             </div>
-            <!-- Discussion time selector (full-width segmented control) -->
+            <!-- Discussion time selector -->
             <div class="mt-6">
               <label class="block text-sm text-gray-400 mb-2 font-semibold">DISCUSSION TIME</label>
               <div class="w-full bg-[rgba(0,0,0,0.15)] rounded-full flex overflow-hidden">
@@ -145,22 +167,27 @@ function sendChat() { if (!newMessage.value) return; roomStore.sendChat(newMessa
         </div>
 
         <div class="mt-6 flex justify-center">
-          <button v-if="isHost" @click="startGame" class="w-full max-w-3xl px-10 py-4 rounded-full bg-violet-500 text-white font-bold">START GAME</button>
+          <button v-if="isHost" @click="startGame" :disabled="!canStart" :class="['w-full max-w-3xl px-10 py-4 rounded-full font-bold', canStart ? 'bg-violet-500 text-white' : 'bg-gray-600 text-gray-400 cursor-not-allowed']">
+              <span v-if="!enoughPlayers">Need {{ MIN_PLAYERS - players.length }} more player{{ MIN_PLAYERS - players.length > 1 ? 's' : '' }}!</span>
+              <span v-else>START GAME ({{ readyCount+1 }}/{{ nonHostPlayers.length+1 }} ready)</span>
+            </button>
           <button v-else @click="toggleReady" :class="['w-full max-w-3xl px-10 py-4 rounded-full font-bold', currentReady ? 'bg-emerald-400 text-black' : 'bg-violet-500 text-white']">{{ currentReady ? 'UNREADY' : 'READY' }}</button>
         </div>
       </main>
 
       <!-- Chat -->
-      <aside class="card pop-in col-span-3 bg-[rgba(24,24,24,0.9)] p-4 rounded flex flex-col h-full min-h-0">
+      <aside class="card pop-in order-3 md:order-none col-span-1 md:col-span-3 bg-[rgba(24,24,24,0.9)] p-3 md:p-4 rounded flex flex-col h-full min-h-0">
         <h3 class="text-sm text-gray-300 font-bold mb-4">CHAT</h3>
-        <div class="flex-1 overflow-auto mb-4 p-2 bg-[rgba(0,0,0,0.2)] rounded">
+        <div ref="chatContainer" class="h-64 md:h-[calc(100vh-300px)] overflow-y-auto mb-4 p-2 bg-[rgba(0,0,0,0.2)] rounded">
           <div v-for="(m, i) in messages" :key="i" class="mb-3">
-            <div class="text-xs text-violet-300 font-semibold">{{ m.sender || m.displayName || m.from }}</div>
-            <div class="text-sm text-gray-200">{{ m.content || m.message }}</div>
+            <div>
+              <div class="text-sm font-bold text-violet-300 leading-tight">{{ ((m.local || (m.senderId && String(m.senderId) === String(authStore.user?.id))) ? 'You' : (m.sender ?? m.displayName ?? m.from ?? m.senderId ?? 'Player')) + ':' }}</div>
+              <div class="text-sm text-gray-200 break-words mt-1">{{ m.content || m.message }}</div>
+            </div>
           </div>
         </div>
 
-        <div class="flex gap-2">
+        <div class="flex gap-2 items-center">
           <input v-model="newMessage" placeholder="Send a message..." class="flex-1 px-3 py-2 rounded bg-[rgba(0,0,0,0.25)] text-gray-100" />
           <button @click="sendChat" class="px-4 py-2 rounded bg-violet-500">SEND</button>
         </div>

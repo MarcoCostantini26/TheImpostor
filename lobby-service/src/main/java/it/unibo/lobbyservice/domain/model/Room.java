@@ -25,7 +25,7 @@ public final class Room {
     @EqualsAndHashCode.Include
     private final RoomCode code;
     
-    private final String hostId;
+    private String hostId;
     private final Map<String, User> players; // userId -> User
     private RoomStatus status;
     private int currentRound; // numero round corrente (incrementa ad ogni rematch)
@@ -73,12 +73,13 @@ public final class Room {
             throw new IllegalStateException("Cannot join room: game already started or ended");
         }
         
-        if (players.size() >= MAX_PLAYERS) {
-            throw new IllegalStateException("Room is full (max " + MAX_PLAYERS + " players)");
+        // Idempotent: if player already in room by ID, do nothing
+        if (players.containsKey(player.getId())) {
+            return;
         }
         
-        if (players.containsKey(player.getId())) {
-            throw new IllegalArgumentException("Player already in room");
+        if (players.size() >= MAX_PLAYERS) {
+            throw new IllegalStateException("Room is full (max " + MAX_PLAYERS + " players)");
         }
         
         // Verifica username univoco nella stanza
@@ -94,23 +95,27 @@ public final class Room {
 
     /**
      * Rimuove un giocatore dalla stanza.
-     * Se l'host lascia, la stanza viene chiusa (status -> ENDED).
+     * Se l'host lascia e ci sono altri giocatori, il ruolo di host viene assegnato a un altro giocatore.
+     * Se l'ultimo giocatore lascia, la stanza viene chiusa (status -> ENDED).
      */
     public void removePlayer(String playerId) {
+        // Idempotent: if player not in room, do nothing
         if (!players.containsKey(playerId)) {
-            throw new IllegalArgumentException("Player not in room");
+            return;
         }
         
         if (status != RoomStatus.WAITING) {
             throw new IllegalStateException("Cannot leave room: game already started");
         }
         
-        if (playerId.equals(hostId)) {
-            // Host ha lasciato: chiudi la stanza
+        players.remove(playerId);
+        
+        if (players.isEmpty()) {
             status = RoomStatus.ENDED;
-            players.clear();
-        } else {
-            players.remove(playerId);
+        } else if (playerId.equals(hostId)) {
+            // Host left but others remain: pick a random new host
+            List<String> remainingIds = new ArrayList<>(players.keySet());
+            hostId = remainingIds.get(new java.util.Random().nextInt(remainingIds.size()));
         }
     }
 

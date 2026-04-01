@@ -8,68 +8,60 @@ import (
 	"game-engine/internal/domain/service"
 )
 
-// GameAppService è l'orchestratore dei casi d'uso della partita
 type GameAppService struct {
 	gameRepo    repository.GameRepository
 	gameFactory *aggregate.GameFactory
 	rulesSvc    *service.GameRulesService
+	notifier    GatewayNotifier
 }
 
-// NewGameAppService è il costruttore dell'Application Service
 func NewGameAppService(
 	repo repository.GameRepository,
 	factory *aggregate.GameFactory,
 	rules *service.GameRulesService,
+	notifier GatewayNotifier,
 ) *GameAppService {
 	return &GameAppService{
 		gameRepo:    repo,
 		gameFactory: factory,
 		rulesSvc:    rules,
+		notifier:    notifier,
 	}
 }
 
-// ==========================================
-// CASI D'USO (USE CASES)
-// ==========================================
-
-// CreateGameUseCase gestisce la richiesta di creazione di una nuova partita dalla Lobby
 func (app *GameAppService) CreateGameUseCase(gameID string, playerIDs []string, requestedImpostors int) error {
-	// 1. La Factory crea la partita validando tutte le regole
 	game, err := app.gameFactory.CreateGame(gameID, playerIDs, requestedImpostors)
-	if err != nil {
-		return err 
-	}
-
-	// 2. Salviamo la partita appena nata nel DB/Memoria
-	return app.gameRepo.Save(game)
-}
-
-// AdvanceToVotingUseCase sposta il gioco nella fase di voto
-func (app *GameAppService) AdvanceToVotingUseCase(gameID string) error {
-	game, err := app.gameRepo.FindByID(gameID)
 	if err != nil {
 		return err
 	}
-	if game == nil {
+	err = app.gameRepo.Save(game)
+	if err != nil {
+		return err
+	}
+
+	app.notifier.NotifyEvent("GameCreated", game)
+	return nil
+}
+
+func (app *GameAppService) AdvanceToVotingUseCase(gameID string) error {
+	game, err := app.gameRepo.FindByID(gameID)
+	if err != nil || game == nil {
 		return errors.New("partita non trovata")
 	}
 
-	// Chiamiamo la logica di dominio
 	err = game.AdvanceToVoting()
 	if err != nil {
 		return err
 	}
+	app.gameRepo.Save(game)
 
-	return app.gameRepo.Save(game)
+	app.notifier.NotifyEvent("PhaseChanged", map[string]string{"gameId": gameID, "newPhase": "VOTING"})
+	return nil
 }
 
-// CastVoteUseCase orchestra l'azione di voto di un giocatore
 func (app *GameAppService) CastVoteUseCase(gameID string, voterID string, targetID string) error {
 	game, err := app.gameRepo.FindByID(gameID)
-	if err != nil {
-		return err
-	}
-	if game == nil {
+	if err != nil || game == nil {
 		return errors.New("partita non trovata")
 	}
 
@@ -77,39 +69,52 @@ func (app *GameAppService) CastVoteUseCase(gameID string, voterID string, target
 	if err != nil {
 		return err
 	}
+	app.gameRepo.Save(game)
 
-	return app.gameRepo.Save(game)
+	app.notifier.NotifyEvent("PlayerVoted", map[string]string{
+		"gameId":   gameID,
+		"voterId":  voterID,
+		"targetId": targetID,
+	})
+	return nil
 }
 
-// ResolveVotingUseCase chiude i voti, elimina l'eventuale giocatore e controlla se qualcuno ha vinto!
 func (app *GameAppService) ResolveVotingUseCase(gameID string) error {
 	game, err := app.gameRepo.FindByID(gameID)
-	if err != nil {
-		return err
-	}
-	if game == nil {
+	if err != nil || game == nil {
 		return errors.New("partita non trovata")
 	}
 
-	// 1. Risolviamo i voti (il file game.go decide se e chi muore)
-	_, err = game.ResolveVoting()
+	eliminatedID, err := game.ResolveVoting()
 	if err != nil {
 		return err
 	}
 
-	// 2. CONTROLLO VITTORIA: Il momento in cui i vari pezzi del dominio collaborano!
-	// Chiediamo all'arbitro (GameRulesService) se l'eliminazione ha fatto vincere qualcuno.
 	winTeam := app.rulesSvc.CheckWinCondition(game)
-	
-	// Se qualcuno ha vinto (quindi non è "NONE")
-	if winTeam != service.WinNone { 
-		// Diciamo al gioco di chiudersi e dichiarare il vincitore
-		err = game.EndGame(winTeam)
-		if err != nil {
-			return err
-		}
+	if winTeam != service.WinNone {
+		game.EndGame(winTeam)
+		app.gameRepo.Save(game)
+		// 🔔 TELEFONIAMO A NODE.JS (Partita finita!)
+		// Nota: se winTeam è un tipo custom, potrebbe dover fare string(winTeam)
+		app.notifier.NotifyEvent("GameEnded", map[string]string{"gameId": gameID, "winner": string(winTeam)})
+		return nil
 	}
 
-	// 3. Salviamo il tutto
-	return app.gameRepo.Save(game)
+	app.gameRepo.Save(game)
+	app.notifier.NotifyEvent("VotingResolved", map[string]string{"gameId": gameID, "eliminatedId": eliminatedID})
+	return nil
+}
+
+// ==============================================================
+// 🟢 FUNZIONE AGGIUNTA CHE MANCAVA PER IL CONTROLLER
+// ==============================================================
+func (app *GameAppService) GetGameUseCase(gameID string) (interface{}, error) {
+	game, err := app.gameRepo.FindByID(gameID)
+	if err != nil {
+		return nil, err
+	}
+	if game == nil {
+		return nil, errors.New("partita non trovata")
+	}
+	return game, nil
 }

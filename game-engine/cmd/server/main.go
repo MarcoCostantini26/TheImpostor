@@ -22,24 +22,30 @@ func main() {
 	factory := aggregate.NewGameFactory()
 	rules := service.NewGameRulesService()
 
+	notifierURL := "http://localhost:8080/internal/engine-callback"
+
+	// Creiamo il "telefono" HTTP
+	webhookNotifier := gameapi.NewHTTPGatewayNotifier(notifierURL)
+
 	// 3. Assumiamo lo Chef e gli diamo gli strumenti
-	appService := application.NewGameAppService(repo, factory, rules)
+	appService := application.NewGameAppService(repo, factory, rules, webhookNotifier)
 
 	// 4. Assumiamo il Cameriere e gli presentiamo lo Chef
 	controller := gameapi.NewGameController(appService)
 
 	// 5. Prepariamo la Mappa del Ristorante (Rotte HTTP)
 	mux := http.NewServeMux()
-	
+
 	// Qui diciamo al server quali URL corrispondono a quali funzioni
 	mux.HandleFunc("/games/create", controller.HandleCreateGame)
 	mux.HandleFunc("/games/advance-voting", controller.HandleAdvanceToVoting)
 	mux.HandleFunc("/games/vote", controller.HandleCastVote)
 	mux.HandleFunc("/games/resolve-voting", controller.HandleResolveVoting)
+	mux.HandleFunc("/games/state", controller.HandleGetGameState)
 
 	// 6. Alziamo la serranda! (Avviamo il server sulla porta 8081)
 	fmt.Println("🚀 Game Engine acceso e in ascolto sulla porta 8081!")
-	
+
 	// Ascoltiamo sulla porta che hai scelto tu:
 	err := http.ListenAndServe(":8081", mux)
 	if err != nil {
