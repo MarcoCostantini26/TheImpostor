@@ -1,6 +1,7 @@
 package it.unibo.lobbyservice.infrastructure.web;
 
 import it.unibo.lobbyservice.application.service.GameHistoryNotFoundException;
+import it.unibo.lobbyservice.application.service.InvalidCredentialsException;
 import it.unibo.lobbyservice.application.service.RoomNotFoundException;
 import it.unibo.lobbyservice.application.service.UserAlreadyExistsException;
 import it.unibo.lobbyservice.application.service.UserNotFoundException;
@@ -17,6 +18,20 @@ import java.time.Instant;
  */
 @RestControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * Gestisce eccezioni di credenziali non valide → 401.
+     */
+    @ExceptionHandler(InvalidCredentialsException.class)
+    public ResponseEntity<ErrorResponse> handleInvalidCredentials(InvalidCredentialsException ex) {
+        ErrorResponse error = new ErrorResponse(
+                HttpStatus.UNAUTHORIZED.value(),
+                "Unauthorized",
+                ex.getMessage(),
+                Instant.now().toString()
+        );
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(error);
+    }
 
     /**
      * Gestisce eccezioni di risorsa non trovata.
