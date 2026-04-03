@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import * as authService from '../services/authService'
 
 export const useAuthStore = defineStore('auth', () => {
@@ -10,11 +10,16 @@ export const useAuthStore = defineStore('auth', () => {
         try {
             const data = await authService.login(email, password)
 
-            user.value = data || null
-            token.value = null
+            // Il backend ritorna { token, tokenType, user }
+            token.value = data.token || null
+            user.value = data.user || null
 
             localStorage.setItem('user', JSON.stringify(user.value))
-            localStorage.removeItem('token')
+            if (token.value) {
+                localStorage.setItem('token', token.value)
+            } else {
+                localStorage.removeItem('token')
+            }
 
             return { success: true }
         } catch (error) {
@@ -26,6 +31,7 @@ export const useAuthStore = defineStore('auth', () => {
         try {
             const data = await authService.register(username, email, password)
 
+            // La registrazione non ritorna token, solo i dati utente
             user.value = data || null
             token.value = null
 
@@ -65,13 +71,14 @@ export const useAuthStore = defineStore('auth', () => {
     ;(async () => {
         const stored = JSON.parse(localStorage.getItem('user') || 'null')
         const id = stored?.id
-        // Only validate non-guest users against the database
-        if (id && !stored?.guest) {
+        // Solo utenti non-guest con token valido
+        if (id && !stored?.guest && token.value) {
             try {
                 const data = await authService.me(id)
                 user.value = data || null
                 localStorage.setItem('user', JSON.stringify(user.value))
             } catch {
+                // Token scaduto o non valido → logout
                 token.value = null
                 localStorage.removeItem('token')
                 user.value = null
@@ -80,5 +87,7 @@ export const useAuthStore = defineStore('auth', () => {
         }
     })()
 
-    return { user, token, login, register, logout, guest, setUserId }
+    const isAuthenticated = computed(() => !!token.value && !!user.value && !user.value.guest)
+
+    return { user, token, isAuthenticated, login, register, logout, guest, setUserId }
 })
