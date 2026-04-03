@@ -1,3 +1,16 @@
+## [1.23.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.22.0...1.23.0) (2026-04-03)
+
+### Features
+
+* **front-end:** implemented jwt bearer token on auth ([f09864c](https://github.com/MarcoCostantini26/TheImpostor/commit/f09864c94b0ba5dd5af7b83816b01ff6f5ba73ef))
+* **lobby-service:** implemented jwt bearer token ([78a547c](https://github.com/MarcoCostantini26/TheImpostor/commit/78a547c3849b5f805f7eb3a6653585d5e776802c))
+* **lobby-service:** implemented jwt bearer token ([b72239d](https://github.com/MarcoCostantini26/TheImpostor/commit/b72239d6bcd2f70a8487d41c05c38f32fa23173c))
+
+### Bug Fixes
+
+* **comm-service:** default port 3000 instead of 8080 to avoid conflict with lobby-service ([57b27e1](https://github.com/MarcoCostantini26/TheImpostor/commit/57b27e1dd787783071f13fe5943271d12a7e8dcb))
+* **comm-service:** sync package-lock.json with ts-node dependency ([5cc45c2](https://github.com/MarcoCostantini26/TheImpostor/commit/5cc45c291fb1284cf071c6d7a894bc72ac7d9ec8))
+
 ## [1.22.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.21.0...1.22.0) (2026-04-03)
 
 ### Features
