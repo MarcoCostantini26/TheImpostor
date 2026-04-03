@@ -1,3 +1,9 @@
+## [1.22.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.21.0...1.22.0) (2026-04-03)
+
+### Features
+
+* **lobby-service:** implemented auth BCrypt ([b5c2b50](https://github.com/MarcoCostantini26/TheImpostor/commit/b5c2b50c6e0d57e12bc71a5f4d0320639331fe64))
+
 ## [1.21.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.20.0...1.21.0) (2026-03-31)
 
 ### Features
