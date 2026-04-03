@@ -15,7 +15,7 @@ interface AliveWebSocket extends WebSocket {
     isAlive?: boolean;
 }
 
-const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 8080;
+const port = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
 
 const sessionRepository = new InMemorySessionRepository();
 const engineAdapter = new HttpEngineAdapter(); 

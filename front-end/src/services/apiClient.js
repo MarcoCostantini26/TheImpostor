@@ -4,9 +4,14 @@ function defaultJsonHeaders() {
   return { 'Content-Type': 'application/json' }
 }
 
+function authHeader() {
+  const token = localStorage.getItem('token')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 async function request(path, { method = 'GET', body = null, headers = {}, credentials = 'include', json = true } = {}) {
   const url = path.startsWith('/') ? `${API}${path}` : `${API}/${path}`
-  const h = { ...(json ? defaultJsonHeaders() : {}), ...headers }
+  const h = { ...(json ? defaultJsonHeaders() : {}), ...authHeader(), ...headers }
 
   const opts = { method, headers: h, credentials }
   if (body !== null && body !== undefined) {
