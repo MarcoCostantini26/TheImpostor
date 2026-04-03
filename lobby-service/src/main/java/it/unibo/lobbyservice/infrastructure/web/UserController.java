@@ -30,15 +30,11 @@ public class UserController {
      */
     @PostMapping("/register")
     public ResponseEntity<UserResponse> register(@RequestBody RegisterRequest request) {
-        // TODO: Hash password (usare BCrypt o simile)
-        String passwordHash = hashPassword(request.password());
-        
         AuthenticatedPlayer player = userService.registerUser(
                 request.username(),
                 request.email(),
-                passwordHash
+                request.password()
         );
-        
         return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.from(player));
     }
 
@@ -48,18 +44,15 @@ public class UserController {
      */
     @PostMapping("/register-full")
     public ResponseEntity<UserResponse> registerWithProfile(@RequestBody RegisterFullRequest request) {
-        String passwordHash = hashPassword(request.password());
-        
         AuthenticatedPlayer player = userService.registerUserWithProfile(
                 request.username(),
                 request.email(),
-                passwordHash,
+                request.password(),
                 request.age(),
                 request.country(),
                 request.avatarUrl(),
                 request.bio()
         );
-        
         return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.from(player));
     }
 
@@ -69,14 +62,7 @@ public class UserController {
      */
     @PostMapping("/login")
     public ResponseEntity<UserResponse> login(@RequestBody LoginRequest request) {
-        AuthenticatedPlayer player = userService.findByEmail(request.email())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
-        
-        // TODO: Verificare password hash
-        if (!verifyPassword(request.password(), player.getPasswordHash())) {
-            throw new RuntimeException("Invalid email or password");
-        }
-        
+        AuthenticatedPlayer player = userService.login(request.email(), request.password());
         return ResponseEntity.ok(UserResponse.from(player));
     }
 
@@ -131,16 +117,6 @@ public class UserController {
         return ResponseEntity.noContent().build();
     }
 
-    // Helper methods (placeholder - TODO: implementare con libreria di sicurezza)
-    private String hashPassword(String password) {
-        // TODO: Implementare hash BCrypt
-        return "HASHED_" + password; // Placeholder
-    }
-
-    private boolean verifyPassword(String password, String hash) {
-        // TODO: Implementare verifica BCrypt
-        return hash.equals("HASHED_" + password); // Placeholder
-    }
 
     // DTO Records
     public record RegisterRequest(String username, String email, String password) {}
