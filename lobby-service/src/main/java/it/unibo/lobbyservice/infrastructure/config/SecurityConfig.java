@@ -53,6 +53,8 @@ public class SecurityConfig {
                 ).permitAll()
                 // Check disponibilità (usati nel flow di registrazione)
                 .requestMatchers("/api/users/check-email/**", "/api/users/check-username/**").permitAll()
+                // Stanze di gioco: accessibili anche ai giocatori guest (senza JWT)
+                .requestMatchers("/api/rooms/**").permitAll()
                 // API interne tra microservizi (non esposti al pubblico)
                 .requestMatchers("/api/internal/**").permitAll()
                 // Documentazione Swagger
