@@ -1,3 +1,9 @@
+## [1.23.2](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.1...1.23.2) (2026-04-04)
+
+### Bug Fixes
+
+* **jwt:** fixed jwt problems with with newly registered users and guest players ([7f46ef2](https://github.com/MarcoCostantini26/TheImpostor/commit/7f46ef200791eac1c2e2ff0e61f63f2924f9086e))
+
 ## [1.23.1](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.0...1.23.1) (2026-04-04)
 
 ### Dependency updates
