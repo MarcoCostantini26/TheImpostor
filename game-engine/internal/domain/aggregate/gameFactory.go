@@ -16,6 +16,25 @@ var (
 	ErrInvalidImpostorCount = errors.New("numero di impostori richiesto non consentito per questo numero di giocatori")
 )
 
+// wordPairs contains [secretWord, hint] pairs used to assign secrets each game.
+var wordPairs = [][2]string{
+	{"PIZZA", "ITALIAN DISH"},
+	{"GUITAR", "MUSICAL INSTRUMENT"},
+	{"VOLCANO", "FIRE MOUNTAIN"},
+	{"SUBMARINE", "UNDERWATER VESSEL"},
+	{"JUNGLE", "TROPICAL FOREST"},
+	{"CASTLE", "MEDIEVAL FORTRESS"},
+	{"COMPASS", "NAVIGATION TOOL"},
+	{"TELESCOPE", "USED FOR STARGAZING"},
+	{"DINOSAUR", "ANCIENT CREATURE"},
+	{"TORNADO", "SPINNING STORM"},
+	{"DIAMOND", "PRECIOUS GEMSTONE"},
+	{"LIGHTHOUSE", "GUIDES SAILORS"},
+	{"PARACHUTE", "SKYDIVING TOOL"},
+	{"AVALANCHE", "SNOW SLIDE"},
+	{"TREASURE", "HIDDEN RICHES"},
+}
+
 // CalculateMaxImpostors restituisce il numero massimo di impostori consentito 
 // in base al numero di giocatori presenti.
 func CalculateMaxImpostors(playerCount int) int {
@@ -79,7 +98,10 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 		})
 	}
 
-	// 6. Creazione Aggregate
+	// 6. Selezione casuale della parola segreta e dell'indizio
+	pair := wordPairs[rand.Intn(len(wordPairs))]
+
+	// 7. Creazione Aggregate
 	game := &Game{
 		ID:      gameID,
 		State:   StatePlaying,
@@ -89,10 +111,12 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 			Phase:       valueobject.PhaseDiscussion,
 			Timer:       120,
 		},
-		Votes: make([]valueobject.Vote, 0),
+		Votes:      make([]valueobject.Vote, 0),
+		SecretWord: valueobject.SecretWord(pair[0]),
+		Hint:       valueobject.Hint(pair[1]),
 	}
 
-	// 7. Evento
+	// 8. Evento
 	startedEvent := event.GameStarted{
 		BaseEvent: event.BaseEvent{OccurredAt: time.Now()},
 		GameID:    game.ID,

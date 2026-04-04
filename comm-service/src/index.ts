@@ -27,34 +27,80 @@ const routingService = new RoutingService(sessionRepository, engineAdapter);
 const chatAndSignalingService = new ChatAndSignalingService(sessionRepository, roomManager);
 
 const activeSockets = new Map<string, WebSocket>();
+const userSockets = new Map<string, WebSocket>(); // userId → ws (for targeted delivery)
 
 const userRooms = new Map<string, string>();
+const roomSettings = new Map<string, { impostors: number }>(); // roomCode → settings
 const pendingLeaves = new Map<string, NodeJS.Timeout>();
 const LEAVE_GRACE_PERIOD_MS = 15_000;
 
 // SERVER HTTP: Gestisce il Webhook per ascoltare gli eventi di Go
 const server = createServer((req, res) => {
+    // Absorb fire-and-forget notifications from lobby-service (no-op, comm-service drives the flow)
+    if (req.method === 'POST' && req.url?.startsWith('/api/internal/lobby/')) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ status: 'ok' }));
+        return;
+    }
+
     if (req.method === 'POST' && req.url === '/internal/engine-callback') {
         let body = '';
         req.on('data', chunk => { body += chunk.toString(); });
         req.on('end', () => {
             try {
                 const engineEvent = JSON.parse(body);
-                console.log(`[Webhook] 📢 Ricevuto da Go: ${engineEvent.eventName || engineEvent.EventName}`);
-                
-                const messageToBroadcast = JSON.stringify({
-                    type: 'ENGINE_EVENT',
-                    payload: engineEvent
-                });
+                const eventName = engineEvent.eventName || engineEvent.EventName;
+                console.log(`[Webhook] 📢 Ricevuto da Go: ${eventName}`);
 
-                wss.clients.forEach(client => {
-                    if (client.readyState === WebSocket.OPEN) {
-                        client.send(messageToBroadcast);
+                if (eventName === 'GameCreated') {
+                    const game = engineEvent.payload || {};
+                    const secretWord = String(game.SecretWord || '');
+                    const hint = String(game.Hint || '');
+                    const roomCode = String(game.ID || '');
+
+                    // Send each player only their own role (targeted delivery)
+                    const players: any[] = game.Players || [];
+                    players.forEach((player: any) => {
+                        const playerWs = userSockets.get(String(player.ID));
+                        if (playerWs && playerWs.readyState === WebSocket.OPEN) {
+                            const isImpostor = player.Role === 'IMPOSTOR';
+                            playerWs.send(JSON.stringify({
+                                type: 'ENGINE_EVENT',
+                                payload: {
+                                    eventName: 'RoleAssigned',
+                                    role: String(player.Role),
+                                    secretWord: isImpostor ? hint : secretWord,
+                                    isImpostor
+                                }
+                            }));
+                            console.log(`[Webhook] 📨 Role ${player.Role} sent to player ${player.ID}`);
+                        } else {
+                            console.log(`[Webhook] ⚠️ No active socket for player ${player.ID}`);
+                        }
+                    });
+
+                    // Broadcast game_started to the whole room
+                    if (roomCode) {
+                        roomManager.broadcastToRoom(roomCode, {
+                            type: 'game_started',
+                            payload: { roomCode, status: 'STARTED' }
+                        });
                     }
-                });
-                
+                } else {
+                    // For other engine events, broadcast to all clients
+                    const messageToBroadcast = JSON.stringify({
+                        type: 'ENGINE_EVENT',
+                        payload: engineEvent
+                    });
+                    wss.clients.forEach(client => {
+                        if (client.readyState === WebSocket.OPEN) {
+                            client.send(messageToBroadcast);
+                        }
+                    });
+                }
+
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ status: 'Broadcast completato' }));
+                res.end(JSON.stringify({ status: 'Elaborato' }));
             } catch (e) {
                 res.writeHead(400);
                 res.end('Invalid JSON');
@@ -120,6 +166,10 @@ wss.on('connection', async (ws: WebSocket) => {
                     userRooms.set(newUserId, existingRoom);
                 }
 
+                // Update targeted socket mapping
+                userSockets.delete(currentUserId);
+                userSockets.set(newUserId, ws);
+
                 currentUserId = newUserId;
                 
                 // Cancel any pending leave for this user (reconnection after refresh)
@@ -175,15 +225,22 @@ wss.on('connection', async (ws: WebSocket) => {
             }
 
             if (eventType === 'update_settings' || eventType === 'UPDATE_SETTINGS') {
+                if (roomCode && payload.settings) {
+                    const cur = roomSettings.get(roomCode) || { impostors: 1 };
+                    roomSettings.set(roomCode, { impostors: payload.settings.impostors ?? cur.impostors });
+                }
                 await lobbyService.handleUpdateSettings(roomCode, currentUserId, payload.settings);
                 return;
             }
 
             if (eventType === 'start_game' || eventType === 'START_GAME') {
                 const hostId = payload.hostId || currentUserId;
-                await lobbyService.handleStartGame(roomCode, hostId);
-                const event = new Event(eventType, payload);
-                await routingService.handleClientEvent(currentUserId, event);
+                const playerIds = await lobbyService.handleStartGame(roomCode, hostId);
+                if (playerIds && playerIds.length > 0) {
+                    const settings = roomSettings.get(roomCode);
+                    const requestedImpostors = settings?.impostors ?? 1;
+                    await engineAdapter.createGame(roomCode, playerIds, requestedImpostors);
+                }
                 return;
             }
 
@@ -207,6 +264,7 @@ wss.on('connection', async (ws: WebSocket) => {
 
     ws.on('close', async () => {
         roomManager.leaveAllRooms(ws); 
+        userSockets.delete(currentUserId);
         await sessionRepository.remove(currentUserId);
         activeSockets.delete(socketId);
 

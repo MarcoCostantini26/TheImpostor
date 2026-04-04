@@ -31,7 +31,7 @@ export class LobbyService {
         }
     }
 
-    async handleStartGame(roomId: string, userId: string): Promise<void> {
+    async handleStartGame(roomId: string, userId: string): Promise<string[] | null> {
         try {
             const response = await fetch(`${this.lobbyUrl}/api/rooms/${roomId}/start`, {
                 method: 'POST',
@@ -39,7 +39,12 @@ export class LobbyService {
                 body: JSON.stringify({ hostId: userId }) 
             });
 
-            if (!response.ok) throw new Error('Errore avvio partita nel lobby-service');
+            if (!response.ok) {
+                const body = await response.text().catch(() => '');
+                throw new Error(`Errore avvio partita nel lobby-service [${response.status}]: ${body}`);
+            }
+
+            const data = await response.json();
 
             this.roomManager.broadcastToRoom(roomId, {
                 type: 'game_started',
@@ -47,8 +52,11 @@ export class LobbyService {
             });
             await this.syncRoomState(roomId);
             console.log(`[LobbyService] 🚀 Partita ${roomId} avviata! Broadcast inviato.`);
+
+            return Array.isArray(data.playerIds) ? data.playerIds : [];
         } catch (error: any) {
             console.error(`[LobbyService] ❌ Errore in handleStartGame: ${error.message}`);
+            return null;
         }
     }
 

@@ -13,6 +13,8 @@ export const useRoomStore = defineStore('room', () => {
   const error = ref(null)
   const roomStatus = ref(null)
   const roomHostId = ref(null)
+  const myRole = ref(null)       // 'CREWMATE' | 'IMPOSTOR' | null
+  const mySecretWord = ref(null) // the secret word (crewmates) or hint (impostors)
   let _joinedViaHome = false
 
   let unsubscribe = null
@@ -164,6 +166,15 @@ export const useRoomStore = defineStore('room', () => {
       roomStatus.value = 'STARTED'
       return
     }
+
+    if (msg.type === 'ENGINE_EVENT') {
+      const ep = msg.payload || {}
+      if (ep.eventName === 'RoleAssigned') {
+        myRole.value = ep.role || null
+        mySecretWord.value = ep.secretWord || null
+      }
+      return
+    }
   }
 
   function initWS(roomCode) {
@@ -241,6 +252,8 @@ export const useRoomStore = defineStore('room', () => {
     messages.value = []
     roomStatus.value = null
     roomHostId.value = null
+    myRole.value = null
+    mySecretWord.value = null
     currentRoomCode = null
   }
 
@@ -304,6 +317,11 @@ export const useRoomStore = defineStore('room', () => {
     if (currentRoomCode) wsService.sendEvent('update_settings', { roomCode: currentRoomCode, settings: { impostors: impostors.value, discussionTime: discussionTime.value } })
   }
 
+  function dismissRole() {
+    myRole.value = null
+    mySecretWord.value = null
+  }
+
   return {
     players,
     messages,
@@ -313,6 +331,8 @@ export const useRoomStore = defineStore('room', () => {
     error,
     roomStatus,
     roomHostId,
+    myRole,
+    mySecretWord,
     currentPlayer,
     isHost,
     join,
@@ -326,7 +346,8 @@ export const useRoomStore = defineStore('room', () => {
     decrementImpostors,
     incrementImpostors,
     upsertPlayer,
-    removePlayerById
+    removePlayerById,
+    dismissRole
   }
 })
 
