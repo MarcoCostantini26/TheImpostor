@@ -10,7 +10,6 @@ export const useAuthStore = defineStore('auth', () => {
         try {
             const data = await authService.login(email, password)
 
-            // Il backend ritorna { token, tokenType, user }
             token.value = data.token || null
             user.value = data.user || null
 
@@ -29,14 +28,18 @@ export const useAuthStore = defineStore('auth', () => {
 
     async function register({ username, email, password }) {
         try {
-            const data = await authService.register(username, email, password)
+            await authService.register(username, email, password)
 
-            // La registrazione non ritorna token, solo i dati utente
-            user.value = data || null
-            token.value = null
+            const loginData = await authService.login(email, password)
+            token.value = loginData.token || null
+            user.value = loginData.user || null
 
             localStorage.setItem('user', JSON.stringify(user.value))
-            localStorage.removeItem('token')
+            if (token.value) {
+                localStorage.setItem('token', token.value)
+            } else {
+                localStorage.removeItem('token')
+            }
 
             return { success: true }
         } catch (error) {
@@ -67,18 +70,15 @@ export const useAuthStore = defineStore('auth', () => {
         window.location.href = '/'
     }
 
-    // If a stored authenticated user exists, try to validate and fetch fresh data
     ;(async () => {
         const stored = JSON.parse(localStorage.getItem('user') || 'null')
         const id = stored?.id
-        // Solo utenti non-guest con token valido
         if (id && !stored?.guest && token.value) {
             try {
                 const data = await authService.me(id)
                 user.value = data || null
                 localStorage.setItem('user', JSON.stringify(user.value))
             } catch {
-                // Token scaduto o non valido → logout
                 token.value = null
                 localStorage.removeItem('token')
                 user.value = null

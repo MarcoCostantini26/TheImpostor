@@ -14,11 +14,13 @@ export async function me(id) {
 }
 
 export async function checkUsername(username) {
-  return apiClient.get(`/api/users/check-username/${encodeURIComponent(username)}`)
+  const data = await apiClient.get(`/api/users/check-username/${encodeURIComponent(username)}`)
+  return data?.available ?? false
 }
 
 export async function checkEmail(email) {
-  return apiClient.get(`/api/users/check-email/${encodeURIComponent(email)}`)
+  const data = await apiClient.get(`/api/users/check-email/${encodeURIComponent(email)}`)
+  return data?.available ?? false
 }
 
 export async function deleteUser(id) {
