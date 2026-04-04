@@ -1,3 +1,9 @@
+## [1.23.1](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.0...1.23.1) (2026-04-04)
+
+### Dependency updates
+
+* **core-deps:** update dependency vue to v3.5.32 ([#86](https://github.com/MarcoCostantini26/TheImpostor/issues/86)) ([f0e33b9](https://github.com/MarcoCostantini26/TheImpostor/commit/f0e33b9aa3c839c35f0c8d19c4ed3dbc029a5467))
+
 ## [1.23.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.22.0...1.23.0) (2026-04-03)
 
 ### Features
