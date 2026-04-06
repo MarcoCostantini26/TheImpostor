@@ -1,3 +1,14 @@
+## [1.23.3](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.2...1.23.3) (2026-04-06)
+
+### Dependency updates
+
+* **deps:** update dependency @types/node to v25.5.2 ([#87](https://github.com/MarcoCostantini26/TheImpostor/issues/87)) ([eb6aa3d](https://github.com/MarcoCostantini26/TheImpostor/commit/eb6aa3d32a80bfafec4b55293871856b5b03f4c0))
+* **deps:** update dependency eslint to v10.2.0 ([#92](https://github.com/MarcoCostantini26/TheImpostor/issues/92)) ([7831e49](https://github.com/MarcoCostantini26/TheImpostor/commit/7831e498f8e696be233b515f8589e48c3c3f79d3))
+
+### Bug Fixes
+
+* **deps:** update dependency io.jsonwebtoken:jjwt-api to v0.13.0 ([#89](https://github.com/MarcoCostantini26/TheImpostor/issues/89)) ([b553704](https://github.com/MarcoCostantini26/TheImpostor/commit/b55370441185f188b05295cf210b2f4cd851e762))
+
 ## [1.23.2](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.1...1.23.2) (2026-04-04)
 
 ### Bug Fixes
