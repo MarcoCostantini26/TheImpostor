@@ -1,3 +1,13 @@
+## [1.23.4](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.3...1.23.4) (2026-04-07)
+
+### Dependency updates
+
+* **deps:** update dependency vite to v8.0.5 ([#95](https://github.com/MarcoCostantini26/TheImpostor/issues/95)) ([f73aa80](https://github.com/MarcoCostantini26/TheImpostor/commit/f73aa80c87f6cefb230e34b8f310b51f97215901))
+
+### Bug Fixes
+
+* **deps:** update dependency io.jsonwebtoken:jjwt-impl to v0.13.0 ([#90](https://github.com/MarcoCostantini26/TheImpostor/issues/90)) ([782ebfb](https://github.com/MarcoCostantini26/TheImpostor/commit/782ebfbb42a4c4f23253aa00fea33467c87ca8d4))
+
 ## [1.23.3](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.2...1.23.3) (2026-04-06)
 
 ### Dependency updates
