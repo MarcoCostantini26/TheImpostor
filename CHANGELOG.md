@@ -1,3 +1,10 @@
+## [1.23.5](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.4...1.23.5) (2026-04-08)
+
+### Dependency updates
+
+* **core-deps:** update dependency postcss to v8.5.9 ([#97](https://github.com/MarcoCostantini26/TheImpostor/issues/97)) ([82aa3e8](https://github.com/MarcoCostantini26/TheImpostor/commit/82aa3e88877b7957992ddcac44e473ee6cd4cf6d))
+* **deps:** update dependency vite to v8.0.7 ([#96](https://github.com/MarcoCostantini26/TheImpostor/issues/96)) ([18213fe](https://github.com/MarcoCostantini26/TheImpostor/commit/18213fe8244ada0821d83b108007ff8260a20bb0))
+
 ## [1.23.4](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.3...1.23.4) (2026-04-07)
 
 ### Dependency updates
