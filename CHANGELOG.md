@@ -1,3 +1,13 @@
+## [1.23.6](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.5...1.23.6) (2026-04-09)
+
+### Dependency updates
+
+* **deps:** update dependency typescript-eslint to v8.58.1 ([#98](https://github.com/MarcoCostantini26/TheImpostor/issues/98)) ([087fcb6](https://github.com/MarcoCostantini26/TheImpostor/commit/087fcb6d5609b4a1dbbf22a2eea44134fab00e0a))
+
+### Bug Fixes
+
+* **deps:** update dependency io.jsonwebtoken:jjwt-jackson to v0.13.0 ([#91](https://github.com/MarcoCostantini26/TheImpostor/issues/91)) ([ec3ffef](https://github.com/MarcoCostantini26/TheImpostor/commit/ec3ffefbea4a8e2c63ee686e875c90b0c9d12524))
+
 ## [1.23.5](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.4...1.23.5) (2026-04-08)
 
 ### Dependency updates
