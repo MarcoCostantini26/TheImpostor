@@ -10,4 +10,6 @@ export interface EngineGateway {
     resolveVoting(gameId: string): Promise<void>;
 
     guessSecretWord(gameId: string, impostorId: string, guessedWord: string): Promise<void>;
+
+    getGameState(gameId: string): Promise<any>;
 }

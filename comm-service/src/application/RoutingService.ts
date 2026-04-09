@@ -15,7 +15,6 @@ export class RoutingService {
         try {
             switch (event.type) {
                 case 'START_GAME':
-                case 'start_game':
                     await this.engineGateway.createGame(
                         String(payload.gameId || payload.roomId),
                         Array.isArray(payload.playerIds) ? payload.playerIds : [],
@@ -25,7 +24,6 @@ export class RoutingService {
                     break;
 
                 case 'GUESS_WORD':
-                case 'guess_word':
                     await this.engineGateway.guessSecretWord(
                         String(payload.gameId || payload.roomId),
                         userId, 
@@ -34,7 +32,6 @@ export class RoutingService {
                     break;
 
                 case 'CAST_VOTE':
-                case 'cast_vote':
                     await this.engineGateway.castVote(
                         String(payload.gameId),
                         userId, 
@@ -43,14 +40,16 @@ export class RoutingService {
                     break;
 
                 case 'ADVANCE_PHASE':
-                case 'advance_phase':
                     await this.engineGateway.advanceToVoting(String(payload.gameId));
                     break;
 
+                case 'RESOLVE_VOTING':
+                    await this.engineGateway.resolveVoting(String(payload.gameId));
+                    break;
+
                 default:
-                    console.log(`[Routing] ⚠️ Evento non gestito: ${event.type}`);
+                    console.log(`[Routing] Evento non gestito: ${event.type}`);
             }
-            // Questo log ti conferma che l'adapter ha FINITO
             console.log(`[Routing] ✅ Operazione "${event.type}" completata.`);
         } catch (error: any) {
             console.error(`[Routing] ❌ Errore durante "${event.type}": ${error.message}`);

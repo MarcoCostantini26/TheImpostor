@@ -16,7 +16,6 @@ export class HttpEngineAdapter implements EngineGateway {
     }
 
     async castVote(gameId: string, voterId: string, targetId: string): Promise<void> {
-        // gameId nell'URL (Query Param) come vuole Go, il resto nel Body
         await this.post(`/games/vote?gameId=${gameId}`, { voterId, targetId });
     }
 
@@ -26,6 +25,16 @@ export class HttpEngineAdapter implements EngineGateway {
 
     async resolveVoting(gameId: string): Promise<void> {
         await this.post(`/games/resolve-voting?gameId=${gameId}`, {});
+    }
+
+    async getGameState(gameId: string): Promise<any> {
+        const url = `${this.engineUrl}/games/state?gameId=${encodeURIComponent(gameId)}`;
+        const response = await fetch(url);
+        if (!response.ok) {
+            const errorMsg = await response.text();
+            throw new Error(`Engine Error (${response.status}): ${errorMsg}`);
+        }
+        return response.json();
     }
 
     private async post(path: string, body: any): Promise<void> {
@@ -39,7 +48,6 @@ export class HttpEngineAdapter implements EngineGateway {
                 body: JSON.stringify(body)
             });
 
-            // Se vedi questo log, Go ha risposto. Se non lo vedi, Go è bloccato.
             console.log(`[Adapter] 📥 RISPOSTA da Go: ${response.status} ${response.statusText}`);
 
             if (!response.ok) {
