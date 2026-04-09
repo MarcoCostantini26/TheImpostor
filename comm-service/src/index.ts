@@ -40,18 +40,29 @@ const server = createServer((req, res) => {
         req.on('end', () => {
             try {
                 const engineEvent = JSON.parse(body);
-                console.log(`[Webhook] 📢 Ricevuto da Go: ${engineEvent.eventName || engineEvent.EventName}`);
+                const eventName = engineEvent.eventName || engineEvent.EventName;
+                console.log(`[Webhook] 📢 Ricevuto da Go: ${eventName}`);
                 
-                const messageToBroadcast = JSON.stringify({
+                const eventToBroadcast = {
                     type: 'ENGINE_EVENT',
-                    payload: engineEvent
-                });
+                    payload: engineEvent // Inoltra tutto il payload così 'reason' e gli altri dati arrivano al frontend
+                };
 
-                wss.clients.forEach(client => {
-                    if (client.readyState === WebSocket.OPEN) {
-                        client.send(messageToBroadcast);
-                    }
-                });
+                // Estrai l'ID della stanza se l'engine te lo fornisce nel payload
+                const targetRoom = engineEvent.payload?.gameId || engineEvent.gameId;
+
+                if (targetRoom) {
+                    // Broadcast mirato alla stanza specifica
+                    roomManager.broadcastToRoom(targetRoom, eventToBroadcast);
+                } else {
+                    // Fallback: Broadcast globale se la struttura del payload non ha gameId
+                    const messageString = JSON.stringify(eventToBroadcast);
+                    wss.clients.forEach(client => {
+                        if (client.readyState === WebSocket.OPEN) {
+                            client.send(messageString);
+                        }
+                    });
+                }
                 
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ status: 'Broadcast completato' }));
@@ -194,9 +205,10 @@ wss.on('connection', async (ws: WebSocket) => {
                 const message = new Message(roomCode, currentUserId, payload);
                 await chatAndSignalingService.processWebRTCSignaling(message, ws);
             } else {
-                // Eventi di gioco (START_GAME, CAST_VOTE, etc.)
+                // Eventi di gioco (START_GAME, CAST_VOTE, GUESS_WORD, etc.)
                 const eventPayload = parsedData.payload || parsedData;
-                const event = new Event(parsedData.type, eventPayload);
+                // Usiamo eventType per supportare il wrapper 'EVENT' anziché parsedData.type
+                const event = new Event(eventType, eventPayload);
                 await routingService.handleClientEvent(currentUserId, event);
             }
         } catch (error: any) {

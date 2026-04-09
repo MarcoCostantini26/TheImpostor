@@ -15,14 +15,26 @@ export class RoutingService {
         try {
             switch (event.type) {
                 case 'START_GAME':
+                case 'start_game':
                     await this.engineGateway.createGame(
-                        String(payload.gameId),
+                        String(payload.gameId || payload.roomId),
                         Array.isArray(payload.playerIds) ? payload.playerIds : [],
-                        Number(payload.requestedImpostors) || 1
+                        Number(payload.requestedImpostors) || 1,
+                        String(payload.secretWord || "")
+                    );
+                    break;
+
+                case 'GUESS_WORD':
+                case 'guess_word':
+                    await this.engineGateway.guessSecretWord(
+                        String(payload.gameId || payload.roomId),
+                        userId, 
+                        String(payload.guessedWord || "")
                     );
                     break;
 
                 case 'CAST_VOTE':
+                case 'cast_vote':
                     await this.engineGateway.castVote(
                         String(payload.gameId),
                         userId, 
@@ -31,6 +43,7 @@ export class RoutingService {
                     break;
 
                 case 'ADVANCE_PHASE':
+                case 'advance_phase':
                     await this.engineGateway.advanceToVoting(String(payload.gameId));
                     break;
 
