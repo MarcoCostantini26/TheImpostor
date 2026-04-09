@@ -22,7 +22,7 @@ func main() {
 	factory := aggregate.NewGameFactory()
 	rules := service.NewGameRulesService()
 
-	notifierURL := "http://localhost:8080/internal/engine-callback"
+	notifierURL := "http://localhost:3000/internal/engine-callback"
 
 	// Creiamo il "telefono" HTTP
 	webhookNotifier := gameapi.NewHTTPGatewayNotifier(notifierURL)
