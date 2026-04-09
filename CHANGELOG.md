@@ -1,3 +1,17 @@
+## [2.0.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.6...2.0.0) (2026-04-09)
+
+### ⚠ BREAKING CHANGES
+
+* **engine:** add impostor word guessing and remove hints
+
+### Features
+
+* **engine:** add impostor word guessing and remove hints ([548b396](https://github.com/MarcoCostantini26/TheImpostor/commit/548b396699e62315ef7d82d76e07cdd93bcab85d))
+
+### Bug Fixes
+
+* **comm-service:** finalize secret word mechanic and WS broadcast ([3f67ce8](https://github.com/MarcoCostantini26/TheImpostor/commit/3f67ce8b2e042143fb7d4324ce16a4e96432643d))
+
 ## [1.23.6](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.5...1.23.6) (2026-04-09)
 
 ### Dependency updates
