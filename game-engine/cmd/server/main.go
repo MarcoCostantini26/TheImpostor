@@ -42,6 +42,7 @@ func main() {
 	mux.HandleFunc("/games/vote", controller.HandleCastVote)
 	mux.HandleFunc("/games/resolve-voting", controller.HandleResolveVoting)
 	mux.HandleFunc("/games/state", controller.HandleGetGameState)
+	mux.HandleFunc("/games/guess-word", controller.HandleGuessWord)
 
 	// 6. Alziamo la serranda! (Avviamo il server sulla porta 8081)
 	fmt.Println("🚀 Game Engine acceso e in ascolto sulla porta 8081!")
