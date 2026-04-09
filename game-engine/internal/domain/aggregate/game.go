@@ -3,6 +3,7 @@ package aggregate
 import (
 	"errors"
 	"time"
+	"strings"
 
 	"game-engine/internal/domain/entity"
 	"game-engine/internal/domain/event"
@@ -21,7 +22,6 @@ type Game struct {
 	Players     []entity.Player
 	CurrentTurn valueobject.Turn
 	SecretWord        valueobject.SecretWord
-	Hint        valueobject.Hint
 	Votes       []valueobject.Vote
 	domainEvents []event.DomainEvent 
 }
@@ -48,19 +48,6 @@ func (g *Game) ClearEvents() {
 // ==========================================
 // COMPORTAMENTI DEL GIOCO (LOGICA DI BUSINESS)
 // ==========================================
-
-// AssignSecrets imposta la parola segreta per i Crewmate e l'indizio per l'Impostore.
-// (Verrà chiamato all'inizio del round effettivo)
-func (g *Game) AssignSecrets(secretWord valueobject.SecretWord, hint valueobject.Hint) error {
-	if g.State != StatePlaying {
-		return errors.New("impossibile assegnare le parole: la partita non è in corso")
-	}
-	
-	g.SecretWord = secretWord
-	g.Hint = hint
-	
-	return nil
-}
 
 // AdvanceToVoting cambia la fase del turno corrente, passando dalla discussione al voto.
 func (g *Game) AdvanceToVoting() error {
@@ -225,4 +212,41 @@ func (g *Game) eliminatePlayer(playerID string) error {
 	})
 
 	return nil
+}
+
+// GetPlayerRole restituisce il ruolo di un giocatore
+func (g *Game) GetPlayerRole(playerID string) string {
+	idx := g.getPlayerIndex(playerID)
+	if idx != -1 {
+		return string(g.Players[idx].Role)
+	}
+	return ""
+}
+
+// StartGuessingPhase mette in pausa il gioco e aspetta la parola dall'impostore
+func (g *Game) StartGuessingPhase() error {
+	if g.State != StatePlaying {
+		return errors.New("la partita non è in corso")
+	}
+	
+	// Impostiamo la nuova fase (assicurati di aggiungere "GUESSING_WORD" nel tuo valueobject!)
+	g.CurrentTurn.Phase = "GUESSING_WORD" 
+
+	g.RecordEvent(event.PhaseChanged{
+		BaseEvent: event.BaseEvent{OccurredAt: time.Now()},
+		GameID:    g.ID,
+		NewPhase:  "GUESSING_WORD",
+		Timer:     30, 
+	})
+
+	return nil
+}
+
+// CheckSecretWord verifica se la parola è corretta
+func (g *Game) CheckSecretWord(guessedWord string) bool {
+    // Convertiamo in stringa il valueobject SecretWord per fare il paragone
+	actualWord := string(g.SecretWord) 
+	
+	// Confrontiamo ignorando le maiuscole/minuscole
+	return strings.ToLower(guessedWord) == strings.ToLower(actualWord)
 }

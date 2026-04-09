@@ -33,10 +33,10 @@ func NewGameFactory() *GameFactory {
 	return &GameFactory{}
 }
 
-func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImpostors int) (*Game, error) {
+func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImpostors int, secretWord string) (*Game, error) {
 	numPlayers := len(playerIDs)
 
-	// 1. Validazione Invarianti base (minimo 4, massimo 8)
+	// Validazione Invarianti base
 	if numPlayers < 4 {
 		return nil, ErrNotEnoughPlayers
 	}
@@ -44,15 +44,16 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 		return nil, ErrTooManyPlayers
 	}
 
-	// 2. Calcoliamo il massimo consentito
+	if secretWord == "" {
+		return nil, errors.New("la parola segreta è obbligatoria")
+	}
+
 	maxImpostors := CalculateMaxImpostors(numPlayers)
 
-	// 3. Validazione della richiesta della Lobby
 	if requestedImpostors < 1 || requestedImpostors > maxImpostors {
 		return nil, ErrInvalidImpostorCount
 	}
 
-	// 4. Selezione casuale
 	shuffledIndices := rand.Perm(numPlayers)
 	impostorIndices := shuffledIndices[:requestedImpostors]
 
@@ -65,7 +66,6 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 		return false
 	}
 
-	// 5. Creazione giocatori
 	var players []entity.Player
 	for i, pid := range playerIDs {
 		role := valueobject.RoleCrewmate
@@ -79,7 +79,6 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 		})
 	}
 
-	// 6. Creazione Aggregate
 	game := &Game{
 		ID:      gameID,
 		State:   StatePlaying,
@@ -89,10 +88,10 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 			Phase:       valueobject.PhaseDiscussion,
 			Timer:       120,
 		},
-		Votes: make([]valueobject.Vote, 0),
+		SecretWord: valueobject.SecretWord(secretWord),
+		Votes:      make([]valueobject.Vote, 0),
 	}
 
-	// 7. Evento
 	startedEvent := event.GameStarted{
 		BaseEvent: event.BaseEvent{OccurredAt: time.Now()},
 		GameID:    game.ID,
