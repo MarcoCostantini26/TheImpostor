@@ -1,3 +1,9 @@
+## [2.1.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.0.0...2.1.0) (2026-04-09)
+
+### Features
+
+* **comm-service:** successfully merge turn logic with secret word mechanic ([db56e9c](https://github.com/MarcoCostantini26/TheImpostor/commit/db56e9c6f6041b87ad85aa06930ec52f0984764f))
+
 ## [2.0.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.6...2.0.0) (2026-04-09)
 
 ### ⚠ BREAKING CHANGES
