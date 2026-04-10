@@ -1,3 +1,17 @@
+## [2.2.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.1.0...2.2.0) (2026-04-10)
+
+### Features
+
+* **engine:** sync changes ([b47c5ff](https://github.com/MarcoCostantini26/TheImpostor/commit/b47c5ffcc720659089a039c3433c54135009228c))
+
+### Dependency updates
+
+* **deps:** update dependency vite to v8.0.8 ([#99](https://github.com/MarcoCostantini26/TheImpostor/issues/99)) ([ac6dd4c](https://github.com/MarcoCostantini26/TheImpostor/commit/ac6dd4caf314634165aa65ff6fee3d481149b98f))
+
+### Bug Fixes
+
+* **comm-service:** merged roles and words assignment ([1f320c3](https://github.com/MarcoCostantini26/TheImpostor/commit/1f320c3767b9dec7c0a9ddc892a1e4b4cd1d525c))
+
 ## [2.1.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.0.0...2.1.0) (2026-04-09)
 
 ### Features
