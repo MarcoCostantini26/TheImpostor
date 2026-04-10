@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 
 	"game-engine/internal/application"
 	"game-engine/internal/domain/aggregate"
@@ -22,7 +23,12 @@ func main() {
 	factory := aggregate.NewGameFactory()
 	rules := service.NewGameRulesService()
 
-	notifierURL := "http://localhost:3000/internal/engine-callback"
+	commServiceURL := os.Getenv("COMM_SERVICE_URL")
+	if commServiceURL == "" {
+		commServiceURL = "http://localhost:3000" // NOTA: il tuo amico ha messo 3000 invece di 8080!
+	}
+
+	notifierURL := commServiceURL + "/internal/engine-callback"
 
 	// Creiamo il "telefono" HTTP
 	webhookNotifier := gameapi.NewHTTPGatewayNotifier(notifierURL)
