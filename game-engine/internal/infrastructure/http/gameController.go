@@ -58,8 +58,7 @@ func (c *GameController) HandleCreateGame(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// 🚨 Passiamo req.SecretWord
-	err := c.appService.CreateGameUseCase(req.GameID, req.PlayerIDs, req.RequestedImpostors, req.SecretWord)
+	err := c.appService.CreateGameUseCase(req.GameID, req.PlayerIDs, req.RequestedImpostors)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
