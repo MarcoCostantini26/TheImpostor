@@ -120,6 +120,14 @@ const server = createServer(async (req, res) => {
         return;
     }
 
+    // Absorb fire-and-forget notifications from lobby-service (no-op, comm-service drives the flow)
+    if (req.method === 'POST' && req.url?.startsWith('/api/internal/lobby/')) {
+        res.writeHead(200, { 'Content-Type': 'application/json' });
+        res.end(JSON.stringify({ status: 'ok' }));
+        return;
+    }
+
+
     if (req.method === 'POST' && req.url === '/internal/engine-callback') {
         let body = '';
         req.on('data', chunk => { body += chunk.toString(); });
@@ -150,6 +158,9 @@ const server = createServer(async (req, res) => {
                                     isImpostor
                                 }
                             }));
+                            console.log(`[Webhook] 📨 Role ${player.Role} sent to player ${player.ID}`);
+                        } else {
+                            console.log(`[Webhook] ⚠️ No active socket for player ${player.ID}`);
                         }
                     });
 
@@ -207,7 +218,7 @@ const server = createServer(async (req, res) => {
                 }
                 
                 res.writeHead(200, { 'Content-Type': 'application/json' });
-                res.end(JSON.stringify({ status: 'Broadcast completato' }));
+                res.end(JSON.stringify({ status: 'Elaborato' }));
             } catch (e) {
                 res.writeHead(400);
                 res.end('Invalid JSON');
