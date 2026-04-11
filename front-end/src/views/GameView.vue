@@ -109,13 +109,9 @@ onBeforeUnmount(() => {
 })
 
 const isImpostor = computed(() => myRole.value === 'IMPOSTOR')
-const isHost     = computed(() => roomStore.isHost)
 
 const alivePlayers = computed(() =>
   players.value.filter(p => p && p.status !== 'DEAD' && !p.eliminated)
-)
-const deadPlayers = computed(() =>
-  players.value.filter(p => p && (p.status === 'DEAD' || p.eliminated))
 )
 
 function getClue(player) {
