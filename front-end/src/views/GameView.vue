@@ -17,7 +17,6 @@ const {
   players,
   messages,
   gameWinner,
-  votedPlayers,
   myRole,
   mySecretWord,
   playerClues,
@@ -34,7 +33,6 @@ const showMobileChat    = ref(false)
 const mobileUnreadCount = ref(0)
 const clueInput        = ref('')
 const myClueSubmitted  = ref(false)
-const myVote           = ref(null)
 
 const myUserId   = computed(() => authStore.user?.id)
 
@@ -43,10 +41,6 @@ const isMyTurn = computed(() => {
   return !!myId && currentTurnUserId.value === myId
 })
 
-
-watch(displayPhase, (phase) => {
-  if (phase === 'DISCUSSION' || phase === 'VOTING') myVote.value = null
-})
 
 watch(playerClues, (newClues) => {
   try {
@@ -146,14 +140,6 @@ function sendClue() {
   myClueSubmitted.value = true
 }
 
-function castVote(player) {
-  if (displayPhase.value !== 'VOTING' || myVote.value) return
-  const targetId = player?.id || player?.userId
-  if (!targetId) return
-  myVote.value = targetId
-  roomStore.castVote(targetId)
-}
-
 function timerColor(t) {
   if (t <= 0) return 'bg-gray-700'
   if (t <= 10) return 'bg-red-600'
@@ -229,8 +215,7 @@ function timerColor(t) {
 
     <!-- Phase banner -->
     <div :class="['text-center py-1.5 text-[11px] font-bold tracking-widest uppercase',
-      displayPhase === 'VOTING' ? 'bg-red-900/50 text-red-300'
-      : displayPhase === 'DISCUSSION' ? 'bg-blue-900/30 text-blue-300'
+      displayPhase === 'DISCUSSION' ? 'bg-blue-900/30 text-blue-300'
       : 'bg-violet-900/30 text-violet-400']">
       <template v-if="displayPhase === 'CLUE_SUBMISSION' || !displayPhase">
         CLUE SUBMISSION
@@ -239,9 +224,6 @@ function timerColor(t) {
       </template>
       <template v-else-if="displayPhase === 'DISCUSSION'">
         DISCUSSION PHASE — All clues revealed, discuss with your team!
-      </template>
-      <template v-else-if="displayPhase === 'VOTING'">
-        VOTING PHASE — Click a player to eliminate them
       </template>
     </div>
 
@@ -299,17 +281,11 @@ function timerColor(t) {
           <div
             v-for="player in alivePlayers"
             :key="player.id || player.userId"
-            @click="castVote(player)"
             :class="[
               'flex items-center justify-between p-3 pr-4 rounded-xl border transition-all duration-200',
-              displayPhase === 'VOTING' && !myVote && !isSelf(player) ? 'cursor-pointer' : '',
-              myVote === (player.id || player.userId)
-                ? 'border-red-500 bg-red-950/30'
-                : isSelf(player)
-                  ? 'border-violet-500/40 bg-violet-950/20'
-                  : displayPhase === 'VOTING' && !myVote
-                    ? 'border-white/5 bg-white/[0.02] hover:border-red-400/40 hover:bg-red-950/10'
-                    : 'border-white/5 bg-white/[0.02]'
+              isSelf(player)
+                ? 'border-violet-500/40 bg-violet-950/20'
+                : 'border-white/5 bg-white/[0.02]'
             ]"
           >
             <div class="flex items-center gap-3 min-w-0">
@@ -319,10 +295,7 @@ function timerColor(t) {
                   {{ player.displayName || player.username }}
                   <span v-if="isSelf(player)" class="text-violet-400 font-normal text-xs"> (You)</span>
                 </p>
-                <p v-if="votedPlayers.includes(player.id || player.userId)"
-                  class="text-[10px] text-gray-500 mt-0.5">
-                  voted ✓
-                </p>
+
               </div>
             </div>
 
@@ -330,9 +303,7 @@ function timerColor(t) {
             <div :class="[
               'ml-3 flex-shrink-0 px-4 py-1.5 rounded-full border text-xs font-bold tracking-widest whitespace-nowrap transition-all',
               getClue(player)
-                ? (myVote === (player.id || player.userId)
-                    ? 'border-red-500/80 text-red-400 bg-red-950/30'
-                    : 'border-violet-500/50 text-violet-300 bg-violet-950/20')
+                ? 'border-violet-500/50 text-violet-300 bg-violet-950/20'
                 : 'border-white/10 text-gray-600'
             ]">
               {{ getClue(player) ? `"${getClue(player)}"` : '...' }}
@@ -342,19 +313,7 @@ function timerColor(t) {
           <!-- Dead players removed: elimination UI handled elsewhere -->
         </div>
 
-        <!-- Host action buttons -->
-        <div v-if="isHost && displayPhase === 'DISCUSSION'" class="mt-8">
-          <button
-            @click="roomStore.advanceToVoting()"
-            class="w-full py-3.5 rounded-full bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 text-white font-bold tracking-widest text-sm transition-all"
-          >START VOTING NOW ›</button>
-        </div>
-        <div v-if="isHost && displayPhase === 'VOTING'" class="mt-8">
-          <button
-            @click="roomStore.resolveVoting()"
-            class="w-full py-3.5 rounded-full bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white font-bold tracking-widest text-sm transition-all"
-          >RESOLVE VOTING ›</button>
-        </div>
+
       </main>
 
       <!-- ── RIGHT: Live Discussion (desktop) ── -->

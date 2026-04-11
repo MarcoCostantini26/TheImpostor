@@ -27,17 +27,103 @@ const routingService = new RoutingService(sessionRepository, engineAdapter);
 const chatAndSignalingService = new ChatAndSignalingService(sessionRepository, roomManager);
 
 const activeSockets = new Map<string, WebSocket>();
-const userSockets = new Map<string, WebSocket>(); // userId → ws (for targeted delivery)
+const userSockets = new Map<string, WebSocket>(); // userId → ws (per messaggi privati come i ruoli)
 
 const userRooms = new Map<string, string>();
-const roomSettings = new Map<string, { impostors: number }>(); // roomCode → settings
+const roomSettings = new Map<string, { impostors: number }>(); 
 const pendingLeaves = new Map<string, NodeJS.Timeout>();
 const LEAVE_GRACE_PERIOD_MS = 15_000;
 
+// ─── GESTIONE TURNI E INDIZI ─────────────────────────────────────────────────
+const CLUE_TURN_SECONDS = 15;
+const FREE_DISCUSSION_SECONDS = 60;
+const roomDiscussionTimers = new Map<string, NodeJS.Timeout>(); 
+const roomDiscussionExpiry = new Map<string, number>(); 
+const roomClues = new Map<string, Record<string, string>>(); 
+interface TurnState {
+    queue: string[];   
+    index: number;     
+    timer: NodeJS.Timeout | null;
+    expiresAt?: number; 
+}
+const roomTurns = new Map<string, TurnState>(); 
+
+function startTurn(roomCode: string) {
+    const state = roomTurns.get(roomCode);
+    if (!state) return;
+    if (state.timer) clearTimeout(state.timer);
+    const activePlayerId = state.queue[state.index];
+    const playerWs = userSockets.get(activePlayerId);
+
+    state.expiresAt = Date.now() + CLUE_TURN_SECONDS * 1000;
+
+    roomManager.broadcastToRoom(roomCode, {
+        type: 'turn_started',
+        payload: { yourTurn: false, activePlayerId, seconds: CLUE_TURN_SECONDS, fullSeconds: CLUE_TURN_SECONDS, expiresAt: state.expiresAt }
+    });
+    
+    if (playerWs && playerWs.readyState === WebSocket.OPEN) {
+        playerWs.send(JSON.stringify({
+            type: 'turn_started',
+            payload: { yourTurn: true, activePlayerId, seconds: CLUE_TURN_SECONDS, fullSeconds: CLUE_TURN_SECONDS, expiresAt: state.expiresAt }
+        }));
+    }
+
+    state.timer = setTimeout(() => {
+        advanceTurn(roomCode);
+    }, CLUE_TURN_SECONDS * 1000);
+}
+
+function advanceTurn(roomCode: string) {
+    const state = roomTurns.get(roomCode);
+    if (!state) return;
+    if (state.timer) { clearTimeout(state.timer); state.timer = null; }
+
+    state.index++;
+    if (state.index >= state.queue.length) {
+        roomTurns.delete(roomCode);
+        const discExpiry = Date.now() + FREE_DISCUSSION_SECONDS * 1000;
+        roomManager.broadcastToRoom(roomCode, {
+            type: 'discussion_phase_started',
+            payload: { roomCode, seconds: FREE_DISCUSSION_SECONDS, expiresAt: discExpiry }
+        });
+        
+        const discussionTimer = setTimeout(async () => {
+            try {
+                await engineAdapter.advanceToVoting(roomCode);
+            } catch (e: any) {
+                console.error(`[Turn] ❌ Errore auto-advance voting: ${e.message}`);
+            }
+            roomDiscussionTimers.delete(roomCode);
+            roomDiscussionExpiry.delete(roomCode);
+        }, FREE_DISCUSSION_SECONDS * 1000);
+        
+        roomDiscussionTimers.set(roomCode, discussionTimer);
+        roomDiscussionExpiry.set(roomCode, Date.now() + FREE_DISCUSSION_SECONDS * 1000);
+        return;
+    }
+    startTurn(roomCode);
+}
+
 // SERVER HTTP: Gestisce il Webhook per ascoltare gli eventi di Go
-const server = createServer((req, res) => {
+const server = createServer(async (req, res) => {
+    // Proxy per recuperare lo stato
+    if (req.method === 'GET' && req.url?.startsWith('/api/games/state')) {
+        const gameId = new URL(req.url, `http://localhost`).searchParams.get('gameId') || '';
+        try {
+            const state = await engineAdapter.getGameState(gameId);
+            res.writeHead(200, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify(state));
+        } catch (e: any) {
+            res.writeHead(500, { 'Content-Type': 'application/json' });
+            res.end(JSON.stringify({ error: e.message }));
+        }
+        return;
+    }
+
     // Absorb fire-and-forget notifications from lobby-service (no-op, comm-service drives the flow)
     if (req.method === 'POST' && req.url?.startsWith('/api/internal/lobby/')) {
+        console.log(`[Internal] ${req.method} ${req.url} received from ${req.headers['x-forwarded-for'] || req.socket.remoteAddress}`);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'ok' }));
         return;
@@ -58,7 +144,7 @@ const server = createServer((req, res) => {
                     const hint = String(game.Hint || '');
                     const roomCode = String(game.ID || '');
 
-                    // Send each player only their own role (targeted delivery)
+                    // Invio privato dei ruoli (e della parola segreta)
                     const players: any[] = game.Players || [];
                     players.forEach((player: any) => {
                         const playerWs = userSockets.get(String(player.ID));
@@ -79,26 +165,59 @@ const server = createServer((req, res) => {
                         }
                     });
 
-                    // Broadcast game_started to the whole room
                     if (roomCode) {
                         roomManager.broadcastToRoom(roomCode, {
                             type: 'game_started',
                             payload: { roomCode, status: 'STARTED' }
                         });
+                        roomClues.set(roomCode, {});
+                        const turnQueue: string[] = players.map((p: any) => String(p.ID)).filter(Boolean);
+                        roomTurns.set(roomCode, { queue: turnQueue, index: 0, timer: null });
+                        setTimeout(() => startTurn(roomCode), 500);
+                    }
+                } else if (eventName === 'PhaseChanged') {
+                    const ep = engineEvent.payload || {};
+                    const roomCode = String(ep.gameId || ep.GameID || '');
+                    const ts = roomTurns.get(roomCode);
+                    if (ts?.timer) { clearTimeout(ts.timer); }
+                    roomTurns.delete(roomCode);
+                    const dt = roomDiscussionTimers.get(roomCode);
+                    if (dt) { clearTimeout(dt); roomDiscussionTimers.delete(roomCode); }
+                    if (roomDiscussionExpiry.has(roomCode)) roomDiscussionExpiry.delete(roomCode);
+                    
+                    roomManager.broadcastToRoom(roomCode, {
+                        type: 'ENGINE_EVENT',
+                        payload: { eventName: 'PhaseChanged', gameId: roomCode, newPhase: ep.newPhase || ep.NewPhase || 'VOTING', timer: ep.timer || ep.Timer || 60 }
+                    });
+                } else if (eventName === 'GameEnded') {
+                    const ep = engineEvent.payload || {};
+                    const roomCode = String(ep.gameId || ep.GameID || '');
+                    if (roomCode) {
+                        roomManager.broadcastToRoom(roomCode, {
+                            type: 'ENGINE_EVENT',
+                            payload: {
+                                eventName: 'GameEnded',
+                                gameId: roomCode,
+                                winner: ep.winner || ep.Winner || '',
+                                reason: ep.reason || ep.Reason || '' // Essenziale per "WORD_GUESSED"
+                            }
+                        });
                     }
                 } else {
-                    // For other engine events, broadcast to all clients
-                    const messageToBroadcast = JSON.stringify({
-                        type: 'ENGINE_EVENT',
-                        payload: engineEvent
-                    });
-                    wss.clients.forEach(client => {
-                        if (client.readyState === WebSocket.OPEN) {
-                            client.send(messageToBroadcast);
-                        }
-                    });
-                }
+                    // Fallback per tutti gli altri eventi (es. VotingResolved, ImpostorGuessPhase)
+                    const eventToBroadcast = { type: 'ENGINE_EVENT', payload: engineEvent };
+                    const targetRoom = engineEvent.payload?.gameId || engineEvent.gameId || engineEvent.payload?.GameID;
 
+                    if (targetRoom) {
+                        roomManager.broadcastToRoom(targetRoom, eventToBroadcast);
+                    } else {
+                        const messageString = JSON.stringify(eventToBroadcast);
+                        wss.clients.forEach(client => {
+                            if (client.readyState === WebSocket.OPEN) client.send(messageString);
+                        });
+                    }
+                }
+                
                 res.writeHead(200, { 'Content-Type': 'application/json' });
                 res.end(JSON.stringify({ status: 'Elaborato' }));
             } catch (e) {
@@ -122,13 +241,11 @@ wss.on('connection', async (ws: WebSocket) => {
         extWs.isAlive = true;
     });
 
-    // Inizialmente usiamo un ID temporaneo
     let currentUserId = `temp-${randomUUID()}`;
     const socketId = randomUUID();
 
     activeSockets.set(socketId, ws);
 
-    // Creiamo la sessione iniziale nel repository (Usando Connection come richiesto)
     const session = new Session(currentUserId);
     session.addConnection(new Connection(socketId));
     await sessionRepository.save(session);
@@ -138,7 +255,6 @@ wss.on('connection', async (ws: WebSocket) => {
     ws.on('message', async (data: RawData) => {
         let parsedData;
 
-        // 🟢 GESTIONE ERRORI JSON (Invia errore al client)
         try {
             parsedData = JSON.parse(data.toString());
         } catch (e) {
@@ -147,7 +263,6 @@ wss.on('connection', async (ws: WebSocket) => {
         }
 
         try {
-            // 🟢 ESTRAZIONE WRAPPER 'EVENT' E NOMENCLATURA
             const eventType = parsedData.type === 'EVENT' ? parsedData.payload?.action : parsedData.type;
             const payload = parsedData.type === 'EVENT' ? parsedData.payload : (parsedData.payload || parsedData);
             
@@ -159,46 +274,75 @@ wss.on('connection', async (ws: WebSocket) => {
                 
                 await sessionRepository.remove(currentUserId);
 
-                // Move room mapping from temp ID to real ID
                 const existingRoom = userRooms.get(currentUserId);
                 if (existingRoom) {
                     userRooms.delete(currentUserId);
                     userRooms.set(newUserId, existingRoom);
                 }
 
-                // Update targeted socket mapping
                 userSockets.delete(currentUserId);
-                userSockets.set(newUserId, ws);
+                userSockets.set(newUserId, ws); // Tracciamo il socket per i ruoli privati
 
                 currentUserId = newUserId;
                 
-                // Cancel any pending leave for this user (reconnection after refresh)
                 if (pendingLeaves.has(currentUserId)) {
                     clearTimeout(pendingLeaves.get(currentUserId)!);
                     pendingLeaves.delete(currentUserId);
-                    console.log(`[Gateway] 🔄 Pending leave cancelled for reconnected user: ${currentUserId}`);
                 }
                 
                 const newSession = new Session(currentUserId);
                 newSession.addConnection(new Connection(socketId));
                 await sessionRepository.save(newSession);
+
+                // Tentativo di recovery dello stato dei turni e del ruolo
+                try {
+                    const roomCodeForUser = userRooms.get(currentUserId);
+                    if (roomCodeForUser) {
+                        const ts = roomTurns.get(roomCodeForUser);
+                        if (ts && ts.queue && ts.queue.length > 0) {
+                            const activePlayerId = ts.queue[ts.index];
+                            const remaining = ts.expiresAt ? Math.max(0, Math.ceil((ts.expiresAt - Date.now()) / 1000)) : CLUE_TURN_SECONDS;
+                            const isMyTurn = currentUserId === activePlayerId;
+                            ws.send(JSON.stringify({ type: 'turn_started', payload: { yourTurn: isMyTurn, activePlayerId, seconds: remaining, fullSeconds: CLUE_TURN_SECONDS, expiresAt: ts.expiresAt } }));
+                        }
+                        
+                        try {
+                            const gameState = await engineAdapter.getGameState(roomCodeForUser);
+                            const playersList = gameState?.Players || gameState?.players || null;
+                            if (Array.isArray(playersList)) {
+                                const me = playersList.find((p: any) => String(p.ID || p.id || p.playerId) === String(currentUserId));
+                                if (me) {
+                                    const globalSecret = gameState?.SecretWord || gameState?.secretWord || '';
+                                    const globalHint = gameState?.Hint || gameState?.hint || '';
+                                    const roleVal = String(me.Role || me.role || 'CREWMATE');
+                                    const isImpostor = (me.Role || me.role) === 'IMPOSTOR' || (me.Role || me.role) === 'Impostor';
+                                    const secretWord = isImpostor ? (globalHint || me.Hint) : (globalSecret || me.SecretWord);
+                                    ws.send(JSON.stringify({ type: 'ENGINE_EVENT', payload: { eventName: 'RoleAssigned', role: roleVal, secretWord, isImpostor } }));
+                                }
+                            }
+                        } catch (e) {}
+
+                        // Recovery discussion phase
+                        const discExpiry = roomDiscussionExpiry.get(roomCodeForUser);
+                        if (discExpiry && discExpiry > Date.now()) {
+                            const remaining = Math.max(0, Math.ceil((discExpiry - Date.now()) / 1000));
+                            ws.send(JSON.stringify({ type: 'discussion_phase_started', payload: { roomCode: roomCodeForUser, seconds: remaining, expiresAt: discExpiry } }));
+                        }
+                    }
+                } catch (err) {}
+
                 return;
             }
 
-            // 🟢 Supporta 'roomCode' (richiesto) o 'roomId' (fallback)
             const roomCode = payload.roomCode || payload.roomId;
 
             if (eventType === 'join_room' || eventType === 'JOIN_ROOM') {
                 roomManager.joinRoom(roomCode, ws);
-
-                // Track which room this user is in
                 userRooms.set(currentUserId, roomCode);
 
-                // Cancel any pending leave (reconnection after refresh)
                 if (pendingLeaves.has(currentUserId)) {
                     clearTimeout(pendingLeaves.get(currentUserId)!);
                     pendingLeaves.delete(currentUserId);
-                    console.log(`[Gateway] 🔄 Pending leave cancelled on join_room for: ${currentUserId}`);
                 }
 
                 roomManager.broadcastToRoom(roomCode, {
@@ -206,6 +350,27 @@ wss.on('connection', async (ws: WebSocket) => {
                     payload: { userId: currentUserId, username: payload.username }
                 }, ws); 
                 await lobbyService.syncRoomState(roomCode);
+
+                // Recovery indizi e turni
+                try {
+                    const clues = roomClues.get(roomCode) || {};
+                    ws.send(JSON.stringify({ type: 'clues_state', payload: { clues } }));
+                    
+                    const ts = roomTurns.get(roomCode);
+                    if (ts && ts.queue && ts.queue.length > 0) {
+                        const activePlayerId = ts.queue[ts.index];
+                        const remaining = ts.expiresAt ? Math.max(0, Math.ceil((ts.expiresAt - Date.now()) / 1000)) : CLUE_TURN_SECONDS;
+                        ws.send(JSON.stringify({ type: 'turn_started', payload: { yourTurn: currentUserId === activePlayerId, activePlayerId, seconds: remaining, fullSeconds: CLUE_TURN_SECONDS, expiresAt: ts.expiresAt } }));
+                    } else {
+                        // Recovery discussion phase
+                        const discExpiry = roomDiscussionExpiry.get(roomCode);
+                        if (discExpiry && discExpiry > Date.now()) {
+                            const remaining = Math.max(0, Math.ceil((discExpiry - Date.now()) / 1000));
+                            ws.send(JSON.stringify({ type: 'discussion_phase_started', payload: { roomCode, seconds: remaining, expiresAt: discExpiry } }));
+                        }
+                    }
+                } catch (e) {}
+                
                 return;
             }
 
@@ -233,14 +398,61 @@ wss.on('connection', async (ws: WebSocket) => {
                 return;
             }
 
+            if (eventType === 'submit_clue' || eventType === 'SUBMIT_CLUE') {
+                const clueText = String(payload.clue || '').toUpperCase();
+                const ts = roomTurns.get(roomCode);
+                const activePlayerId = ts?.queue?.[ts.index];
+
+                if (!ts || !activePlayerId || activePlayerId !== currentUserId) {
+                    ws.send(JSON.stringify({ type: 'error', payload: { message: 'Not your turn or no active turn' } }));
+                    return;
+                }
+
+                const existing = roomClues.get(roomCode) || {};
+                if (existing[currentUserId]) {
+                    ws.send(JSON.stringify({ type: 'error', payload: { message: 'Clue already submitted' } }));
+                    return;
+                }
+
+                existing[currentUserId] = clueText;
+                roomClues.set(roomCode, existing);
+
+                // Notify all clients (includiamo anche il mittente) so everyone resets/updates the timer consistently
+                roomManager.broadcastToRoom(roomCode, {
+                    type: 'clue_submitted',
+                    payload: { userId: currentUserId, username: payload.username || '', clue: clueText }
+                });
+
+                advanceTurn(roomCode);
+                return;
+            }
+
             if (eventType === 'start_game' || eventType === 'START_GAME') {
                 const hostId = payload.hostId || currentUserId;
-                const playerIds = await lobbyService.handleStartGame(roomCode, hostId);
-                if (playerIds && playerIds.length > 0) {
-                    const settings = roomSettings.get(roomCode);
-                    const requestedImpostors = settings?.impostors ?? 1;
-                    await engineAdapter.createGame(roomCode, playerIds, requestedImpostors);
+
+                // 1. Aggiorna lo stato della lobby e prendi la lista finale dei playerIds restituiti
+                const playerIds = await lobbyService.handleStartGame(roomCode, hostId) || [];
+
+                // 2. Inoltra l'intero payload (arricchito con gameId, playerIds e impostori) al RoutingService
+                const settings = roomSettings.get(roomCode);
+                const requestedImpostors = settings?.impostors ?? 1;
+                const enrichedPayload = { ...payload, gameId: roomCode, playerIds, requestedImpostors };
+                const event = new Event('START_GAME', enrichedPayload);
+                await routingService.handleClientEvent(currentUserId, event);
+                return;
+            }
+
+            if (eventType === 'ADVANCE_PHASE' || eventType === 'advance_phase') {
+                const gameRoomCode = payload.gameId || roomCode || userRooms.get(currentUserId) || '';
+                if (gameRoomCode) {
+                    const ts = roomTurns.get(gameRoomCode);
+                    if (ts?.timer) { clearTimeout(ts.timer); }
+                    roomTurns.delete(gameRoomCode);
+                    const dt = roomDiscussionTimers.get(gameRoomCode);
+                    if (dt) { clearTimeout(dt); roomDiscussionTimers.delete(gameRoomCode); }
                 }
+                const eventObj = new Event(eventType, payload);
+                await routingService.handleClientEvent(currentUserId, eventObj);
                 return;
             }
 
@@ -251,9 +463,9 @@ wss.on('connection', async (ws: WebSocket) => {
                 const message = new Message(roomCode, currentUserId, payload);
                 await chatAndSignalingService.processWebRTCSignaling(message, ws);
             } else {
-                // Eventi di gioco (START_GAME, CAST_VOTE, etc.)
+                // Gestisce tutti gli altri eventi, incluso GUESS_WORD
                 const eventPayload = parsedData.payload || parsedData;
-                const event = new Event(parsedData.type, eventPayload);
+                const event = new Event(eventType, eventPayload);
                 await routingService.handleClientEvent(currentUserId, event);
             }
         } catch (error: any) {
@@ -274,7 +486,6 @@ wss.on('connection', async (ws: WebSocket) => {
             const closedUserId = currentUserId;
             const timeout = setTimeout(async () => {
                 try {
-                    console.log(`[Gateway] ⏰ Grace period expired for ${closedUserId} in room ${roomCode}. Removing from lobby.`);
                     await lobbyService.handleLeaveRoom(roomCode, closedUserId, ws);
                 } catch (e: any) {
                     console.error(`[Gateway] ❌ Error during grace period leave: ${e.message}`);
@@ -282,7 +493,6 @@ wss.on('connection', async (ws: WebSocket) => {
                 pendingLeaves.delete(closedUserId);
             }, LEAVE_GRACE_PERIOD_MS);
             pendingLeaves.set(closedUserId, timeout);
-            console.log(`[Gateway] 🕐 Grace period started for ${currentUserId} (${LEAVE_GRACE_PERIOD_MS}ms).`);
         }
 
         console.log(`[Gateway] 🚪 Client disconnesso: ${currentUserId}`);
@@ -293,12 +503,10 @@ wss.on('connection', async (ws: WebSocket) => {
     });
 });
 
-// HEARTBEAT: Pulisce le connessioni "morte" ogni 30 secondi
 const interval = setInterval(() => {
     wss.clients.forEach((ws) => {
         const extWs = ws as AliveWebSocket;
         if (extWs.isAlive === false) {
-            console.log(`[Gateway] Connessione fantasma rilevata, terminazione forzata.`);
             return extWs.terminate();
         }
         extWs.isAlive = false;
@@ -306,7 +514,6 @@ const interval = setInterval(() => {
     });
 }, 30000);
 
-// SHUTDOWN LOGIC: Gestione SIGTERM/SIGINT
 const shutdown = () => {
     console.log('[Gateway] Ricevuto segnale di spegnimento. Chiusura in corso...');
     clearInterval(interval);

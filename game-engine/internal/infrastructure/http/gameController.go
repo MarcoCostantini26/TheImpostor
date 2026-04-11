@@ -28,11 +28,17 @@ type CreateGameRequest struct {
 	GameID             string   `json:"gameId"`
 	PlayerIDs          []string `json:"playerIds"`
 	RequestedImpostors int      `json:"requestedImpostors"`
+	SecretWord         string   `json:"secretWord"`
 }
 
 type CastVoteRequest struct {
 	VoterID  string `json:"voterId"`
 	TargetID string `json:"targetId"` // Può essere vuoto per uno "Skip"
+}
+
+type GuessWordRequest struct {
+	ImpostorID  string `json:"impostorId"`
+	GuessedWord string `json:"guessedWord"`
 }
 
 // ==========================================
@@ -52,10 +58,9 @@ func (c *GameController) HandleCreateGame(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	// Chiamiamo lo Chef!
 	err := c.appService.CreateGameUseCase(req.GameID, req.PlayerIDs, req.RequestedImpostors)
 	if err != nil {
-		http.Error(w, err.Error(), http.StatusBadRequest) // Esempio: "una partita richiede almeno 4 giocatori"
+		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
 	}
 
@@ -161,4 +166,32 @@ func (c *GameController) HandleGetGameState(w http.ResponseWriter, r *http.Reque
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(game)
+}
+
+func (c *GameController) HandleGuessWord(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Metodo non consentito", http.StatusMethodNotAllowed)
+		return
+	}
+
+	gameID := r.URL.Query().Get("gameId")
+	if gameID == "" {
+		http.Error(w, "Manca il gameId", http.StatusBadRequest)
+		return
+	}
+
+	var req GuessWordRequest
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		http.Error(w, "JSON non valido", http.StatusBadRequest)
+		return
+	}
+
+	err := c.appService.GuessSecretWordUseCase(gameID, req.ImpostorID, req.GuessedWord)
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusBadRequest)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
+	json.NewEncoder(w).Encode(map[string]string{"message": "Tentativo registrato"})
 }

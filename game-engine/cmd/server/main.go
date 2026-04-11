@@ -25,8 +25,9 @@ func main() {
 
 	commServiceURL := os.Getenv("COMM_SERVICE_URL")
 	if commServiceURL == "" {
-		commServiceURL = "http://localhost:3000"
+		commServiceURL = "http://localhost:3000" // NOTA: il tuo amico ha messo 3000 invece di 8080!
 	}
+
 	notifierURL := commServiceURL + "/internal/engine-callback"
 
 	// Creiamo il "telefono" HTTP
@@ -47,6 +48,7 @@ func main() {
 	mux.HandleFunc("/games/vote", controller.HandleCastVote)
 	mux.HandleFunc("/games/resolve-voting", controller.HandleResolveVoting)
 	mux.HandleFunc("/games/state", controller.HandleGetGameState)
+	mux.HandleFunc("/games/guess-word", controller.HandleGuessWord)
 
 	// 6. Alziamo la serranda! (Avviamo il server sulla porta 8081)
 	fmt.Println("🚀 Game Engine acceso e in ascolto sulla porta 8081!")

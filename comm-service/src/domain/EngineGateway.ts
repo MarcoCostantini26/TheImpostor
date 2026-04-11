@@ -1,7 +1,7 @@
 import { Event } from './Event';
 
 export interface EngineGateway {
-    createGame(gameId: string, playerIds: string[], requestedImpostors: number): Promise<void>;
+    createGame(gameId: string, playerIds: string[], requestedImpostors: number, secretWord: string): Promise<void>;
     
     castVote(gameId: string, voterId: string, targetId: string): Promise<void>;
 
@@ -9,5 +9,7 @@ export interface EngineGateway {
 
     resolveVoting(gameId: string): Promise<void>;
 
-    //checkHealth(): Promise<boolean>; 
+    guessSecretWord(gameId: string, impostorId: string, guessedWord: string): Promise<void>;
+
+    getGameState(gameId: string): Promise<any>;
 }

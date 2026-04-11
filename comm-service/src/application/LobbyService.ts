@@ -45,15 +45,14 @@ export class LobbyService {
             }
 
             const data = await response.json();
-
             this.roomManager.broadcastToRoom(roomId, {
                 type: 'game_started',
                 payload: { roomId }
             });
             await this.syncRoomState(roomId);
             console.log(`[LobbyService] 🚀 Partita ${roomId} avviata! Broadcast inviato.`);
-
             return Array.isArray(data.playerIds) ? data.playerIds : [];
+
         } catch (error: any) {
             console.error(`[LobbyService] ❌ Errore in handleStartGame: ${error.message}`);
             return null;

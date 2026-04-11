@@ -35,27 +35,23 @@ var wordPairs = [][2]string{
 	{"TREASURE", "HIDDEN RICHES"},
 }
 
-// CalculateMaxImpostors restituisce il numero massimo di impostori consentito 
-// in base al numero di giocatori presenti.
 func CalculateMaxImpostors(playerCount int) int {
 	if playerCount >= 6 {
 		return 2
 	}
-	return 1 // Per 4 o 5 giocatori, massimo 1 impostore
+	return 1
 }
 
-// GameFactory espone i metodi per creare partite valide rispettando le regole di dominio
 type GameFactory struct{}
 
-// NewGameFactory crea una nuova istanza della factory
 func NewGameFactory() *GameFactory {
 	return &GameFactory{}
 }
 
+// Nota: ho tolto 'secretWord string' dai parametri, perché ora la sceglie lui!
 func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImpostors int) (*Game, error) {
 	numPlayers := len(playerIDs)
 
-	// 1. Validazione Invarianti base (minimo 4, massimo 8)
 	if numPlayers < 4 {
 		return nil, ErrNotEnoughPlayers
 	}
@@ -63,15 +59,11 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 		return nil, ErrTooManyPlayers
 	}
 
-	// 2. Calcoliamo il massimo consentito
 	maxImpostors := CalculateMaxImpostors(numPlayers)
-
-	// 3. Validazione della richiesta della Lobby
 	if requestedImpostors < 1 || requestedImpostors > maxImpostors {
 		return nil, ErrInvalidImpostorCount
 	}
 
-	// 4. Selezione casuale
 	shuffledIndices := rand.Perm(numPlayers)
 	impostorIndices := shuffledIndices[:requestedImpostors]
 
@@ -84,7 +76,6 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 		return false
 	}
 
-	// 5. Creazione giocatori
 	var players []entity.Player
 	for i, pid := range playerIDs {
 		role := valueobject.RoleCrewmate
@@ -98,10 +89,8 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 		})
 	}
 
-	// 6. Selezione casuale della parola segreta e dell'indizio
 	pair := wordPairs[rand.Intn(len(wordPairs))]
 
-	// 7. Creazione Aggregate
 	game := &Game{
 		ID:      gameID,
 		State:   StatePlaying,
@@ -113,10 +102,9 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 		},
 		Votes:      make([]valueobject.Vote, 0),
 		SecretWord: valueobject.SecretWord(pair[0]),
-		Hint:       valueobject.Hint(pair[1]),
+		Hint: valueobject.Hint(pair[1]), 
 	}
 
-	// 8. Evento
 	startedEvent := event.GameStarted{
 		BaseEvent: event.BaseEvent{OccurredAt: time.Now()},
 		GameID:    game.ID,

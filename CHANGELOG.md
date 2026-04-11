@@ -1,3 +1,91 @@
+## [2.3.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.2.0...2.3.0) (2026-04-11)
+
+### Features
+
+* **lobby-service:** add frontend Docker support and update compose config ([a148afa](https://github.com/MarcoCostantini26/TheImpostor/commit/a148afa429c649ab65e3fd23490c8615d47a215b))
+
+### Dependency updates
+
+* **deps:** update dependency @types/node to v25.6.0 ([#102](https://github.com/MarcoCostantini26/TheImpostor/issues/102)) ([b0f557c](https://github.com/MarcoCostantini26/TheImpostor/commit/b0f557cd80faf21076aa109c41c4f304e859a06d))
+
+## [2.2.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.1.0...2.2.0) (2026-04-10)
+
+### Features
+
+* **engine:** sync changes ([b47c5ff](https://github.com/MarcoCostantini26/TheImpostor/commit/b47c5ffcc720659089a039c3433c54135009228c))
+
+### Dependency updates
+
+* **deps:** update dependency vite to v8.0.8 ([#99](https://github.com/MarcoCostantini26/TheImpostor/issues/99)) ([ac6dd4c](https://github.com/MarcoCostantini26/TheImpostor/commit/ac6dd4caf314634165aa65ff6fee3d481149b98f))
+
+### Bug Fixes
+
+* **comm-service:** merged roles and words assignment ([1f320c3](https://github.com/MarcoCostantini26/TheImpostor/commit/1f320c3767b9dec7c0a9ddc892a1e4b4cd1d525c))
+
+## [2.1.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.0.0...2.1.0) (2026-04-09)
+
+### Features
+
+* **comm-service:** successfully merge turn logic with secret word mechanic ([db56e9c](https://github.com/MarcoCostantini26/TheImpostor/commit/db56e9c6f6041b87ad85aa06930ec52f0984764f))
+
+## [2.0.0](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.6...2.0.0) (2026-04-09)
+
+### ⚠ BREAKING CHANGES
+
+* **engine:** add impostor word guessing and remove hints
+
+### Features
+
+* **engine:** add impostor word guessing and remove hints ([548b396](https://github.com/MarcoCostantini26/TheImpostor/commit/548b396699e62315ef7d82d76e07cdd93bcab85d))
+
+### Bug Fixes
+
+* **comm-service:** finalize secret word mechanic and WS broadcast ([3f67ce8](https://github.com/MarcoCostantini26/TheImpostor/commit/3f67ce8b2e042143fb7d4324ce16a4e96432643d))
+
+## [1.23.6](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.5...1.23.6) (2026-04-09)
+
+### Dependency updates
+
+* **deps:** update dependency typescript-eslint to v8.58.1 ([#98](https://github.com/MarcoCostantini26/TheImpostor/issues/98)) ([087fcb6](https://github.com/MarcoCostantini26/TheImpostor/commit/087fcb6d5609b4a1dbbf22a2eea44134fab00e0a))
+
+### Bug Fixes
+
+* **deps:** update dependency io.jsonwebtoken:jjwt-jackson to v0.13.0 ([#91](https://github.com/MarcoCostantini26/TheImpostor/issues/91)) ([ec3ffef](https://github.com/MarcoCostantini26/TheImpostor/commit/ec3ffefbea4a8e2c63ee686e875c90b0c9d12524))
+
+## [1.23.5](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.4...1.23.5) (2026-04-08)
+
+### Dependency updates
+
+* **core-deps:** update dependency postcss to v8.5.9 ([#97](https://github.com/MarcoCostantini26/TheImpostor/issues/97)) ([82aa3e8](https://github.com/MarcoCostantini26/TheImpostor/commit/82aa3e88877b7957992ddcac44e473ee6cd4cf6d))
+* **deps:** update dependency vite to v8.0.7 ([#96](https://github.com/MarcoCostantini26/TheImpostor/issues/96)) ([18213fe](https://github.com/MarcoCostantini26/TheImpostor/commit/18213fe8244ada0821d83b108007ff8260a20bb0))
+
+## [1.23.4](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.3...1.23.4) (2026-04-07)
+
+### Dependency updates
+
+* **deps:** update dependency vite to v8.0.5 ([#95](https://github.com/MarcoCostantini26/TheImpostor/issues/95)) ([f73aa80](https://github.com/MarcoCostantini26/TheImpostor/commit/f73aa80c87f6cefb230e34b8f310b51f97215901))
+
+### Bug Fixes
+
+* **deps:** update dependency io.jsonwebtoken:jjwt-impl to v0.13.0 ([#90](https://github.com/MarcoCostantini26/TheImpostor/issues/90)) ([782ebfb](https://github.com/MarcoCostantini26/TheImpostor/commit/782ebfbb42a4c4f23253aa00fea33467c87ca8d4))
+
+## [1.23.3](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.2...1.23.3) (2026-04-06)
+
+### Dependency updates
+
+* **deps:** update dependency @types/node to v25.5.2 ([#87](https://github.com/MarcoCostantini26/TheImpostor/issues/87)) ([eb6aa3d](https://github.com/MarcoCostantini26/TheImpostor/commit/eb6aa3d32a80bfafec4b55293871856b5b03f4c0))
+* **deps:** update dependency eslint to v10.2.0 ([#92](https://github.com/MarcoCostantini26/TheImpostor/issues/92)) ([7831e49](https://github.com/MarcoCostantini26/TheImpostor/commit/7831e498f8e696be233b515f8589e48c3c3f79d3))
+
+### Bug Fixes
+
+* **deps:** update dependency io.jsonwebtoken:jjwt-api to v0.13.0 ([#89](https://github.com/MarcoCostantini26/TheImpostor/issues/89)) ([b553704](https://github.com/MarcoCostantini26/TheImpostor/commit/b55370441185f188b05295cf210b2f4cd851e762))
+
+## [1.23.2](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.1...1.23.2) (2026-04-04)
+
+### Bug Fixes
+
+* **jwt:** fixed jwt problems with with newly registered users and guest players ([7f46ef2](https://github.com/MarcoCostantini26/TheImpostor/commit/7f46ef200791eac1c2e2ff0e61f63f2924f9086e))
+
 ## [1.23.1](https://github.com/MarcoCostantini26/TheImpostor/compare/1.23.0...1.23.1) (2026-04-04)
 
 ### Dependency updates

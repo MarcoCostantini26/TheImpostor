@@ -37,6 +37,7 @@ export const useRoomStore = defineStore('room', () => {
   let unsubscribe = null
   let currentRoomCode = null
   const STORAGE_PREFIX = 'theimpostor:chat:'
+  const ROLE_STORAGE_PREFIX = 'theimpostor:role:'
   const MAX_PERSISTED = 200
 
   const authStore = useAuthStore()
@@ -206,6 +207,8 @@ export const useRoomStore = defineStore('room', () => {
       const uid = payload.userId || payload.senderId
       const clue = payload.clue || ''
       if (uid && clue) playerClues.value = { ...playerClues.value, [uid]: clue }
+      // Ferma il timer corrente: il server avvierà il prossimo turno con 'turn_started'
+      try { stopTimer() } catch { /* void */ }
       _pendingTimerSeconds = 0
       return
     }
@@ -263,6 +266,11 @@ export const useRoomStore = defineStore('room', () => {
         myRole.value = ep.role || null
         mySecretWord.value = ep.secretWord || null
         rolePopupVisible.value = true
+        try {
+          if (currentRoomCode) {
+            sessionStorage.setItem(ROLE_STORAGE_PREFIX + currentRoomCode, JSON.stringify({ role: myRole.value, secretWord: mySecretWord.value }))
+          }
+        } catch { /* void */ }
       } else if (ep.eventName === 'PhaseChanged') {
         gamePhase.value = ep.newPhase || null
         if (ep.newPhase === 'VOTING') {
@@ -360,6 +368,18 @@ export const useRoomStore = defineStore('room', () => {
       } catch {
         messages.value = []
       }
+
+      // Restore role/secretWord from sessionStorage on rejoin (page refresh)
+      if (!myRole.value) {
+        try {
+          const roleRaw = sessionStorage.getItem(ROLE_STORAGE_PREFIX + roomCode)
+          if (roleRaw) {
+            const saved = JSON.parse(roleRaw)
+            if (saved.role) myRole.value = saved.role
+            if (saved.secretWord) mySecretWord.value = saved.secretWord
+          }
+        } catch { /* void */ }
+      }
     } catch (e) {
       error.value = e.message || 'Join failed'
       throw e
@@ -385,6 +405,9 @@ export const useRoomStore = defineStore('room', () => {
     roomHostId.value = null
     myRole.value = null
     mySecretWord.value = null
+    if (currentRoomCode) {
+      try { sessionStorage.removeItem(ROLE_STORAGE_PREFIX + currentRoomCode) } catch { /* void */ }
+    }
     gamePhase.value = null
     gameWinner.value = null
     votedPlayers.value = []

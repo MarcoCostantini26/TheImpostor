@@ -1,4 +1,3 @@
-
 services:
   # 1. LOBBY SERVICE (Java 21)
   lobby-service:
@@ -40,20 +39,21 @@ services:
       - ENGINE_URL=http://game-engine:8081
       - LOBBY_URL=http://lobby-service:8080
 
-  # 4. FRONT-END (Vue.js)
-  # frontend:
-  #   build:
-  #     context: ./frontend       # <-- CAMBIA QUESTO col nome esatto della cartella Vue
-  #     dockerfile: Dockerfile
-  #   ports:
-  #     - "5173:5173"             # 5173 è la porta standard di Vite/Vue. Modifica se usi altro.
-  #   networks:
-  #     - game-network
-  #   depends_on:
-  #     - lobby-service
-  #     - comm-service
+  # 4. FRONT-END (Vue.js - Vite dev server)
+  frontend:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    networks:
+      - game-network
+    depends_on:
+      - lobby-service
+      - comm-service
 
 # La rete virtuale che permette ai servizi di "vedersi" tra loro
 networks:
   game-network:
     driver: bridge
+

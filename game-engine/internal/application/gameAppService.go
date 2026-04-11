@@ -30,6 +30,8 @@ func NewGameAppService(
 }
 
 func (app *GameAppService) CreateGameUseCase(gameID string, playerIDs []string, requestedImpostors int) error {
+	
+	// Ora passiamo solo 3 parametri: gameID, playerIDs, e requestedImpostors
 	game, err := app.gameFactory.CreateGame(gameID, playerIDs, requestedImpostors)
 	if err != nil {
 		return err
@@ -90,12 +92,24 @@ func (app *GameAppService) ResolveVotingUseCase(gameID string) error {
 		return err
 	}
 
+	if eliminatedID != "" {
+		if string(game.GetPlayerRole(eliminatedID)) == "IMPOSTOR" { // Cast a stringa per sicurezza
+			game.StartGuessingPhase()
+			app.gameRepo.Save(game)
+			
+			// 🔔 Telefona a Node.js
+			app.notifier.NotifyEvent("ImpostorGuessPhase", map[string]string{
+				"gameId":     gameID,
+				"impostorId": eliminatedID,
+			})
+			return nil
+		}
+	}
+
 	winTeam := app.rulesSvc.CheckWinCondition(game)
 	if winTeam != service.WinNone {
-		game.EndGame(winTeam)
+		game.EndGame(string(winTeam)) // Assicurati di castare a string
 		app.gameRepo.Save(game)
-		// 🔔 TELEFONIAMO A NODE.JS (Partita finita!)
-		// Nota: se winTeam è un tipo custom, potrebbe dover fare string(winTeam)
 		app.notifier.NotifyEvent("GameEnded", map[string]string{"gameId": gameID, "winner": string(winTeam)})
 		return nil
 	}
@@ -105,9 +119,6 @@ func (app *GameAppService) ResolveVotingUseCase(gameID string) error {
 	return nil
 }
 
-// ==============================================================
-// 🟢 FUNZIONE AGGIUNTA CHE MANCAVA PER IL CONTROLLER
-// ==============================================================
 func (app *GameAppService) GetGameUseCase(gameID string) (interface{}, error) {
 	game, err := app.gameRepo.FindByID(gameID)
 	if err != nil {
@@ -117,4 +128,38 @@ func (app *GameAppService) GetGameUseCase(gameID string) (interface{}, error) {
 		return nil, errors.New("partita non trovata")
 	}
 	return game, nil
+}
+
+func (app *GameAppService) GuessSecretWordUseCase(gameID string, impostorID string, guessedWord string) error {
+	game, err := app.gameRepo.FindByID(gameID)
+	if err != nil {
+		return err
+	}
+	if game == nil {
+		return errors.New("partita non trovata")
+	}
+
+	if string(game.CurrentTurn.Phase) != "GUESSING_WORD" {
+		return errors.New("non è il momento di indovinare la parola")
+	}
+
+	if game.CheckSecretWord(guessedWord) {
+		game.EndGame("IMPOSTOR_WINS")
+		app.gameRepo.Save(game)
+		app.notifier.NotifyEvent("GameEnded", map[string]string{
+			"gameId": gameID, 
+			"winner": "IMPOSTOR_WINS",
+			"reason": "WORD_GUESSED",
+		})
+	} else {
+		game.EndGame("CREWMATES_WIN")
+		app.gameRepo.Save(game)
+		app.notifier.NotifyEvent("GameEnded", map[string]string{
+			"gameId": gameID, 
+			"winner": "CREWMATES_WIN",
+			"reason": "WRONG_GUESS",
+		})
+	}
+
+	return nil
 }
