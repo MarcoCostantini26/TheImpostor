@@ -3,7 +3,7 @@ package it.unibo.lobbyservice.domain.model;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 
-import java.util.Random;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Value Object: codice univoco di una stanza.
@@ -14,7 +14,6 @@ import java.util.Random;
 public final class RoomCode {
     private static final int CODE_LENGTH = 6;
     private static final String ALLOWED_CHARS = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    private static final Random RANDOM = new Random();
 
     private final String value;
 
@@ -39,7 +38,7 @@ public final class RoomCode {
     public static RoomCode generate() {
         StringBuilder code = new StringBuilder(CODE_LENGTH);
         for (int i = 0; i < CODE_LENGTH; i++) {
-            code.append(ALLOWED_CHARS.charAt(RANDOM.nextInt(ALLOWED_CHARS.length())));
+            code.append(ALLOWED_CHARS.charAt(ThreadLocalRandom.current().nextInt(ALLOWED_CHARS.length())));
         }
         return new RoomCode(code.toString());
     }

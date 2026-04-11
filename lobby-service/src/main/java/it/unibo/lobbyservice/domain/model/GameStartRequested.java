@@ -23,7 +23,8 @@ public final class GameStartRequested {
     private final String hostId;
     private final Instant occurredAt;
 
-    private final int MINIMUM_PLAYERS_REQUIRED= 4;
+    // static final: condiviso tra tutte le istanze, non ricreato ad ogni new
+    private static final int MINIMUM_PLAYERS_REQUIRED = 4;
 
     private GameStartRequested(String roomCode, Integer roundNumber, List<String> playerIds, 
                               List<String> playerUsernames, String hostId, Instant occurredAt) {
