@@ -1,3 +1,9 @@
+## [2.4.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.3.0...2.4.0) (2026-04-11)
+
+### Features
+
+* **lobby-service:** resolve auth user bug, add bean validation, and harden domain rules ([abb4a07](https://github.com/MarcoCostantini26/TheImpostor/commit/abb4a0735b2fd3a4555db28caf98dbb88181c612))
+
 ## [2.3.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.2.0...2.3.0) (2026-04-11)
 
 ### Features
