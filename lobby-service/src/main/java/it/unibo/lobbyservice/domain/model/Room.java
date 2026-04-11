@@ -129,7 +129,12 @@ public final class Room {
         if (!requesterId.equals(hostId)) {
             throw new IllegalStateException("Only the host can start the game");
         }
-        
+
+        // Idempotent: if already started, do nothing (allows retry after webhook failure)
+        if (status == RoomStatus.STARTED) {
+            return;
+        }
+
         if (status != RoomStatus.WAITING) {
             throw new IllegalStateException("Game already started or room ended");
         }

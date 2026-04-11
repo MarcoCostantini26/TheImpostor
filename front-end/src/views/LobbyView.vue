@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useRoomStore } from '../stores/room'
 import Avatar from '../components/AvatarIcon.vue'
+import RolePopup from '../components/RolePopup.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -16,7 +17,7 @@ const username = computed(() => {
 })
 
 const roomStore = useRoomStore()
-const { players, messages, impostors, discussionTime } = storeToRefs(roomStore)
+const { players, messages, impostors, discussionTime, myRole, mySecretWord } = storeToRefs(roomStore)
 const newMessage = ref('')
 const chatContainer = ref(null)
 const currentPlayer = computed(() => roomStore.currentPlayer)
@@ -85,11 +86,17 @@ watch(maxImpostors, (newMax) => {
 })
 
 onBeforeUnmount(() => {
-  roomStore.leave()
+  if (roomStore.roomStatus !== 'STARTED') {
+    roomStore.leave()
+  }
 })
 
 const { startGame, toggleReady, setDiscussionTime, decrementImpostors, incrementImpostors } = roomStore
 function sendChat() { if (!newMessage.value) return; roomStore.sendChat(newMessage.value); newMessage.value = '' }
+function onRolePopupDismiss() {
+  roomStore.dismissRole()
+  router.push({ name: 'game', params: { code } })
+}
 </script>
 
 <template>
@@ -195,6 +202,9 @@ function sendChat() { if (!newMessage.value) return; roomStore.sendChat(newMessa
       </div>
     </div>
   </div>
+
+  <!-- Role Assigned Popup -->
+  <RolePopup :role="myRole" :secret="mySecretWord" v-if="roomStore.rolePopupVisible" @dismiss="onRolePopupDismiss" />
 </template>
 
 <style scoped>

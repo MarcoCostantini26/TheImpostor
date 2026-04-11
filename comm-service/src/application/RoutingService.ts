@@ -16,7 +16,7 @@ export class RoutingService {
             switch (event.type) {
                 case 'START_GAME':
                     await this.engineGateway.createGame(
-                        String(payload.gameId || payload.roomId),
+                        String(payload.gameId || payload.roomCode || payload.roomId),
                         Array.isArray(payload.playerIds) ? payload.playerIds : [],
                         Number(payload.requestedImpostors) || 1,
                         String(payload.secretWord || "")

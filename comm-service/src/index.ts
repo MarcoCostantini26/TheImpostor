@@ -65,7 +65,7 @@ function startTurn(roomCode: string) {
     if (playerWs && playerWs.readyState === WebSocket.OPEN) {
         playerWs.send(JSON.stringify({
             type: 'turn_started',
-            payload: { yourTurn: true, seconds: CLUE_TURN_SECONDS, fullSeconds: CLUE_TURN_SECONDS, expiresAt: state.expiresAt }
+            payload: { yourTurn: true, activePlayerId, seconds: CLUE_TURN_SECONDS, fullSeconds: CLUE_TURN_SECONDS, expiresAt: state.expiresAt }
         }));
     }
 
@@ -82,9 +82,10 @@ function advanceTurn(roomCode: string) {
     state.index++;
     if (state.index >= state.queue.length) {
         roomTurns.delete(roomCode);
+        const discExpiry = Date.now() + FREE_DISCUSSION_SECONDS * 1000;
         roomManager.broadcastToRoom(roomCode, {
             type: 'discussion_phase_started',
-            payload: { roomCode, seconds: FREE_DISCUSSION_SECONDS }
+            payload: { roomCode, seconds: FREE_DISCUSSION_SECONDS, expiresAt: discExpiry }
         });
         
         const discussionTimer = setTimeout(async () => {
@@ -122,11 +123,11 @@ const server = createServer(async (req, res) => {
 
     // Absorb fire-and-forget notifications from lobby-service (no-op, comm-service drives the flow)
     if (req.method === 'POST' && req.url?.startsWith('/api/internal/lobby/')) {
+        console.log(`[Internal] ${req.method} ${req.url} received from ${req.headers['x-forwarded-for'] || req.socket.remoteAddress}`);
         res.writeHead(200, { 'Content-Type': 'application/json' });
         res.end(JSON.stringify({ status: 'ok' }));
         return;
     }
-
 
     if (req.method === 'POST' && req.url === '/internal/engine-callback') {
         let body = '';
@@ -320,6 +321,13 @@ wss.on('connection', async (ws: WebSocket) => {
                                 }
                             }
                         } catch (e) {}
+
+                        // Recovery discussion phase
+                        const discExpiry = roomDiscussionExpiry.get(roomCodeForUser);
+                        if (discExpiry && discExpiry > Date.now()) {
+                            const remaining = Math.max(0, Math.ceil((discExpiry - Date.now()) / 1000));
+                            ws.send(JSON.stringify({ type: 'discussion_phase_started', payload: { roomCode: roomCodeForUser, seconds: remaining, expiresAt: discExpiry } }));
+                        }
                     }
                 } catch (err) {}
 
@@ -353,6 +361,13 @@ wss.on('connection', async (ws: WebSocket) => {
                         const activePlayerId = ts.queue[ts.index];
                         const remaining = ts.expiresAt ? Math.max(0, Math.ceil((ts.expiresAt - Date.now()) / 1000)) : CLUE_TURN_SECONDS;
                         ws.send(JSON.stringify({ type: 'turn_started', payload: { yourTurn: currentUserId === activePlayerId, activePlayerId, seconds: remaining, fullSeconds: CLUE_TURN_SECONDS, expiresAt: ts.expiresAt } }));
+                    } else {
+                        // Recovery discussion phase
+                        const discExpiry = roomDiscussionExpiry.get(roomCode);
+                        if (discExpiry && discExpiry > Date.now()) {
+                            const remaining = Math.max(0, Math.ceil((discExpiry - Date.now()) / 1000));
+                            ws.send(JSON.stringify({ type: 'discussion_phase_started', payload: { roomCode, seconds: remaining, expiresAt: discExpiry } }));
+                        }
                     }
                 } catch (e) {}
                 
@@ -402,10 +417,11 @@ wss.on('connection', async (ws: WebSocket) => {
                 existing[currentUserId] = clueText;
                 roomClues.set(roomCode, existing);
 
+                // Notify all clients (includiamo anche il mittente) so everyone resets/updates the timer consistently
                 roomManager.broadcastToRoom(roomCode, {
                     type: 'clue_submitted',
                     payload: { userId: currentUserId, username: payload.username || '', clue: clueText }
-                }, ws);
+                });
 
                 advanceTurn(roomCode);
                 return;
@@ -413,12 +429,15 @@ wss.on('connection', async (ws: WebSocket) => {
 
             if (eventType === 'start_game' || eventType === 'START_GAME') {
                 const hostId = payload.hostId || currentUserId;
-                
-                // 1. Aggiorna lo stato della lobby
-                await lobbyService.handleStartGame(roomCode, hostId);
-                
-                // 2. Inoltra l'intero payload (che contiene già playerIds e secretWord) al RoutingService
-                const event = new Event(eventType, payload);
+
+                // 1. Aggiorna lo stato della lobby e prendi la lista finale dei playerIds restituiti
+                const playerIds = await lobbyService.handleStartGame(roomCode, hostId) || [];
+
+                // 2. Inoltra l'intero payload (arricchito con gameId, playerIds e impostori) al RoutingService
+                const settings = roomSettings.get(roomCode);
+                const requestedImpostors = settings?.impostors ?? 1;
+                const enrichedPayload = { ...payload, gameId: roomCode, playerIds, requestedImpostors };
+                const event = new Event('START_GAME', enrichedPayload);
                 await routingService.handleClientEvent(currentUserId, event);
                 return;
             }
