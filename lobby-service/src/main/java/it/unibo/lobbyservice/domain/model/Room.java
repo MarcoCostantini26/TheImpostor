@@ -5,6 +5,7 @@ import lombok.Getter;
 
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.ThreadLocalRandom;
 
 /**
  * Room Aggregate Root.
@@ -115,7 +116,7 @@ public final class Room {
         } else if (playerId.equals(hostId)) {
             // Host left but others remain: pick a random new host
             List<String> remainingIds = new ArrayList<>(players.keySet());
-            hostId = remainingIds.get(new java.util.Random().nextInt(remainingIds.size()));
+            hostId = remainingIds.get(ThreadLocalRandom.current().nextInt(remainingIds.size()));
         }
     }
 
@@ -137,6 +138,12 @@ public final class Room {
             throw new IllegalStateException("Insufficient players to start (minimum " + MIN_PLAYERS + ")");
         }
         
+        if (impostors >= players.size()) {
+            throw new IllegalStateException(
+                "Number of impostors (" + impostors + ") must be less than total players (" + players.size() + ")"
+            );
+        }
+
         currentRound++;
         status = RoomStatus.STARTED;
         startedAt = Instant.now();

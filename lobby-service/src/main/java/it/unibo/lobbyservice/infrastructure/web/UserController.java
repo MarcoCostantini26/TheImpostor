@@ -3,9 +3,14 @@ package it.unibo.lobbyservice.infrastructure.web;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import it.unibo.lobbyservice.application.service.UserNotFoundException;
 import it.unibo.lobbyservice.application.service.UserService;
 import it.unibo.lobbyservice.domain.model.AuthenticatedPlayer;
 import it.unibo.lobbyservice.infrastructure.config.JwtService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -34,7 +39,7 @@ public class UserController {
      * Registrazione base (username, email, password).
      */
     @PostMapping("/register")
-    public ResponseEntity<UserResponse> register(@RequestBody RegisterRequest request) {
+    public ResponseEntity<UserResponse> register(@Valid @RequestBody RegisterRequest request) {
         AuthenticatedPlayer player = userService.registerUser(
                 request.username(),
                 request.email(),
@@ -48,7 +53,7 @@ public class UserController {
      * Registrazione con profilo completo.
      */
     @PostMapping("/register-full")
-    public ResponseEntity<UserResponse> registerWithProfile(@RequestBody RegisterFullRequest request) {
+    public ResponseEntity<UserResponse> registerWithProfile(@Valid @RequestBody RegisterFullRequest request) {
         AuthenticatedPlayer player = userService.registerUserWithProfile(
                 request.username(),
                 request.email(),
@@ -67,7 +72,7 @@ public class UserController {
      */
     @PostMapping("/login")
     @Operation(summary = "Login utente", description = "Autentica l'utente e restituisce un JWT Bearer token")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest request) {
+    public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthenticatedPlayer player = userService.login(request.email(), request.password());
         String token = jwtService.generateToken(player);
         return ResponseEntity.ok(new LoginResponse(token, "Bearer", UserResponse.from(player)));
@@ -91,7 +96,7 @@ public class UserController {
     @GetMapping("/username/{username}")
     public ResponseEntity<UserResponse> getUserByUsername(@PathVariable String username) {
         AuthenticatedPlayer player = userService.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new UserNotFoundException("User with username '" + username + "' not found"));
         return ResponseEntity.ok(UserResponse.from(player));
     }
 
@@ -127,19 +132,26 @@ public class UserController {
 
 
     // DTO Records
-    public record RegisterRequest(String username, String email, String password) {}
-    
+    public record RegisterRequest(
+            @NotBlank String username,
+            @NotBlank @Email String email,
+            @NotBlank @Size(min = 8) String password
+    ) {}
+
     public record RegisterFullRequest(
-            String username,
-            String email,
-            String password,
+            @NotBlank String username,
+            @NotBlank @Email String email,
+            @NotBlank @Size(min = 8) String password,
             Integer age,
             String country,
             String avatarUrl,
             String bio
     ) {}
     
-    public record LoginRequest(String email, String password) {}
+    public record LoginRequest(
+            @NotBlank @Email String email,
+            @NotBlank String password
+    ) {}
 
     public record LoginResponse(String token, String tokenType, UserResponse user) {}
 
