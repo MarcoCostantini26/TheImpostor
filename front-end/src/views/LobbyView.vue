@@ -6,6 +6,7 @@ import { useAuthStore } from '../stores/auth'
 import { useRoomStore } from '../stores/room'
 import Avatar from '../components/AvatarIcon.vue'
 import RolePopup from '../components/RolePopup.vue'
+import ChatPanel from '../components/ChatPanel.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -18,8 +19,8 @@ const username = computed(() => {
 
 const roomStore = useRoomStore()
 const { players, messages, impostors, discussionTime, myRole, mySecretWord } = storeToRefs(roomStore)
-const newMessage = ref('')
-const chatContainer = ref(null)
+const showMobileChat = ref(false)
+const mobileUnreadCount = ref(0)
 const currentPlayer = computed(() => roomStore.currentPlayer)
 const isHost = computed(() => roomStore.isHost)
 const currentReady = computed(() => !!currentPlayer.value && !!currentPlayer.value.ready)
@@ -68,16 +69,11 @@ onMounted(async () => {
   try {
     await roomStore.join(code)
     await nextTick()
-    if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight
   } catch {
     setTimeout(() => router.push({ name: 'home' }), 1400)
   }
 })
 
-watch(messages, async () => {
-  await nextTick()
-  if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight
-}, { deep: true })
 
 watch(maxImpostors, (newMax) => {
   if (impostors.value > newMax) {
@@ -92,7 +88,6 @@ onBeforeUnmount(() => {
 })
 
 const { startGame, toggleReady, setDiscussionTime, decrementImpostors, incrementImpostors } = roomStore
-function sendChat() { if (!newMessage.value) return; roomStore.sendChat(newMessage.value); newMessage.value = '' }
 function onRolePopupDismiss() {
   roomStore.dismissRole()
   router.push({ name: 'game', params: { code } })
@@ -183,23 +178,30 @@ function onRolePopupDismiss() {
       </main>
 
       <!-- Chat -->
-      <aside class="card pop-in order-3 md:order-none col-span-1 md:col-span-3 bg-[rgba(24,24,24,0.9)] p-3 md:p-4 rounded flex flex-col h-full min-h-0">
-        <h3 class="text-sm text-gray-300 font-bold mb-4">CHAT</h3>
-        <div ref="chatContainer" class="h-64 md:h-[calc(100vh-300px)] overflow-y-auto mb-4 p-2 bg-[rgba(0,0,0,0.2)] rounded">
-          <div v-for="(m, i) in messages" :key="i" class="mb-3">
-            <div>
-              <div class="text-sm font-bold text-violet-300 leading-tight">{{ ((m.local || (m.senderId && String(m.senderId) === String(authStore.user?.id))) ? 'You' : (m.sender ?? m.displayName ?? m.from ?? m.senderId ?? 'Player')) + ':' }}</div>
-              <div class="text-sm text-gray-200 break-words mt-1">{{ m.content || m.message }}</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex gap-2 items-center">
-          <input v-model="newMessage" placeholder="Send a message..." class="flex-1 px-3 py-2 rounded bg-[rgba(0,0,0,0.25)] text-gray-100" />
-          <button @click="sendChat" class="px-4 py-2 rounded bg-violet-500">SEND</button>
-        </div>
-      </aside>
+      <ChatPanel
+        class="order-3 md:order-none col-span-1 md:col-span-3"
+        :messages="messages"
+        :myUserId="authStore.user?.id"
+        v-model="showMobileChat"
+        @send="(payload) => roomStore.sendChat(typeof payload === 'string' ? payload : (payload?.content || ''))"
+        @unread-change="mobileUnreadCount = $event"
+      />
       </div>
+    </div>
+
+    <!-- Mobile chat toggle (shows unread count) -->
+    <div class="md:hidden fixed bottom-0 left-0 right-0 z-30 flex flex-col">
+      <button
+        @click="showMobileChat = true"
+        class="w-full bg-[#1a1a2e] border-t border-violet-500/20 py-4 flex items-center justify-center gap-2"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+        </svg>
+        <span class="text-sm font-bold tracking-widest text-gray-300">
+          CHAT{{ mobileUnreadCount > 0 ? ` (${mobileUnreadCount} NEW)` : '' }}
+        </span>
+      </button>
     </div>
   </div>
 
@@ -208,7 +210,7 @@ function onRolePopupDismiss() {
 </template>
 
 <style scoped>
-/* pop-in animation (same as Login/Register) */
+/* pop-in animation */
 .card { opacity: 0; transform: translateY(8px) scale(0.995); }
 
 @keyframes popIn {

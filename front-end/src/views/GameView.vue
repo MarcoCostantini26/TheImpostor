@@ -5,6 +5,9 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useRoomStore } from '../stores/room'
 import Avatar from '../components/AvatarIcon.vue'
+import ClueSubmit from '../components/ClueSubmit.vue'
+import PlayerCard from '../components/PlayerCard.vue'
+import ChatPanel from '../components/ChatPanel.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -26,10 +29,7 @@ const {
   timeLeft
 } = storeToRefs(roomStore)
 
-const newMessage = ref('')
-const desktopChat = ref(null)
-const mobileChat  = ref(null)
-const showMobileChat    = ref(false)
+const showMobileChat = ref(false)
 const mobileUnreadCount = ref(0)
 const clueInput        = ref('')
 const myClueSubmitted  = ref(false)
@@ -58,24 +58,7 @@ watch(rolePopupVisible, (visible) => {
   } catch { /* void */ }
 })
 
-watch(messages, async () => {
-  await nextTick()
-  if (desktopChat.value) desktopChat.value.scrollTop = desktopChat.value.scrollHeight
-  if (showMobileChat.value) {
-    if (mobileChat.value) mobileChat.value.scrollTop = mobileChat.value.scrollHeight
-    mobileUnreadCount.value = 0
-  } else {
-    mobileUnreadCount.value++
-  }
-}, { deep: true })
-
-watch(showMobileChat, async (val) => {
-  if (val) {
-    mobileUnreadCount.value = 0
-    await nextTick()
-    if (mobileChat.value) mobileChat.value.scrollTop = mobileChat.value.scrollHeight
-  }
-})
+// Chat scrolling and unread logic moved into ChatPanel component
 
 onMounted(() => {
   (async () => {
@@ -124,10 +107,9 @@ function isSelf(player) {
   return uid && uid === myUserId.value
 }
 
-function sendChat() {
-  if (!newMessage.value.trim()) return
-  roomStore.sendChat(newMessage.value.trim())
-  newMessage.value = ''
+function sendChat(msg) {
+  if (!msg || !msg.trim()) return
+  roomStore.sendChat(msg.trim())
 }
 
 function sendClue() {
@@ -229,34 +211,19 @@ function timerColor(t) {
       <main class="flex-1 overflow-y-auto p-4 md:p-6 pb-28 md:pb-8">
 
         <!-- Clue submit form -->
-        <div v-if="displayPhase === 'CLUE_SUBMISSION' && isMyTurn && !myClueSubmitted"
-          class="mb-6 rounded-2xl bg-[#1a1a2e] border border-violet-500/30 p-4 ring-2 ring-violet-500/40">
-          <p class="text-[10px] text-violet-400 uppercase tracking-widest mb-1 font-bold">⏱ Your turn! {{ timeLeft }}s left</p>
-          <p class="text-[10px] text-gray-400 uppercase tracking-widest mb-3">
-            {{ isImpostor
-              ? 'Submit a hint — you don\'t know the secret word, try to blend in!'
-              : 'Submit your one-word clue for the secret word' }}
-          </p>
-          <div class="flex gap-2">
-            <input
-              v-model="clueInput"
-              @keydown.enter="sendClue"
-              placeholder="One word…"
-              maxlength="20"
-              class="flex-1 px-4 py-2.5 rounded-full bg-black/40 border border-violet-500/30 text-white uppercase tracking-widest font-bold text-sm focus:outline-none focus:border-violet-400 placeholder:normal-case placeholder:font-normal placeholder:text-gray-600"
-            />
-            <button
-              @click="sendClue"
-              :disabled="!clueInput.trim()"
-              :class="['px-5 py-2 rounded-full font-bold text-sm transition-all',
-                clueInput.trim() ? 'bg-violet-500 text-white hover:bg-violet-600' : 'bg-white/5 text-gray-600 cursor-not-allowed']"
-            >SUBMIT</button>
-          </div>
-        </div>
+        <ClueSubmit
+          v-if="displayPhase === 'CLUE_SUBMISSION' && isMyTurn && !myClueSubmitted"
+          :modelValue="clueInput"
+          @update:clue="clueInput = $event"
+          :isImpostor="isImpostor"
+          :timeLeft="timeLeft"
+          :disabled="myClueSubmitted"
+          @submit="sendClue"
+        />
 
         <!-- Waiting banner -->
         <div v-else-if="displayPhase === 'CLUE_SUBMISSION' && !isMyTurn && currentTurnUserId"
-          class="mb-6 rounded-2xl bg-white/[0.03] border border-white/5 p-4 flex items-center gap-3">
+          class="mb-6 card pop-in rounded-2xl bg-white/[0.03] border border-white/5 p-4 flex items-center gap-3">
           <div class="w-2 h-2 rounded-full bg-violet-400 animate-pulse flex-shrink-0"></div>
           <p class="text-sm text-gray-400">
             Waiting for
@@ -274,77 +241,30 @@ function timerColor(t) {
 
         <!-- Alive player cards -->
         <div class="space-y-3">
-          <div
+          <PlayerCard
             v-for="player in alivePlayers"
             :key="player.id || player.userId"
-            :class="[
-              'flex items-center justify-between p-3 pr-4 rounded-xl border transition-all duration-200',
-              isSelf(player)
-                ? 'border-violet-500/40 bg-violet-950/20'
-                : 'border-white/5 bg-white/[0.02]'
-            ]"
-          >
-            <div class="flex items-center gap-3 min-w-0">
-              <Avatar :name="player.displayName || player.username" :active="isSelf(player)" size="sm" class="flex-shrink-0" />
-              <div class="min-w-0">
-                <p class="font-bold text-sm leading-tight truncate">
-                  {{ player.displayName || player.username }}
-                  <span v-if="isSelf(player)" class="text-violet-400 font-normal text-xs"> (You)</span>
-                </p>
-
-              </div>
-            </div>
-
-            <!-- Clue pill -->
-            <div :class="[
-              'ml-3 flex-shrink-0 px-4 py-1.5 rounded-full border text-xs font-bold tracking-widest whitespace-nowrap transition-all',
-              getClue(player)
-                ? 'border-violet-500/50 text-violet-300 bg-violet-950/20'
-                : 'border-white/10 text-gray-600'
-            ]">
-              {{ getClue(player) ? `"${getClue(player)}"` : '...' }}
-            </div>
-          </div>
-
-          <!-- Dead players removed: elimination UI handled elsewhere -->
+            :player="player"
+            :isSelf="isSelf(player)"
+            :clue="getClue(player)"
+          />
         </div>
 
 
       </main>
 
-      <!-- ── RIGHT: Live Discussion (desktop) ── -->
-      <aside class="hidden md:flex w-80 xl:w-96 flex-col bg-[#111] border-l border-white/5 flex-shrink-0">
-        <div class="px-5 py-3 border-b border-white/5">
-          <p class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Live Discussion</p>
-        </div>
-
-        <div ref="desktopChat" class="flex-1 overflow-y-auto p-4 space-y-4">
-          <div v-for="(m, i) in messages" :key="i">
-            <p class="text-xs font-bold text-violet-300 leading-tight">
-              {{ (m.local || String(m.senderId) === String(myUserId)) ? 'You' : (m.sender || m.displayName || 'Player') }}
-            </p>
-            <p class="text-sm text-gray-200 mt-0.5 break-words leading-snug">{{ m.content || m.message }}</p>
-          </div>
-        </div>
-
-        <div class="p-3 border-t border-white/5 flex gap-2">
-          <input
-            v-model="newMessage"
-            @keydown.enter="sendChat"
-            placeholder="Send a message…"
-            class="flex-1 px-4 py-2.5 rounded-full bg-black/40 border border-white/10 text-gray-100 text-sm focus:outline-none focus:border-violet-500/50 placeholder:text-gray-600"
-          />
-          <button
-            @click="sendChat"
-            class="px-4 py-2 rounded-full bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm transition-colors"
-          >SEND</button>
-        </div>
-      </aside>
+      <!-- Chat panel -->
+      <ChatPanel
+        :messages="messages"
+        :myUserId="myUserId"
+        v-model="showMobileChat"
+        @send="sendChat"
+        @unread-change="mobileUnreadCount = $event"
+      />
     </div>
 
     <div class="md:hidden fixed bottom-0 left-0 right-0 z-30 flex flex-col">
       <button
-        v-if="!showMobileChat"
         @click="showMobileChat = true"
         class="w-full bg-[#1a1a2e] border-t border-violet-500/20 py-4 flex items-center justify-center gap-2"
       >
@@ -355,37 +275,6 @@ function timerColor(t) {
           DISCUSSION{{ mobileUnreadCount > 0 ? ` (${mobileUnreadCount} NEW MESSAGES)` : '' }}
         </span>
       </button>
-
-      <!-- Expanded chat panel -->
-      <div v-else class="bg-[#0f0f0f] border-t border-violet-500/20 flex flex-col" style="height: 50vh">
-        <div class="flex items-center justify-between px-4 py-2 border-b border-white/5">
-          <p class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Live Discussion</p>
-          <button @click="showMobileChat = false" class="text-gray-500 hover:text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-            </svg>
-          </button>
-        </div>
-
-        <div ref="mobileChat" class="flex-1 overflow-y-auto p-4 space-y-3">
-          <div v-for="(m, i) in messages" :key="i">
-            <p class="text-xs font-bold text-violet-300">
-              {{ (m.local || String(m.senderId) === String(myUserId)) ? 'You' : (m.sender || m.displayName || 'Player') }}
-            </p>
-            <p class="text-sm text-gray-200 mt-0.5 break-words">{{ m.content || m.message }}</p>
-          </div>
-        </div>
-
-        <div class="p-3 border-t border-white/5 flex gap-2">
-          <input
-            v-model="newMessage"
-            @keydown.enter="sendChat"
-            placeholder="Send a message…"
-            class="flex-1 px-4 py-2 rounded-full bg-black/40 border border-white/10 text-gray-100 text-sm focus:outline-none"
-          />
-          <button @click="sendChat" class="px-4 py-2 rounded-full bg-violet-600 text-white font-bold text-sm">SEND</button>
-        </div>
-      </div>
     </div>
 
     <Teleport to="body">
@@ -429,5 +318,10 @@ function timerColor(t) {
 }
 .pop-in {
   animation: popIn 400ms cubic-bezier(.2,.9,.2,1) both;
+}
+
+.card {
+  opacity: 0;
+  transform: translateY(8px) scale(0.995);
 }
 </style>
