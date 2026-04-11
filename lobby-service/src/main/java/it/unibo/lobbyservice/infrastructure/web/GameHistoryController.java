@@ -1,6 +1,7 @@
 package it.unibo.lobbyservice.infrastructure.web;
 
 import io.swagger.v3.oas.annotations.tags.Tag;
+import it.unibo.lobbyservice.application.service.GameHistoryNotFoundException;
 import it.unibo.lobbyservice.application.service.GameHistoryService;
 import it.unibo.lobbyservice.application.service.GameHistoryService.PlayerStats;
 import it.unibo.lobbyservice.domain.model.GameHistory;
@@ -77,7 +78,7 @@ public class GameHistoryController {
     @GetMapping("/room/{roomCode}")
     public ResponseEntity<GameHistoryResponse> getGameHistoryByRoom(@PathVariable String roomCode) {
         GameHistory gameHistory = gameHistoryService.findByRoomCode(roomCode)
-                .orElseThrow(() -> new RuntimeException("Game history not found for room " + roomCode));
+                .orElseThrow(() -> new GameHistoryNotFoundException("Game history not found for room " + roomCode));
         return ResponseEntity.ok(GameHistoryResponse.from(gameHistory));
     }
 

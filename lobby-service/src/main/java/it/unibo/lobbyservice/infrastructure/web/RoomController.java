@@ -4,8 +4,14 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import it.unibo.lobbyservice.application.service.RoomNotFoundException;
 import it.unibo.lobbyservice.application.service.RoomService;
+import it.unibo.lobbyservice.application.service.UserService;
 import it.unibo.lobbyservice.domain.model.*;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+import jakarta.validation.constraints.Min;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -13,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import it.unibo.lobbyservice.application.service.RoomNotFoundException;
 
 /**
  * REST Controller per la gestione delle Room.
@@ -25,9 +30,11 @@ import it.unibo.lobbyservice.application.service.RoomNotFoundException;
 public class RoomController {
     
     private final RoomService roomService;
+    private final UserService userService;
 
-    public RoomController(RoomService roomService) {
+    public RoomController(RoomService roomService, UserService userService) {
         this.roomService = Objects.requireNonNull(roomService, "RoomService cannot be null");
+        this.userService = Objects.requireNonNull(userService, "UserService cannot be null");
     }
 
     /**
@@ -40,7 +47,7 @@ public class RoomController {
         @ApiResponse(responseCode = "201", description = "Stanza creata con successo"),
         @ApiResponse(responseCode = "400", description = "Dati richiesta non validi")
     })
-    public ResponseEntity<RoomResponse> createRoom(@RequestBody CreateRoomRequest request) {
+    public ResponseEntity<RoomResponse> createRoom(@Valid @RequestBody CreateRoomRequest request) {
         User host = createUserFromRequest(request.hostUsername(), request.hostId(), request.isAuthenticated());
         Room room = roomService.createRoom(host);
         return ResponseEntity.status(HttpStatus.CREATED).body(RoomResponse.from(room));
@@ -51,7 +58,7 @@ public class RoomController {
      * Unisciti a una stanza esistente (UC-02).
      */
     @PostMapping("/{code}/join")
-    public ResponseEntity<RoomResponse> joinRoom(@PathVariable String code, @RequestBody JoinRoomRequest request) {
+    public ResponseEntity<RoomResponse> joinRoom(@PathVariable String code, @Valid @RequestBody JoinRoomRequest request) {
         User player = createUserFromRequest(request.username(), request.userId(), request.isAuthenticated());
         Room room = roomService.joinRoom(code, player);
         return ResponseEntity.ok(RoomResponse.from(room));
@@ -62,7 +69,7 @@ public class RoomController {
      * Lascia una stanza (UC-03).
      */
     @PostMapping("/{code}/leave")
-    public ResponseEntity<?> leaveRoom(@PathVariable String code, @RequestBody LeaveRoomRequest request) {
+    public ResponseEntity<?> leaveRoom(@PathVariable String code, @Valid @RequestBody LeaveRoomRequest request) {
         try {
             roomService.leaveRoom(code, request.playerId());
         } catch (RoomNotFoundException e) {
@@ -83,7 +90,7 @@ public class RoomController {
      * Avvia la partita (UC-04 - solo host).
      */
     @PostMapping("/{code}/start")
-    public ResponseEntity<GameStartResponse> startGame(@PathVariable String code, @RequestBody StartGameRequest request) {
+    public ResponseEntity<GameStartResponse> startGame(@PathVariable String code, @Valid @RequestBody StartGameRequest request) {
         GameStartRequested event = roomService.startGame(code, request.hostId());
         return ResponseEntity.ok(GameStartResponse.from(event));
     }
@@ -116,7 +123,7 @@ public class RoomController {
      * Prepara la stanza per un nuovo round (rematch).
      */
     @PostMapping("/{code}/next-round")
-    public ResponseEntity<RoomResponse> prepareNextRound(@PathVariable String code, @RequestBody NextRoundRequest request) {
+    public ResponseEntity<RoomResponse> prepareNextRound(@PathVariable String code, @Valid @RequestBody NextRoundRequest request) {
         Room room = roomService.prepareForNextRound(code, request.hostId());
         return ResponseEntity.ok(RoomResponse.from(room));
     }
@@ -137,7 +144,7 @@ public class RoomController {
      */
     @PutMapping("/{code}/settings")
     @Operation(summary = "Aggiorna le impostazioni della stanza", description = "Solo l'host può modificare le impostazioni")
-    public ResponseEntity<RoomResponse> updateSettings(@PathVariable String code, @RequestBody UpdateSettingsRequest request) {
+    public ResponseEntity<RoomResponse> updateSettings(@PathVariable String code, @Valid @RequestBody UpdateSettingsRequest request) {
         Room room = roomService.updateSettings(code, request.hostId(), request.impostors(), request.discussionTime());
         return ResponseEntity.ok(RoomResponse.from(room));
     }
@@ -159,19 +166,23 @@ public class RoomController {
     // Helper method per creare User dal request
     private User createUserFromRequest(String username, String userId, boolean isAuthenticated) {
         if (isAuthenticated && userId != null) {
-            // Placeholder: dovrebbe essere recuperato dal database
-            return new AnonymousPlayer(userId, username);
+            // Recupera l'AuthenticatedPlayer reale dal database tramite UserService
+            return userService.getUserById(userId);
         }
         return new AnonymousPlayer(username);
     }
 
     // DTO Records
-    public record CreateRoomRequest(String hostUsername, String hostId, boolean isAuthenticated) {}
-    public record JoinRoomRequest(String username, String userId, boolean isAuthenticated) {}
-    public record LeaveRoomRequest(String playerId) {}
-    public record StartGameRequest(String hostId) {}
-    public record NextRoundRequest(String hostId) {}
-    public record UpdateSettingsRequest(String hostId, int impostors, int discussionTime) {}
+    public record CreateRoomRequest(@NotBlank String hostUsername, String hostId, boolean isAuthenticated) {}
+    public record JoinRoomRequest(@NotBlank String username, String userId, boolean isAuthenticated) {}
+    public record LeaveRoomRequest(@NotBlank String playerId) {}
+    public record StartGameRequest(@NotBlank String hostId) {}
+    public record NextRoundRequest(@NotBlank String hostId) {}
+    public record UpdateSettingsRequest(
+            @NotBlank String hostId,
+            @Positive int impostors,
+            @Min(10) int discussionTime
+    ) {}
 
     public record RoomResponse(
             String code,
