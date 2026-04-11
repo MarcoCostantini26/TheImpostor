@@ -1,3 +1,14 @@
+## [2.5.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.4.0...2.5.0) (2026-04-11)
+
+### Features
+
+* **game:** created rolepopup and gameview to start a gameplay ([f5b8c0b](https://github.com/MarcoCostantini26/TheImpostor/commit/f5b8c0b69ba92be7d3fffc5ab9ba2e367de2909e))
+* **gameplay:** roles assignment and role popup creation ([360f8b3](https://github.com/MarcoCostantini26/TheImpostor/commit/360f8b3a983be3242f01c4161389b19d36f69079))
+
+### Bug Fixes
+
+* **lint:** removed unused values ([3de7198](https://github.com/MarcoCostantini26/TheImpostor/commit/3de719868306dcb8f90a47bac9eab4cbd504d341))
+
 ## [2.4.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.3.0...2.4.0) (2026-04-11)
 
 ### Features
