@@ -86,11 +86,17 @@ watch(maxImpostors, (newMax) => {
 })
 
 onBeforeUnmount(() => {
-  roomStore.leave()
+  if (roomStore.roomStatus !== 'STARTED') {
+    roomStore.leave()
+  }
 })
 
-const { startGame, toggleReady, setDiscussionTime, decrementImpostors, incrementImpostors, dismissRole } = roomStore
+const { startGame, toggleReady, setDiscussionTime, decrementImpostors, incrementImpostors } = roomStore
 function sendChat() { if (!newMessage.value) return; roomStore.sendChat(newMessage.value); newMessage.value = '' }
+function onRolePopupDismiss() {
+  roomStore.dismissRole()
+  router.push({ name: 'game', params: { code } })
+}
 </script>
 
 <template>
@@ -198,7 +204,7 @@ function sendChat() { if (!newMessage.value) return; roomStore.sendChat(newMessa
   </div>
 
   <!-- Role Assigned Popup -->
-  <RolePopup :role="myRole" :secret="mySecretWord" v-if="myRole" @dismiss="dismissRole" />
+  <RolePopup :role="myRole" :secret="mySecretWord" v-if="roomStore.rolePopupVisible" @dismiss="onRolePopupDismiss" />
 </template>
 
 <style scoped>
