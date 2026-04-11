@@ -1,3 +1,13 @@
+## [2.3.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.2.0...2.3.0) (2026-04-11)
+
+### Features
+
+* **lobby-service:** add frontend Docker support and update compose config ([a148afa](https://github.com/MarcoCostantini26/TheImpostor/commit/a148afa429c649ab65e3fd23490c8615d47a215b))
+
+### Dependency updates
+
+* **deps:** update dependency @types/node to v25.6.0 ([#102](https://github.com/MarcoCostantini26/TheImpostor/issues/102)) ([b0f557c](https://github.com/MarcoCostantini26/TheImpostor/commit/b0f557cd80faf21076aa109c41c4f304e859a06d))
+
 ## [2.2.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.1.0...2.2.0) (2026-04-10)
 
 ### Features
