@@ -22,6 +22,8 @@ services:
       - "8081:8081"             # Modifica se il tuo server Go usa una porta diversa
     networks:
       - game-network
+    environment:
+      - COMM_SERVICE_URL=http://comm-service:3000
 
   # 3. COMM SERVICE (Node.js 22 - WebSocket)
   comm-service:

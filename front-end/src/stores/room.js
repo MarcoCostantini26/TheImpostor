@@ -13,14 +13,50 @@ export const useRoomStore = defineStore('room', () => {
   const error = ref(null)
   const roomStatus = ref(null)
   const roomHostId = ref(null)
+  const myRole = ref(null)       // 'CREWMATE' | 'IMPOSTOR' | null
+  const mySecretWord = ref(null) 
+
+  const gamePhase = ref(null)        // 'DISCUSSION' | 'VOTING' | null
+  const gameWinner = ref(null)       // 'CREWMATES_WIN' | 'IMPOSTOR_WINS' | null
+  const votedPlayers = ref([])       
+  const lastEliminatedId = ref(null)
+  const rolePopupVisible = ref(false)
+  const playerClues = ref({})         
+
+  const currentTurnUserId = ref(null)
+  const turnSeconds = ref(15)         
+  const allCluesSubmitted = ref(false) 
+
+  const displayPhase = ref(null)        // 'CLUE_SUBMISSION' | 'DISCUSSION' | 'VOTING' | null
+  const discussionFreeSeconds = ref(60) 
+  const timeLeft = ref(0)               
+  let _timerInterval = null              
+  let _pendingTimerSeconds = 0           
   let _joinedViaHome = false
 
   let unsubscribe = null
   let currentRoomCode = null
   const STORAGE_PREFIX = 'theimpostor:chat:'
+  const ROLE_STORAGE_PREFIX = 'theimpostor:role:'
   const MAX_PERSISTED = 200
 
   const authStore = useAuthStore()
+
+  function startTimer(seconds) {
+    stopTimer('startTimer:clear')
+    timeLeft.value = Math.max(0, Math.round(seconds))
+    if (timeLeft.value <= 0) return
+    _timerInterval = setInterval(() => {
+      if (timeLeft.value > 0) {
+        timeLeft.value--
+      } else stopTimer('expired')
+    }, 1000)
+  }
+
+  function stopTimer() {
+    if (_timerInterval) { clearInterval(_timerInterval); _timerInterval = null }
+    timeLeft.value = 0
+  }
 
   const currentPlayer = computed(() => {
     const uidCandidates = [authStore.user?.id, authStore.user?._id, authStore.user?.userId].filter(Boolean)
@@ -162,6 +198,113 @@ export const useRoomStore = defineStore('room', () => {
 
     if (action === 'game_started' || action === 'GAME_STARTED') {
       roomStatus.value = 'STARTED'
+      gamePhase.value = 'DISCUSSION'
+      displayPhase.value = 'CLUE_SUBMISSION'
+      return
+    }
+
+    if (action === 'clue_submitted' || msg.type === 'clue_submitted') {
+      const uid = payload.userId || payload.senderId
+      const clue = payload.clue || ''
+      if (uid && clue) playerClues.value = { ...playerClues.value, [uid]: clue }
+      // Ferma il timer corrente: il server avvierà il prossimo turno con 'turn_started'
+      try { stopTimer() } catch { /* void */ }
+      _pendingTimerSeconds = 0
+      return
+    }
+
+    if (msg.type === 'clues_state') {
+      const p = msg.payload || {}
+      const clues = p.clues || {}
+      playerClues.value = { ...playerClues.value, ...clues }
+      return
+    }
+
+    if (msg.type === 'turn_started') {
+      const p = msg.payload || {}
+      const fullSecs = p.fullSeconds || p.seconds || 15
+      turnSeconds.value = fullSecs
+      if (!displayPhase.value) displayPhase.value = 'CLUE_SUBMISSION'
+      if (p.yourTurn) {
+        const myId = useAuthStore().user?.id
+        currentTurnUserId.value = myId || null
+      } else {
+        currentTurnUserId.value = p.activePlayerId || null
+      }
+      _pendingTimerSeconds = 0
+      if (p.expiresAt) {
+        const expiresTs = typeof p.expiresAt === 'number' ? p.expiresAt : Date.parse(p.expiresAt)
+        const now = Date.now()
+        const remaining = Math.max(0, Math.ceil((expiresTs - now) / 1000))
+        startTimer(remaining)
+      } else {
+        startTimer(fullSecs)
+      }
+      return
+    }
+
+    if (msg.type === 'discussion_phase_started') {
+      const p = msg.payload || {}
+      allCluesSubmitted.value = true
+      currentTurnUserId.value = null
+      discussionFreeSeconds.value = p.seconds || 60
+      displayPhase.value = 'DISCUSSION'
+      if (p.expiresAt) {
+        const expiresTs = typeof p.expiresAt === 'number' ? p.expiresAt : Date.parse(p.expiresAt)
+        const now = Date.now()
+        const remaining = Math.max(0, Math.ceil((expiresTs - now) / 1000))
+        startTimer(remaining)
+      } else {
+        startTimer(p.seconds || 60)
+      }
+      return
+    }
+
+    if (msg.type === 'ENGINE_EVENT') {
+      const ep = msg.payload || {}
+      if (ep.eventName === 'RoleAssigned') {
+        myRole.value = ep.role || null
+        mySecretWord.value = ep.secretWord || null
+        rolePopupVisible.value = true
+        try {
+          if (currentRoomCode) {
+            sessionStorage.setItem(ROLE_STORAGE_PREFIX + currentRoomCode, JSON.stringify({ role: myRole.value, secretWord: mySecretWord.value }))
+          }
+        } catch { /* void */ }
+      } else if (ep.eventName === 'PhaseChanged') {
+        gamePhase.value = ep.newPhase || null
+        if (ep.newPhase === 'VOTING') {
+          votedPlayers.value = []
+          displayPhase.value = 'VOTING'
+          startTimer(60)
+        }
+      } else if (ep.eventName === 'PlayerVoted') {
+        if (ep.voterId && !votedPlayers.value.includes(ep.voterId)) {
+          votedPlayers.value = [...votedPlayers.value, ep.voterId]
+        }
+      } else if (ep.eventName === 'VotingResolved') {
+        lastEliminatedId.value = ep.eliminatedId || null
+        gamePhase.value = 'DISCUSSION'
+        votedPlayers.value = []
+        if (ep.eliminatedId) {
+          players.value = players.value.map(p => {
+            if (!p) return p
+            const pid = p.id || p.userId
+            return pid === ep.eliminatedId ? { ...p, status: 'DEAD', eliminated: true } : p
+          })
+        }
+      } else if (ep.eventName === 'PlayerEliminated') {
+        if (ep.playerId) {
+          players.value = players.value.map(p => {
+            if (!p) return p
+            const pid = p.id || p.userId
+            return pid === ep.playerId ? { ...p, status: 'DEAD', eliminated: true } : p
+          })
+        }
+      } else if (ep.eventName === 'GameEnded') {
+        gameWinner.value = ep.winner || null
+        roomStatus.value = 'ENDED'
+      }
       return
     }
   }
@@ -195,18 +338,25 @@ export const useRoomStore = defineStore('room', () => {
       const displayName = authStore.user?.username || authStore.user?.name || 'Guest'
 
       if (!alreadyJoined) {
-        const joinResult = await roomService.joinRoom(roomCode, displayName, authStore.user?.id || null, !!authStore.user?.id)
-        resolveGuestId(joinResult?.players, displayName)
+        try {
+          const joinResult = await roomService.joinRoom(roomCode, displayName, authStore.user?.id || null, !!authStore.user?.id)
+          resolveGuestId(joinResult?.players, displayName)
+        } catch (joinErr) {
+          console.warn('[room] HTTP join failed, falling back to WS join:', joinErr?.message || joinErr)
+        }
       }
 
-      const room = await roomService.getRoom(roomCode)
-      players.value = room.players || []
-      roomStatus.value = room.status || room.state || null
-      roomHostId.value = room.hostId || room.hostUserId || room.creatorId || null
-      if (room.impostors !== undefined) impostors.value = room.impostors
-      if (room.discussionTime !== undefined) discussionTime.value = room.discussionTime
-
-      resolveGuestId(room.players, displayName)
+      try {
+        const room = await roomService.getRoom(roomCode)
+        players.value = room.players || []
+        roomStatus.value = room.status || room.state || null
+        roomHostId.value = room.hostId || room.hostUserId || room.creatorId || null
+        if (room.impostors !== undefined) impostors.value = room.impostors
+        if (room.discussionTime !== undefined) discussionTime.value = room.discussionTime
+        resolveGuestId(room.players, displayName)
+      } catch (getErr) {
+        console.warn('[room] getRoom failed, will proceed with WS join and expect server to push state', getErr?.message || getErr)
+      }
 
       initWS(roomCode)
       wsService.sendEvent('join_room', { roomCode, userId: authStore.user?.id, username: displayName })
@@ -217,6 +367,18 @@ export const useRoomStore = defineStore('room', () => {
         messages.value = Array.isArray(parsed) ? parsed.slice(-MAX_PERSISTED) : []
       } catch {
         messages.value = []
+      }
+
+      // Restore role/secretWord from sessionStorage on rejoin (page refresh)
+      if (!myRole.value) {
+        try {
+          const roleRaw = sessionStorage.getItem(ROLE_STORAGE_PREFIX + roomCode)
+          if (roleRaw) {
+            const saved = JSON.parse(roleRaw)
+            if (saved.role) myRole.value = saved.role
+            if (saved.secretWord) mySecretWord.value = saved.secretWord
+          }
+        } catch { /* void */ }
       }
     } catch (e) {
       error.value = e.message || 'Join failed'
@@ -241,6 +403,23 @@ export const useRoomStore = defineStore('room', () => {
     messages.value = []
     roomStatus.value = null
     roomHostId.value = null
+    myRole.value = null
+    mySecretWord.value = null
+    if (currentRoomCode) {
+      try { sessionStorage.removeItem(ROLE_STORAGE_PREFIX + currentRoomCode) } catch { /* void */ }
+    }
+    gamePhase.value = null
+    gameWinner.value = null
+    votedPlayers.value = []
+    lastEliminatedId.value = null
+    rolePopupVisible.value = false
+    playerClues.value = {}
+    currentTurnUserId.value = null
+    allCluesSubmitted.value = false
+    displayPhase.value = null
+    discussionFreeSeconds.value = 60
+    stopTimer()
+    _pendingTimerSeconds = 0
     currentRoomCode = null
   }
 
@@ -304,6 +483,42 @@ export const useRoomStore = defineStore('room', () => {
     if (currentRoomCode) wsService.sendEvent('update_settings', { roomCode: currentRoomCode, settings: { impostors: impostors.value, discussionTime: discussionTime.value } })
   }
 
+  function castVote(targetId) {
+    if (!currentRoomCode) return
+    const voterId = authStore.user?.id
+    if (!voterId) return
+    wsService.send({ type: 'EVENT', payload: { action: 'CAST_VOTE', gameId: currentRoomCode, targetId: targetId || '' } })
+  }
+
+  function advanceToVoting() {
+    if (!currentRoomCode) return
+    wsService.send({ type: 'EVENT', payload: { action: 'ADVANCE_PHASE', gameId: currentRoomCode } })
+  }
+
+  function resolveVoting() {
+    if (!currentRoomCode) return
+    wsService.send({ type: 'EVENT', payload: { action: 'RESOLVE_VOTING', gameId: currentRoomCode } })
+  }
+
+  function submitClue(clueWord) {
+    if (!currentRoomCode || !clueWord) return
+    const uid = authStore.user?.id
+    if (uid) playerClues.value = { ...playerClues.value, [uid]: clueWord }
+    wsService.sendEvent('submit_clue', {
+      roomCode: currentRoomCode,
+      clue: clueWord,
+      username: authStore.user?.username || authStore.user?.name
+    })
+  }
+
+  function dismissRole() {
+    rolePopupVisible.value = false
+    if (_pendingTimerSeconds > 0) {
+      startTimer(_pendingTimerSeconds)
+      _pendingTimerSeconds = 0
+    }
+  }
+
   return {
     players,
     messages,
@@ -313,6 +528,20 @@ export const useRoomStore = defineStore('room', () => {
     error,
     roomStatus,
     roomHostId,
+    myRole,
+    mySecretWord,
+    gamePhase,
+    gameWinner,
+    votedPlayers,
+    lastEliminatedId,
+    rolePopupVisible,
+    playerClues,
+    currentTurnUserId,
+    turnSeconds,
+    allCluesSubmitted,
+    displayPhase,
+    discussionFreeSeconds,
+    timeLeft,
     currentPlayer,
     isHost,
     join,
@@ -326,7 +555,12 @@ export const useRoomStore = defineStore('room', () => {
     decrementImpostors,
     incrementImpostors,
     upsertPlayer,
-    removePlayerById
+    removePlayerById,
+    castVote,
+    advanceToVoting,
+    resolveVoting,
+    submitClue,
+    dismissRole
   }
 })
 

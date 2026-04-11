@@ -16,27 +16,42 @@ var (
 	ErrInvalidImpostorCount = errors.New("numero di impostori richiesto non consentito per questo numero di giocatori")
 )
 
-// CalculateMaxImpostors restituisce il numero massimo di impostori consentito 
-// in base al numero di giocatori presenti.
+// wordPairs contains [secretWord, hint] pairs used to assign secrets each game.
+var wordPairs = [][2]string{
+	{"PIZZA", "ITALIAN DISH"},
+	{"GUITAR", "MUSICAL INSTRUMENT"},
+	{"VOLCANO", "FIRE MOUNTAIN"},
+	{"SUBMARINE", "UNDERWATER VESSEL"},
+	{"JUNGLE", "TROPICAL FOREST"},
+	{"CASTLE", "MEDIEVAL FORTRESS"},
+	{"COMPASS", "NAVIGATION TOOL"},
+	{"TELESCOPE", "USED FOR STARGAZING"},
+	{"DINOSAUR", "ANCIENT CREATURE"},
+	{"TORNADO", "SPINNING STORM"},
+	{"DIAMOND", "PRECIOUS GEMSTONE"},
+	{"LIGHTHOUSE", "GUIDES SAILORS"},
+	{"PARACHUTE", "SKYDIVING TOOL"},
+	{"AVALANCHE", "SNOW SLIDE"},
+	{"TREASURE", "HIDDEN RICHES"},
+}
+
 func CalculateMaxImpostors(playerCount int) int {
 	if playerCount >= 6 {
 		return 2
 	}
-	return 1 // Per 4 o 5 giocatori, massimo 1 impostore
+	return 1
 }
 
-// GameFactory espone i metodi per creare partite valide rispettando le regole di dominio
 type GameFactory struct{}
 
-// NewGameFactory crea una nuova istanza della factory
 func NewGameFactory() *GameFactory {
 	return &GameFactory{}
 }
 
-func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImpostors int, secretWord string) (*Game, error) {
+// Nota: ho tolto 'secretWord string' dai parametri, perché ora la sceglie lui!
+func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImpostors int) (*Game, error) {
 	numPlayers := len(playerIDs)
 
-	// Validazione Invarianti base
 	if numPlayers < 4 {
 		return nil, ErrNotEnoughPlayers
 	}
@@ -44,12 +59,7 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 		return nil, ErrTooManyPlayers
 	}
 
-	if secretWord == "" {
-		return nil, errors.New("la parola segreta è obbligatoria")
-	}
-
 	maxImpostors := CalculateMaxImpostors(numPlayers)
-
 	if requestedImpostors < 1 || requestedImpostors > maxImpostors {
 		return nil, ErrInvalidImpostorCount
 	}
@@ -79,6 +89,8 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 		})
 	}
 
+	pair := wordPairs[rand.Intn(len(wordPairs))]
+
 	game := &Game{
 		ID:      gameID,
 		State:   StatePlaying,
@@ -88,8 +100,9 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 			Phase:       valueobject.PhaseDiscussion,
 			Timer:       120,
 		},
-		SecretWord: valueobject.SecretWord(secretWord),
 		Votes:      make([]valueobject.Vote, 0),
+		SecretWord: valueobject.SecretWord(pair[0]),
+		Hint: valueobject.Hint(pair[1]), 
 	}
 
 	startedEvent := event.GameStarted{

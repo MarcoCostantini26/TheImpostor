@@ -29,8 +29,10 @@ func NewGameAppService(
 	}
 }
 
-func (app *GameAppService) CreateGameUseCase(gameID string, playerIDs []string, requestedImpostors int, secretWord string) error {
-	game, err := app.gameFactory.CreateGame(gameID, playerIDs, requestedImpostors, secretWord)
+func (app *GameAppService) CreateGameUseCase(gameID string, playerIDs []string, requestedImpostors int) error {
+	
+	// Ora passiamo solo 3 parametri: gameID, playerIDs, e requestedImpostors
+	game, err := app.gameFactory.CreateGame(gameID, playerIDs, requestedImpostors)
 	if err != nil {
 		return err
 	}

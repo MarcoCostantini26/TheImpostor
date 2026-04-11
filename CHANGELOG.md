@@ -1,3 +1,44 @@
+## [2.5.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.4.0...2.5.0) (2026-04-11)
+
+### Features
+
+* **game:** created rolepopup and gameview to start a gameplay ([f5b8c0b](https://github.com/MarcoCostantini26/TheImpostor/commit/f5b8c0b69ba92be7d3fffc5ab9ba2e367de2909e))
+* **gameplay:** roles assignment and role popup creation ([360f8b3](https://github.com/MarcoCostantini26/TheImpostor/commit/360f8b3a983be3242f01c4161389b19d36f69079))
+
+### Bug Fixes
+
+* **lint:** removed unused values ([3de7198](https://github.com/MarcoCostantini26/TheImpostor/commit/3de719868306dcb8f90a47bac9eab4cbd504d341))
+
+## [2.4.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.3.0...2.4.0) (2026-04-11)
+
+### Features
+
+* **lobby-service:** resolve auth user bug, add bean validation, and harden domain rules ([abb4a07](https://github.com/MarcoCostantini26/TheImpostor/commit/abb4a0735b2fd3a4555db28caf98dbb88181c612))
+
+## [2.3.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.2.0...2.3.0) (2026-04-11)
+
+### Features
+
+* **lobby-service:** add frontend Docker support and update compose config ([a148afa](https://github.com/MarcoCostantini26/TheImpostor/commit/a148afa429c649ab65e3fd23490c8615d47a215b))
+
+### Dependency updates
+
+* **deps:** update dependency @types/node to v25.6.0 ([#102](https://github.com/MarcoCostantini26/TheImpostor/issues/102)) ([b0f557c](https://github.com/MarcoCostantini26/TheImpostor/commit/b0f557cd80faf21076aa109c41c4f304e859a06d))
+
+## [2.2.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.1.0...2.2.0) (2026-04-10)
+
+### Features
+
+* **engine:** sync changes ([b47c5ff](https://github.com/MarcoCostantini26/TheImpostor/commit/b47c5ffcc720659089a039c3433c54135009228c))
+
+### Dependency updates
+
+* **deps:** update dependency vite to v8.0.8 ([#99](https://github.com/MarcoCostantini26/TheImpostor/issues/99)) ([ac6dd4c](https://github.com/MarcoCostantini26/TheImpostor/commit/ac6dd4caf314634165aa65ff6fee3d481149b98f))
+
+### Bug Fixes
+
+* **comm-service:** merged roles and words assignment ([1f320c3](https://github.com/MarcoCostantini26/TheImpostor/commit/1f320c3767b9dec7c0a9ddc892a1e4b4cd1d525c))
+
 ## [2.1.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.0.0...2.1.0) (2026-04-09)
 
 ### Features
