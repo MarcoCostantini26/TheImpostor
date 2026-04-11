@@ -1,3 +1,9 @@
+## [2.6.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.5.0...2.6.0) (2026-04-11)
+
+### Features
+
+* **lobby-service:** fix minor bugs ([4d1125b](https://github.com/MarcoCostantini26/TheImpostor/commit/4d1125bd991597e4461f04c110e4a67b811cddf4))
+
 ## [2.5.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.4.0...2.5.0) (2026-04-11)
 
 ### Features
