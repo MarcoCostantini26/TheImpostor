@@ -1,3 +1,14 @@
+## [2.6.2](https://github.com/MarcoCostantini26/TheImpostor/compare/2.6.1...2.6.2) (2026-04-12)
+
+### Bug Fixes
+
+* **frontend:** divided views into reusable components and updated readme ([5de9634](https://github.com/MarcoCostantini26/TheImpostor/commit/5de96340f2908a6b6b7ff4ce763024fa44106050))
+* **frontend:** solved graphic issues ([e91a940](https://github.com/MarcoCostantini26/TheImpostor/commit/e91a94053feaf9562dade87cab24922b7606f679))
+
+### Tests
+
+* **frontend:** added automatic navigation, creation and join tests ([57828f6](https://github.com/MarcoCostantini26/TheImpostor/commit/57828f626d8052c6ea348553737e9888188db8a2))
+
 ## [2.6.1](https://github.com/MarcoCostantini26/TheImpostor/compare/2.6.0...2.6.1) (2026-04-12)
 
 ### Bug Fixes
