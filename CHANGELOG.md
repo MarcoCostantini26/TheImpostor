@@ -1,3 +1,9 @@
+## [2.6.1](https://github.com/MarcoCostantini26/TheImpostor/compare/2.6.0...2.6.1) (2026-04-12)
+
+### Bug Fixes
+
+* **deps:** update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v3.0.3 ([#110](https://github.com/MarcoCostantini26/TheImpostor/issues/110)) ([b43941b](https://github.com/MarcoCostantini26/TheImpostor/commit/b43941be39733e5d22871dd02debd0a45d95504e))
+
 ## [2.6.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.5.0...2.6.0) (2026-04-11)
 
 ### Features
