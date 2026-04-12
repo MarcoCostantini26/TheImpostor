@@ -16,5 +16,16 @@ A social deduction game where players identify an impostor through debate.
   - If the crewmates manage to catch the impostor and he fails to guess the secret word, the crewmates win.
 
 
+## How to run 
+- `docker-compose build` to build containers (_lobby-service_, _comm-service_, _frontend_, _game-engine_).
+- `docker-compose up` to run.
+- Visit http://localhost:5173.
+
+## How to test
+Automatic tests on the UI can be performed using the following commands:
+- `cd front-end` 
+- `npm install`
+- `npm run test:e2e`
+
 
 
