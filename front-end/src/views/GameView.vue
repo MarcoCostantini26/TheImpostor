@@ -24,6 +24,7 @@ const {
   displayPhase,
   rolePopupVisible,
   timeLeft
+  , votedPlayers, voteCounts, isHost, lastEliminatedId
 } = storeToRefs(roomStore)
 
 const newMessage = ref('')
@@ -136,6 +137,16 @@ function sendClue() {
   myClueSubmitted.value = true
 }
 
+function castVoteFor(player) {
+  const pid = player?.id || player?.userId
+  if (!pid) return
+  // disable if already voted or voting for self
+  const alreadyVoted = votedPlayers.value && votedPlayers.value.includes(myUserId.value)
+  if (alreadyVoted) return
+  if (String(pid) === String(myUserId.value)) return
+  roomStore.castVote(pid)
+}
+
 function timerColor(t) {
   if (t <= 0) return 'bg-gray-700'
   if (t <= 10) return 'bg-red-600'
@@ -223,6 +234,14 @@ function timerColor(t) {
       </template>
     </div>
 
+    <!-- Voting controls (host + quick status) -->
+    <div v-if="displayPhase === 'VOTING'" class="py-2 px-4">
+      <div class="flex items-center justify-center gap-4">
+        <div class="text-sm text-gray-300">Votes: {{ (votedPlayers && votedPlayers.length) || 0 }} / {{ alivePlayers.length }}</div>
+        <button v-if="isHost" @click="roomStore.resolveVoting()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full font-bold">RESOLVE VOTING</button>
+      </div>
+    </div>
+
     <div class="flex flex-1 min-h-0 overflow-hidden">
 
       <!-- Clues + Players -->
@@ -295,8 +314,16 @@ function timerColor(t) {
               </div>
             </div>
 
-            <!-- Clue pill -->
-            <div :class="[
+            <!-- Voting UI or Clue pill -->
+            <div v-if="displayPhase === 'VOTING'" class="ml-3 flex items-center gap-2">
+              <div class="px-3 py-1 rounded-full bg-black/20 border border-white/10 text-xs font-bold">{{ (voteCounts[player.id] || voteCounts[player.userId] || 0) }}</div>
+              <button
+                @click="castVoteFor(player)"
+                :disabled="isSelf(player) || (votedPlayers && votedPlayers.includes(myUserId))"
+                :class="['px-3 py-1 rounded-full text-xs font-bold transition', (isSelf(player) || (votedPlayers && votedPlayers.includes(myUserId))) ? 'bg-white/5 text-gray-500 cursor-not-allowed' : 'bg-violet-500 text-white hover:bg-violet-600']"
+              >VOTE</button>
+            </div>
+            <div v-else :class="[
               'ml-3 flex-shrink-0 px-4 py-1.5 rounded-full border text-xs font-bold tracking-widest whitespace-nowrap transition-all',
               getClue(player)
                 ? 'border-violet-500/50 text-violet-300 bg-violet-950/20'

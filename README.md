@@ -25,7 +25,5 @@ A social deduction game where players identify an impostor through debate.
 Automatic tests on the UI can be performed using the following commands:
 - `cd front-end` 
 - `npm install`
-- `npm run test:e2e`
-
-
-
+- `npm run test:e2e` to run all tests.
+- `npx playwright test tests/e2e/<filename>` to run a single test.

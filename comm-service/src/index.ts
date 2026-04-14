@@ -39,7 +39,9 @@ const CLUE_TURN_SECONDS = 15;
 const FREE_DISCUSSION_SECONDS = 60;
 const roomDiscussionTimers = new Map<string, NodeJS.Timeout>(); 
 const roomDiscussionExpiry = new Map<string, number>(); 
-const roomClues = new Map<string, Record<string, string>>(); 
+const roomClues = new Map<string, Record<string, string>>();
+const roomVotingExpiry = new Map<string, number>();
+const roomVotes = new Map<string, { voterId: string; targetId: string }[]>();
 interface TurnState {
     queue: string[];   
     index: number;     
@@ -184,11 +186,20 @@ const server = createServer(async (req, res) => {
                     const dt = roomDiscussionTimers.get(roomCode);
                     if (dt) { clearTimeout(dt); roomDiscussionTimers.delete(roomCode); }
                     if (roomDiscussionExpiry.has(roomCode)) roomDiscussionExpiry.delete(roomCode);
-                    
+
+                    const newPhase = String(ep.newPhase || ep.NewPhase || 'VOTING').toUpperCase();
+                    const timerSeconds = Number(ep.timer || ep.Timer) || 60;
+                    if (newPhase === 'VOTING') {
+                        roomVotingExpiry.set(roomCode, Date.now() + timerSeconds * 1000);
+                        roomVotes.set(roomCode, []);
+                    }
+
+                    const votingExpiry = newPhase === 'VOTING' ? roomVotingExpiry.get(roomCode) : undefined;
                     roomManager.broadcastToRoom(roomCode, {
                         type: 'ENGINE_EVENT',
-                        payload: { eventName: 'PhaseChanged', gameId: roomCode, newPhase: ep.newPhase || ep.NewPhase || 'VOTING', timer: ep.timer || ep.Timer || 60 }
+                        payload: { eventName: 'PhaseChanged', gameId: roomCode, newPhase, timer: timerSeconds, ...(votingExpiry ? { expiresAt: votingExpiry } : {}) }
                     });
+                    console.log(`[Webhook] 🔁 PhaseChanged broadcast for room ${roomCode} -> ${newPhase}`);
                 } else if (eventName === 'GameEnded') {
                     const ep = engineEvent.payload || {};
                     const roomCode = String(ep.gameId || ep.GameID || '');
@@ -205,11 +216,35 @@ const server = createServer(async (req, res) => {
                     }
                 } else {
                     // Fallback per tutti gli altri eventi (es. VotingResolved, ImpostorGuessPhase)
-                    const eventToBroadcast = { type: 'ENGINE_EVENT', payload: engineEvent };
-                    const targetRoom = engineEvent.payload?.gameId || engineEvent.gameId || engineEvent.payload?.GameID;
+                    // Normalize engine event so payload fields are accessible at top-level
+                    const rawPayload = engineEvent.payload || {};
+                    const normalizedPayload = { eventName: engineEvent.eventName, ...rawPayload };
+                    const eventToBroadcast = { type: 'ENGINE_EVENT', payload: normalizedPayload };
+                    const targetRoom = rawPayload.gameId || engineEvent.gameId || rawPayload.GameID;
+
+                    // Track votes for reconnect recovery
+                    if (engineEvent.eventName === 'PlayerVoted' && targetRoom) {
+                        const voterId = String(rawPayload.voterId || rawPayload.VoterId || '');
+                        const targetId = String(rawPayload.targetId || rawPayload.TargetId || '');
+                        if (voterId && targetId) {
+                            const votes = roomVotes.get(String(targetRoom)) || [];
+                            const idx = votes.findIndex(v => v.voterId === voterId);
+                            if (idx !== -1) votes[idx] = { voterId, targetId };
+                            else votes.push({ voterId, targetId });
+                            roomVotes.set(String(targetRoom), votes);
+                        }
+                    }
+
+                    // Clear voting data when resolved (game returns to next discussion round)
+                    if ((engineEvent.eventName === 'VotingResolved') && targetRoom) {
+                        roomVotingExpiry.delete(String(targetRoom));
+                        roomVotes.delete(String(targetRoom));
+                    }
+
+                    console.log(`[Webhook] 🔁 Broadcasting normalized event ${engineEvent.eventName} to room ${targetRoom || 'ALL'}`);
 
                     if (targetRoom) {
-                        roomManager.broadcastToRoom(targetRoom, eventToBroadcast);
+                        roomManager.broadcastToRoom(String(targetRoom), eventToBroadcast);
                     } else {
                         const messageString = JSON.stringify(eventToBroadcast);
                         wss.clients.forEach(client => {
@@ -318,6 +353,27 @@ wss.on('connection', async (ws: WebSocket) => {
                                     const isImpostor = (me.Role || me.role) === 'IMPOSTOR' || (me.Role || me.role) === 'Impostor';
                                     const secretWord = isImpostor ? (globalHint || me.Hint) : (globalSecret || me.SecretWord);
                                     ws.send(JSON.stringify({ type: 'ENGINE_EVENT', payload: { eventName: 'RoleAssigned', role: roleVal, secretWord, isImpostor } }));
+                                    // If engine reports voting phase, restore it for the reconnecting client
+                                    try {
+                                        const votingExpiry = roomVotingExpiry.get(roomCodeForUser);
+                                        if (votingExpiry && votingExpiry > Date.now()) {
+                                            const remaining = Math.max(0, Math.ceil((votingExpiry - Date.now()) / 1000));
+                                            console.log(`[Gateway] 🔁 Sending PhaseChanged voting recovery to ${currentUserId} for room ${roomCodeForUser} (remaining ${remaining}s)`);
+                                            ws.send(JSON.stringify({ type: 'ENGINE_EVENT', payload: { eventName: 'PhaseChanged', newPhase: 'VOTING', timer: remaining, expiresAt: votingExpiry, gameId: roomCodeForUser } }));
+                                            const votes = roomVotes.get(roomCodeForUser) || [];
+                                            for (const v of votes) {
+                                                ws.send(JSON.stringify({ type: 'ENGINE_EVENT', payload: { eventName: 'PlayerVoted', voterId: v.voterId, targetId: v.targetId, gameId: roomCodeForUser } }));
+                                            }
+                                        } else {
+                                            const reportedPhase = gameState?.Phase || gameState?.phase || gameState?.CurrentTurn?.Phase || gameState?.currentPhase;
+                                            const reportedTimer = gameState?.Timer || gameState?.timer || gameState?.CurrentTurn?.Timer || gameState?.timerSeconds;
+                                            if (reportedPhase && String(reportedPhase).toUpperCase() === 'VOTING') {
+                                                const timerValue = Number(reportedTimer) || 60;
+                                                console.log(`[Gateway] 🔁 Sending PhaseChanged recovery (engine fallback) to ${currentUserId} for room ${roomCodeForUser} (timer ${timerValue})`);
+                                                ws.send(JSON.stringify({ type: 'ENGINE_EVENT', payload: { eventName: 'PhaseChanged', newPhase: 'VOTING', timer: timerValue, gameId: roomCodeForUser } }));
+                                            }
+                                        }
+                                    } catch (e) { /* ignore recovery errors */ }
                                 }
                             }
                         } catch (e) {}
@@ -326,6 +382,7 @@ wss.on('connection', async (ws: WebSocket) => {
                         const discExpiry = roomDiscussionExpiry.get(roomCodeForUser);
                         if (discExpiry && discExpiry > Date.now()) {
                             const remaining = Math.max(0, Math.ceil((discExpiry - Date.now()) / 1000));
+                            console.log(`[Gateway] 🔁 Sending discussion_phase_started recovery to ${currentUserId} for room ${roomCodeForUser} (remaining ${remaining}s)`);
                             ws.send(JSON.stringify({ type: 'discussion_phase_started', payload: { roomCode: roomCodeForUser, seconds: remaining, expiresAt: discExpiry } }));
                         }
                     }
@@ -367,6 +424,17 @@ wss.on('connection', async (ws: WebSocket) => {
                         if (discExpiry && discExpiry > Date.now()) {
                             const remaining = Math.max(0, Math.ceil((discExpiry - Date.now()) / 1000));
                             ws.send(JSON.stringify({ type: 'discussion_phase_started', payload: { roomCode, seconds: remaining, expiresAt: discExpiry } }));
+                        } else {
+                            // Recovery voting phase
+                            const votingExpiry = roomVotingExpiry.get(roomCode);
+                            if (votingExpiry && votingExpiry > Date.now()) {
+                                const remaining = Math.max(0, Math.ceil((votingExpiry - Date.now()) / 1000));
+                                ws.send(JSON.stringify({ type: 'ENGINE_EVENT', payload: { eventName: 'PhaseChanged', newPhase: 'VOTING', timer: remaining, expiresAt: votingExpiry, gameId: roomCode } }));
+                                const votes = roomVotes.get(roomCode) || [];
+                                for (const v of votes) {
+                                    ws.send(JSON.stringify({ type: 'ENGINE_EVENT', payload: { eventName: 'PlayerVoted', voterId: v.voterId, targetId: v.targetId, gameId: roomCode } }));
+                                }
+                            }
                         }
                     }
                 } catch (e) {}
