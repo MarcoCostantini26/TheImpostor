@@ -20,6 +20,8 @@ export const useRoomStore = defineStore('room', () => {
   const gameWinner = ref(null)       // 'CREWMATES_WIN' | 'IMPOSTOR_WINS' | null
   const votedPlayers = ref([])       
   const lastEliminatedId = ref(null)
+  const voteCounts = ref({})         
+  const votedBy = ref({})           
   const rolePopupVisible = ref(false)
   const playerClues = ref({})         
 
@@ -275,17 +277,39 @@ export const useRoomStore = defineStore('room', () => {
         gamePhase.value = ep.newPhase || null
         if (ep.newPhase === 'VOTING') {
           votedPlayers.value = []
+          voteCounts.value = {}
+          votedBy.value = {}
           displayPhase.value = 'VOTING'
-          startTimer(60)
+          if (ep.expiresAt) {
+            const expiresTs = typeof ep.expiresAt === 'number' ? ep.expiresAt : Date.parse(ep.expiresAt)
+            const remaining = Math.max(0, Math.ceil((expiresTs - Date.now()) / 1000))
+            startTimer(remaining)
+          } else {
+            startTimer(ep.timer || 60)
+          }
         }
       } else if (ep.eventName === 'PlayerVoted') {
-        if (ep.voterId && !votedPlayers.value.includes(ep.voterId)) {
-          votedPlayers.value = [...votedPlayers.value, ep.voterId]
+        const voter = ep.voterId
+        const target = ep.targetId || null
+        if (voter) {
+          if (!votedPlayers.value.includes(voter)) votedPlayers.value = [...votedPlayers.value, voter]
+          const prev = votedBy.value[voter]
+          if (prev) {
+            const prevCount = voteCounts.value[prev] || 0
+            voteCounts.value = { ...voteCounts.value, [prev]: Math.max(0, prevCount - 1) }
+          }
+          if (target) {
+            const cur = voteCounts.value[target] || 0
+            voteCounts.value = { ...voteCounts.value, [target]: cur + 1 }
+            votedBy.value = { ...votedBy.value, [voter]: target }
+          }
         }
       } else if (ep.eventName === 'VotingResolved') {
         lastEliminatedId.value = ep.eliminatedId || null
         gamePhase.value = 'DISCUSSION'
         votedPlayers.value = []
+        voteCounts.value = {}
+        votedBy.value = {}
         if (ep.eliminatedId) {
           players.value = players.value.map(p => {
             if (!p) return p
@@ -534,6 +558,8 @@ export const useRoomStore = defineStore('room', () => {
     gameWinner,
     votedPlayers,
     lastEliminatedId,
+    voteCounts,
+    votedBy,
     rolePopupVisible,
     playerClues,
     currentTurnUserId,
