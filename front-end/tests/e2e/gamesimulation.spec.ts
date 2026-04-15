@@ -35,7 +35,7 @@ test('full game flow — 4 players submit clues -> discussion phase', async ({ b
   const codeText = await codeElement.textContent()
   if (!codeText) throw new Error('No code found')
 
-  // ✅ prende SOLO il codice (6 caratteri)
+  // prende SOLO il codice (6 caratteri)
   const match = codeText.match(/CODE:\s*([A-Z0-9]{6})/)
 
   if (!match) throw new Error(`Invalid code format: ${codeText}`)
