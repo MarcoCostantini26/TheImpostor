@@ -5,6 +5,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useRoomStore } from '../stores/room'
 import Avatar from '../components/AvatarIcon.vue'
+import EliminationPopup from '../components/EliminationPopup.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -23,9 +24,23 @@ const {
   currentTurnUserId,
   displayPhase,
   rolePopupVisible,
-  timeLeft
-  , votedPlayers, voteCounts, isHost, lastEliminatedId
+  timeLeft,
+  votedPlayers, voteCounts, isHost,
+  eliminationPopupVisible, eliminationData,
+  currentPlayer, resolveVotingInProgress,
+  impostorIdForGuess
 } = storeToRefs(roomStore)
+
+const isEliminated = computed(() => !!(currentPlayer.value?.status === 'DEAD' || currentPlayer.value?.eliminated))
+const isImpostorForGuess = computed(() => !!myUserId.value && !!impostorIdForGuess.value && String(myUserId.value) === String(impostorIdForGuess.value))
+
+const impostorGuessWord = ref('')
+
+function submitGuess() {
+  if (!impostorGuessWord.value.trim()) return
+  roomStore.guessSecretWord(impostorGuessWord.value.trim().toUpperCase())
+  impostorGuessWord.value = ''
+}
 
 const newMessage = ref('')
 const desktopChat = ref(null)
@@ -40,6 +55,12 @@ const myUserId   = computed(() => authStore.user?.id)
 const isMyTurn = computed(() => {
   const myId = myUserId.value
   return !!myId && currentTurnUserId.value === myId
+})
+
+const canResolveVoting = computed(() => {
+  const totalAlive = alivePlayers.value.length || 0
+  const votes = (votedPlayers.value && votedPlayers.value.length) || 0
+  return isHost.value && !resolveVotingInProgress.value && totalAlive > 0 && votes === totalAlive
 })
 
 
@@ -57,6 +78,13 @@ watch(rolePopupVisible, (visible) => {
     const id = myUserId.value
     if (id && playerClues.value && playerClues.value[id]) myClueSubmitted.value = true
   } catch { /* void */ }
+})
+
+watch(displayPhase, (phase) => {
+  if (phase === 'CLUE_SUBMISSION') {
+    const id = myUserId.value
+    if (!id || !playerClues.value?.[id]) myClueSubmitted.value = false
+  }
 })
 
 watch(messages, async () => {
@@ -232,13 +260,16 @@ function timerColor(t) {
       <template v-else-if="displayPhase === 'DISCUSSION'">
         DISCUSSION PHASE — All clues revealed, discuss with your team!
       </template>
+      <template v-else-if="displayPhase === 'GUESSING_WORD'">
+        GUESSING PHASE — The impostor has one last chance to guess the secret word!
+      </template>
     </div>
 
     <!-- Voting controls (host + quick status) -->
     <div v-if="displayPhase === 'VOTING'" class="py-2 px-4">
       <div class="flex items-center justify-center gap-4">
         <div class="text-sm text-gray-300">Votes: {{ (votedPlayers && votedPlayers.length) || 0 }} / {{ alivePlayers.length }}</div>
-        <button v-if="isHost" @click="roomStore.resolveVoting()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-full font-bold">RESOLVE VOTING</button>
+        <button v-if="isHost" @click="roomStore.resolveVoting()" :disabled="!canResolveVoting" :class="['px-4 py-2 rounded-full font-bold transition', !canResolveVoting ? 'bg-gray-600 text-gray-400 cursor-not-allowed' : 'bg-red-600 hover:bg-red-700 text-white']">RESOLVE VOTING</button>
       </div>
     </div>
 
@@ -246,6 +277,35 @@ function timerColor(t) {
 
       <!-- Clues + Players -->
       <main class="flex-1 overflow-y-auto p-4 md:p-6 pb-28 md:pb-8">
+
+        <!-- Guessing phase UI -->
+        <div v-if="displayPhase === 'GUESSING_WORD'" class="mb-6">
+          <div v-if="isImpostorForGuess"
+            class="rounded-2xl bg-[#1a0d0d] border border-red-500/40 p-5 ring-2 ring-red-500/30">
+            <p class="text-[10px] text-red-400 uppercase tracking-widest mb-1 font-bold">🎯 Final Chance</p>
+            <p class="text-sm text-gray-300 mb-4">You've been eliminated! Guess the secret word to win the game for the impostors.</p>
+            <div class="flex gap-2">
+              <input
+                v-model="impostorGuessWord"
+                @keydown.enter="submitGuess"
+                placeholder="Secret word…"
+                maxlength="30"
+                class="flex-1 px-4 py-2.5 rounded-full bg-black/40 border border-red-500/30 text-white uppercase tracking-widest font-bold text-sm focus:outline-none focus:border-red-400 placeholder:normal-case placeholder:font-normal placeholder:text-gray-600"
+              />
+              <button
+                @click="submitGuess"
+                :disabled="!impostorGuessWord.trim()"
+                :class="['px-5 py-2 rounded-full font-bold text-sm transition-all',
+                  impostorGuessWord.trim() ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-white/5 text-gray-600 cursor-not-allowed']"
+              >GUESS</button>
+            </div>
+          </div>
+          <div v-else
+            class="rounded-2xl bg-white/[0.03] border border-white/5 p-5 flex items-center gap-3">
+            <div class="w-2 h-2 rounded-full bg-red-400 animate-pulse flex-shrink-0"></div>
+            <p class="text-sm text-gray-400">The impostor is making is <span class="text-white font-bold">final guess</span>. Waiting…</p>
+          </div>
+        </div>
 
         <!-- Clue submit form -->
         <div v-if="displayPhase === 'CLUE_SUBMISSION' && isMyTurn && !myClueSubmitted"
@@ -363,7 +423,8 @@ function timerColor(t) {
           />
           <button
             @click="sendChat"
-            class="px-4 py-2 rounded-full bg-violet-600 hover:bg-violet-700 text-white font-bold text-sm transition-colors"
+            :disabled="isEliminated"
+            :class="['px-4 py-2 rounded-full font-bold text-sm transition-colors', isEliminated ? 'bg-white/5 text-gray-600 cursor-not-allowed' : 'bg-violet-600 hover:bg-violet-700 text-white']"
           >SEND</button>
         </div>
       </aside>
@@ -410,7 +471,7 @@ function timerColor(t) {
             placeholder="Send a message…"
             class="flex-1 px-4 py-2 rounded-full bg-black/40 border border-white/10 text-gray-100 text-sm focus:outline-none"
           />
-          <button @click="sendChat" class="px-4 py-2 rounded-full bg-violet-600 text-white font-bold text-sm">SEND</button>
+          <button @click="sendChat" :disabled="isEliminated" :class="['px-4 py-2 rounded-full font-bold text-sm', isEliminated ? 'bg-white/5 text-gray-600 cursor-not-allowed' : 'bg-violet-600 text-white']">SEND</button>
         </div>
       </div>
     </div>
@@ -426,15 +487,23 @@ function timerColor(t) {
           </h2>
           <p class="text-sm text-gray-400">The game has ended.</p>
           <button
-            @click="router.push({ name: 'home' })"
+            @click="router.push({ name: 'login' })"
             :class="['mt-4 w-full py-4 rounded-full font-bold text-white tracking-widest',
               gameWinner === 'CREWMATES_WIN'
                 ? 'bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600'
                 : 'bg-gradient-to-r from-red-500 to-red-700 hover:from-red-600 hover:to-red-800']"
-          >BACK TO HOME</button>
+          >CLOSE</button>
         </div>
       </div>
     </Teleport>
+
+    <EliminationPopup
+      v-if="eliminationPopupVisible"
+      :eliminated-name="eliminationData?.eliminatedName || null"
+      :eliminated-role="eliminationData?.eliminatedRole || null"
+      :is-tie="eliminationData?.isTie || false"
+      @dismiss="roomStore.dismissElimination()"
+    />
 
   </div>
 </template>

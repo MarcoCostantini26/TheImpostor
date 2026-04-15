@@ -2,8 +2,8 @@ package aggregate
 
 import (
 	"errors"
-	"time"
 	"strings"
+	"time"
 
 	"game-engine/internal/domain/entity"
 	"game-engine/internal/domain/event"
@@ -17,14 +17,14 @@ const (
 )
 
 type Game struct {
-	ID          string
-	State       string
-	Players     []entity.Player
-	CurrentTurn valueobject.Turn
-	SecretWord        valueobject.SecretWord
+	ID           string
+	State        string
+	Players      []entity.Player
+	CurrentTurn  valueobject.Turn
+	SecretWord   valueobject.SecretWord
 	Hint         valueobject.Hint
-	Votes       []valueobject.Vote
-	domainEvents []event.DomainEvent 
+	Votes        []valueobject.Vote
+	domainEvents []event.DomainEvent
 }
 
 // ==========================================
@@ -62,7 +62,7 @@ func (g *Game) AdvanceToVoting() error {
 	// 1. Cambiamo la fase in VOTING e resettiamo il timer
 	g.CurrentTurn.Phase = valueobject.PhaseVoting
 	g.CurrentTurn.Timer = 60
-	
+
 	// 2. Resettiamo eventuali voti precedenti (in caso di round successivi al primo)
 	g.Votes = make([]valueobject.Vote, 0)
 
@@ -99,7 +99,7 @@ func (g *Game) CastVote(voterID string, targetID string) error {
 	// 2. Registriamo il voto fisicamente nella memoria del gioco
 	vote := valueobject.Vote{
 		VoterID:  voterID,
-		TargetID: targetID, 
+		TargetID: targetID,
 	}
 	g.Votes = append(g.Votes, vote)
 
@@ -120,7 +120,7 @@ func (g *Game) getPlayerIndex(playerID string) int {
 			return i
 		}
 	}
-	return -1 
+	return -1
 }
 
 // EndGame viene chiamato dall'Application Layer quando il GameRulesService
@@ -229,25 +229,35 @@ func (g *Game) StartGuessingPhase() error {
 	if g.State != StatePlaying {
 		return errors.New("la partita non è in corso")
 	}
-	
+
 	// Impostiamo la nuova fase (assicurati di aggiungere "GUESSING_WORD" nel tuo valueobject!)
-	g.CurrentTurn.Phase = "GUESSING_WORD" 
+	g.CurrentTurn.Phase = "GUESSING_WORD"
 
 	g.RecordEvent(event.PhaseChanged{
 		BaseEvent: event.BaseEvent{OccurredAt: time.Now()},
 		GameID:    g.ID,
 		NewPhase:  "GUESSING_WORD",
-		Timer:     30, 
+		Timer:     30,
 	})
 
 	return nil
 }
 
+// StartNewRound resets the game to a fresh discussion+clue round after voting.
+// It increments the round counter, clears votes, and puts the game back into
+// PhaseDiscussion so that AdvanceToVoting can be called again later.
+func (g *Game) StartNewRound() {
+	g.CurrentTurn.RoundNumber++
+	g.CurrentTurn.Phase = valueobject.PhaseDiscussion
+	g.CurrentTurn.Timer = 0
+	g.Votes = make([]valueobject.Vote, 0)
+}
+
 // CheckSecretWord verifica se la parola è corretta
 func (g *Game) CheckSecretWord(guessedWord string) bool {
-    // Convertiamo in stringa il valueobject SecretWord per fare il paragone
-	actualWord := string(g.SecretWord) 
-	
+	// Convertiamo in stringa il valueobject SecretWord per fare il paragone
+	actualWord := string(g.SecretWord)
+
 	// Confrontiamo ignorando le maiuscole/minuscole
 	return strings.ToLower(guessedWord) == strings.ToLower(actualWord)
 }

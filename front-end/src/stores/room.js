@@ -8,7 +8,7 @@ export const useRoomStore = defineStore('room', () => {
   const players = ref([])
   const messages = ref([])
   const impostors = ref(1)
-  const discussionTime = ref(90)
+  const discussionTime = ref(60)
   const loading = ref(false)
   const error = ref(null)
   const roomStatus = ref(null)
@@ -35,6 +35,11 @@ export const useRoomStore = defineStore('room', () => {
   let _timerInterval = null              
   let _pendingTimerSeconds = 0           
   let _joinedViaHome = false
+
+  const eliminationPopupVisible = ref(false)
+  const eliminationData = ref(null)    
+  const resolveVotingInProgress = ref(false)
+  const impostorIdForGuess = ref(null)  
 
   let unsubscribe = null
   let currentRoomCode = null
@@ -102,8 +107,30 @@ export const useRoomStore = defineStore('room', () => {
       (pl.userId && incoming.userId && pl.userId === incoming.userId) ||
       (pl.username && incoming.username && pl.username === incoming.username)
     ))
-    if (idx !== -1) players.value.splice(idx, 1, { ...players.value[idx], ...incoming })
-    else players.value.push(incoming)
+    if (idx !== -1) {
+      const existing = players.value[idx]
+      const merged = { ...existing, ...incoming }
+      if (existing.status === 'DEAD' || existing.eliminated) {
+        merged.status = 'DEAD'
+        merged.eliminated = true
+      }
+      players.value.splice(idx, 1, merged)
+    } else {
+      players.value.push(incoming)
+    }
+  }
+
+  function mergePlayersPreserveDeadStatus(incoming) {
+    if (!Array.isArray(incoming)) return incoming
+    return incoming.map(p => {
+      if (!p) return p
+      const pid = p.id || p.userId
+      const existing = pid ? players.value.find(e => e && (e.id === pid || e.userId === pid)) : null
+      if (existing && (existing.status === 'DEAD' || existing.eliminated)) {
+        return { ...p, status: 'DEAD', eliminated: true }
+      }
+      return p
+    })
   }
 
   function removePlayerById(id) {
@@ -116,21 +143,21 @@ export const useRoomStore = defineStore('room', () => {
     const action = payload.action || msg.type || payload.type
 
     if (payload.room && Array.isArray(payload.room.players)) {
-      players.value = payload.room.players
+      players.value = mergePlayersPreserveDeadStatus(payload.room.players)
       roomStatus.value = payload.room.status || null
       roomHostId.value = payload.room.hostId || null
       return
     }
 
     if (Array.isArray(payload.players)) {
-      players.value = payload.players
+      players.value = mergePlayersPreserveDeadStatus(payload.players)
       roomStatus.value = payload.status || null
       roomHostId.value = payload.hostId || null
       return
     }
 
     if (action === 'room_update' || action === 'room_state' || action === 'room:updated') {
-      players.value = payload.players || payload.room?.players || []
+      players.value = mergePlayersPreserveDeadStatus(payload.players || payload.room?.players || [])
       roomStatus.value = payload.room?.status || payload.status || null
       roomHostId.value = payload.room?.hostId || payload.hostId || null
       return
@@ -209,7 +236,6 @@ export const useRoomStore = defineStore('room', () => {
       const uid = payload.userId || payload.senderId
       const clue = payload.clue || ''
       if (uid && clue) playerClues.value = { ...playerClues.value, [uid]: clue }
-      // Ferma il timer corrente: il server avvierà il prossimo turno con 'turn_started'
       try { stopTimer() } catch { /* void */ }
       _pendingTimerSeconds = 0
       return
@@ -222,11 +248,27 @@ export const useRoomStore = defineStore('room', () => {
       return
     }
 
+    if (msg.type === 'players_status') {
+      const p = msg.payload || {}
+      const aliveIds = (p.alivePlayerIds || []).map(String)
+      if (aliveIds.length > 0) {
+        players.value = players.value.map(player => {
+          if (!player) return player
+          const pid = player.id || player.userId
+          if (!pid) return player
+          return aliveIds.includes(String(pid))
+            ? { ...player, status: 'ALIVE' }
+            : { ...player, status: 'DEAD', eliminated: true }
+        })
+      }
+      return
+    }
+
     if (msg.type === 'turn_started') {
       const p = msg.payload || {}
       const fullSecs = p.fullSeconds || p.seconds || 15
       turnSeconds.value = fullSecs
-      if (!displayPhase.value) displayPhase.value = 'CLUE_SUBMISSION'
+      displayPhase.value = 'CLUE_SUBMISSION'
       if (p.yourTurn) {
         const myId = useAuthStore().user?.id
         currentTurnUserId.value = myId || null
@@ -305,16 +347,54 @@ export const useRoomStore = defineStore('room', () => {
           }
         }
       } else if (ep.eventName === 'VotingResolved') {
-        lastEliminatedId.value = ep.eliminatedId || null
+        resolveVotingInProgress.value = false
+        const eliminated = ep.eliminatedId || ''
+        lastEliminatedId.value = eliminated || null
         gamePhase.value = 'DISCUSSION'
+        displayPhase.value = 'CLUE_SUBMISSION'
+        currentTurnUserId.value = null
         votedPlayers.value = []
         voteCounts.value = {}
         votedBy.value = {}
-        if (ep.eliminatedId) {
+        playerClues.value = {}
+        allCluesSubmitted.value = false
+        stopTimer()
+        if (eliminated) {
+          const eliminatedPlayer = players.value.find(p => {
+            if (!p) return false
+            const pid = p.id || p.userId
+            return pid === eliminated
+          })
           players.value = players.value.map(p => {
             if (!p) return p
             const pid = p.id || p.userId
-            return pid === ep.eliminatedId ? { ...p, status: 'DEAD', eliminated: true } : p
+            return pid === eliminated ? { ...p, status: 'DEAD', eliminated: true } : p
+          })
+          eliminationData.value = {
+            eliminatedId: eliminated,
+            eliminatedName: eliminatedPlayer?.username || eliminatedPlayer?.displayName || eliminated,
+            eliminatedRole: ep.eliminatedRole || null,
+            isTie: false
+          }
+        } else {
+          eliminationData.value = { eliminatedId: null, eliminatedName: null, eliminatedRole: null, isTie: true }
+        }
+        eliminationPopupVisible.value = true
+      } else if (ep.eventName === 'ImpostorGuessPhase') {
+        resolveVotingInProgress.value = false
+        const impostorId = ep.impostorId || ep.ImpostorId || null
+        impostorIdForGuess.value = impostorId
+        gamePhase.value = 'GUESSING_WORD'
+        displayPhase.value = 'GUESSING_WORD'
+        votedPlayers.value = []
+        voteCounts.value = {}
+        votedBy.value = {}
+        stopTimer()
+        if (impostorId) {
+          players.value = players.value.map(p => {
+            if (!p) return p
+            const pid = p.id || p.userId
+            return pid === impostorId ? { ...p, status: 'DEAD', eliminated: true } : p
           })
         }
       } else if (ep.eventName === 'PlayerEliminated') {
@@ -393,7 +473,6 @@ export const useRoomStore = defineStore('room', () => {
         messages.value = []
       }
 
-      // Restore role/secretWord from sessionStorage on rejoin (page refresh)
       if (!myRole.value) {
         try {
           const roleRaw = sessionStorage.getItem(ROLE_STORAGE_PREFIX + roomCode)
@@ -437,6 +516,10 @@ export const useRoomStore = defineStore('room', () => {
     votedPlayers.value = []
     lastEliminatedId.value = null
     rolePopupVisible.value = false
+    eliminationPopupVisible.value = false
+    eliminationData.value = null
+    resolveVotingInProgress.value = false
+    impostorIdForGuess.value = null
     playerClues.value = {}
     currentTurnUserId.value = null
     allCluesSubmitted.value = false
@@ -463,6 +546,8 @@ export const useRoomStore = defineStore('room', () => {
 
   function sendChat(content) {
     if (!currentRoomCode || !content) return
+    const _me = currentPlayer.value
+    if (_me && (_me.status === 'DEAD' || _me.eliminated)) return
     try {
       const senderName = authStore.user?.username || authStore.user?.name || 'You'
       messages.value.push({ sender: senderName, content, senderId: authStore.user?.id, local: true, timestamp: new Date().toISOString() })
@@ -489,7 +574,7 @@ export const useRoomStore = defineStore('room', () => {
   }
 
   function setDiscussionTime(val) {
-    if (![60, 90, 120].includes(val)) return
+    if (![30, 60, 90].includes(val)) return
     if (!isHost.value) return
     discussionTime.value = val
     if (currentRoomCode) wsService.sendEvent('update_settings', { roomCode: currentRoomCode, settings: { impostors: impostors.value, discussionTime: discussionTime.value } })
@@ -520,7 +605,8 @@ export const useRoomStore = defineStore('room', () => {
   }
 
   function resolveVoting() {
-    if (!currentRoomCode) return
+    if (!currentRoomCode || resolveVotingInProgress.value) return
+    resolveVotingInProgress.value = true
     wsService.send({ type: 'EVENT', payload: { action: 'RESOLVE_VOTING', gameId: currentRoomCode } })
   }
 
@@ -541,6 +627,15 @@ export const useRoomStore = defineStore('room', () => {
       startTimer(_pendingTimerSeconds)
       _pendingTimerSeconds = 0
     }
+  }
+
+  function dismissElimination() {
+    eliminationPopupVisible.value = false
+  }
+
+  function guessSecretWord(word) {
+    if (!currentRoomCode || !word) return
+    wsService.send({ type: 'EVENT', payload: { action: 'GUESS_WORD', gameId: currentRoomCode, guessedWord: word } })
   }
 
   return {
@@ -586,7 +681,13 @@ export const useRoomStore = defineStore('room', () => {
     advanceToVoting,
     resolveVoting,
     submitClue,
-    dismissRole
+    dismissRole,
+    eliminationPopupVisible,
+    eliminationData,
+    dismissElimination,
+    resolveVotingInProgress,
+    impostorIdForGuess,
+    guessSecretWord
   }
 })
 
