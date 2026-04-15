@@ -30,7 +30,7 @@ const activeSockets = new Map<string, WebSocket>();
 const userSockets = new Map<string, WebSocket>(); // userId → ws (per messaggi privati come i ruoli)
 
 const userRooms = new Map<string, string>();
-const roomSettings = new Map<string, { impostors: number }>(); 
+const roomSettings = new Map<string, { impostors: number; discussionTime: number }>(); 
 const pendingLeaves = new Map<string, NodeJS.Timeout>();
 const LEAVE_GRACE_PERIOD_MS = 15_000;
 
@@ -42,6 +42,8 @@ const roomDiscussionExpiry = new Map<string, number>();
 const roomClues = new Map<string, Record<string, string>>();
 const roomVotingExpiry = new Map<string, number>();
 const roomVotes = new Map<string, { voterId: string; targetId: string }[]>();
+const roomAlivePlayers = new Map<string, string[]>();
+const NEW_ROUND_DELAY_MS = 5_000;
 interface TurnState {
     queue: string[];   
     index: number;     
@@ -84,10 +86,11 @@ function advanceTurn(roomCode: string) {
     state.index++;
     if (state.index >= state.queue.length) {
         roomTurns.delete(roomCode);
-        const discExpiry = Date.now() + FREE_DISCUSSION_SECONDS * 1000;
+        const roomDiscSeconds = roomSettings.get(roomCode)?.discussionTime ?? FREE_DISCUSSION_SECONDS;
+        const discExpiry = Date.now() + roomDiscSeconds * 1000;
         roomManager.broadcastToRoom(roomCode, {
             type: 'discussion_phase_started',
-            payload: { roomCode, seconds: FREE_DISCUSSION_SECONDS, expiresAt: discExpiry }
+            payload: { roomCode, seconds: roomDiscSeconds, expiresAt: discExpiry }
         });
         
         const discussionTimer = setTimeout(async () => {
@@ -98,10 +101,10 @@ function advanceTurn(roomCode: string) {
             }
             roomDiscussionTimers.delete(roomCode);
             roomDiscussionExpiry.delete(roomCode);
-        }, FREE_DISCUSSION_SECONDS * 1000);
+        }, roomDiscSeconds * 1000);
         
         roomDiscussionTimers.set(roomCode, discussionTimer);
-        roomDiscussionExpiry.set(roomCode, Date.now() + FREE_DISCUSSION_SECONDS * 1000);
+        roomDiscussionExpiry.set(roomCode, Date.now() + roomDiscSeconds * 1000);
         return;
     }
     startTurn(roomCode);
@@ -174,6 +177,7 @@ const server = createServer(async (req, res) => {
                         });
                         roomClues.set(roomCode, {});
                         const turnQueue: string[] = players.map((p: any) => String(p.ID)).filter(Boolean);
+                        roomAlivePlayers.set(roomCode, [...turnQueue]);
                         roomTurns.set(roomCode, { queue: turnQueue, index: 0, timer: null });
                         setTimeout(() => startTurn(roomCode), 500);
                     }
@@ -235,10 +239,32 @@ const server = createServer(async (req, res) => {
                         }
                     }
 
-                    // Clear voting data when resolved (game returns to next discussion round)
+                    // Clear voting data and restart clue-submission round when resolved
                     if ((engineEvent.eventName === 'VotingResolved') && targetRoom) {
                         roomVotingExpiry.delete(String(targetRoom));
                         roomVotes.delete(String(targetRoom));
+
+                        const eliminatedId = rawPayload.eliminatedId || rawPayload.EliminatedId || '';
+                        if (eliminatedId) {
+                            const alive = roomAlivePlayers.get(String(targetRoom)) || [];
+                            roomAlivePlayers.set(String(targetRoom), alive.filter(id => id !== eliminatedId));
+                        }
+
+                        // Delay before starting new round so clients can display the popup
+                        const roomCodeForNewRound = String(targetRoom);
+                        setTimeout(() => {
+                            const queue = [...(roomAlivePlayers.get(roomCodeForNewRound) || [])];
+                            if (queue.length > 0) {
+                                roomClues.set(roomCodeForNewRound, {});
+                                roomTurns.set(roomCodeForNewRound, { queue, index: 0, timer: null });
+                                startTurn(roomCodeForNewRound);
+                            }
+                        }, NEW_ROUND_DELAY_MS);
+                    }
+
+                    // Clean up alive-player tracking when the game ends
+                    if ((engineEvent.eventName === 'GameEnded') && targetRoom) {
+                        roomAlivePlayers.delete(String(targetRoom));
                     }
 
                     console.log(`[Webhook] 🔁 Broadcasting normalized event ${engineEvent.eventName} to room ${targetRoom || 'ALL'}`);
@@ -385,6 +411,11 @@ wss.on('connection', async (ws: WebSocket) => {
                             console.log(`[Gateway] 🔁 Sending discussion_phase_started recovery to ${currentUserId} for room ${roomCodeForUser} (remaining ${remaining}s)`);
                             ws.send(JSON.stringify({ type: 'discussion_phase_started', payload: { roomCode: roomCodeForUser, seconds: remaining, expiresAt: discExpiry } }));
                         }
+                        // Send alive players list so client can mark eliminated players as dead on reconnect
+                        const alivePlayerIdsForUser = roomAlivePlayers.get(roomCodeForUser);
+                        if (alivePlayerIdsForUser && alivePlayerIdsForUser.length > 0) {
+                            roomManager.broadcastToRoom(roomCodeForUser, { type: 'players_status', payload: { alivePlayerIds: alivePlayerIdsForUser, roomCode: roomCodeForUser } });
+                        }
                     }
                 } catch (err) {}
 
@@ -437,6 +468,11 @@ wss.on('connection', async (ws: WebSocket) => {
                             }
                         }
                     }
+                    // Send alive players list so client can mark eliminated players as dead on reconnect
+                    const alivePlayerIds = roomAlivePlayers.get(roomCode);
+                    if (alivePlayerIds && alivePlayerIds.length > 0) {
+                        roomManager.broadcastToRoom(roomCode, { type: 'players_status', payload: { alivePlayerIds, roomCode } });
+                    }
                 } catch (e) {}
                 
                 return;
@@ -459,8 +495,8 @@ wss.on('connection', async (ws: WebSocket) => {
 
             if (eventType === 'update_settings' || eventType === 'UPDATE_SETTINGS') {
                 if (roomCode && payload.settings) {
-                    const cur = roomSettings.get(roomCode) || { impostors: 1 };
-                    roomSettings.set(roomCode, { impostors: payload.settings.impostors ?? cur.impostors });
+                    const cur = roomSettings.get(roomCode) || { impostors: 1, discussionTime: 60 };
+                    roomSettings.set(roomCode, { impostors: payload.settings.impostors ?? cur.impostors, discussionTime: payload.settings.discussionTime ?? cur.discussionTime });
                 }
                 await lobbyService.handleUpdateSettings(roomCode, currentUserId, payload.settings);
                 return;
@@ -525,6 +561,12 @@ wss.on('connection', async (ws: WebSocket) => {
             }
 
             if (eventType === 'CHAT') {
+                // Block eliminated players from sending messages
+                const aliveInRoom = roomAlivePlayers.get(roomCode);
+                if (aliveInRoom && !aliveInRoom.includes(currentUserId)) {
+                    ws.send(JSON.stringify({ type: 'error', payload: { message: 'Eliminated players cannot send messages' } }));
+                    return;
+                }
                 const message = new Message(roomCode, currentUserId, payload);
                 await chatAndSignalingService.processChatMessage(message, ws);
             } else if (eventType === 'WEBRTC') {

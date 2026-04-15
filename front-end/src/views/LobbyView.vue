@@ -19,7 +19,10 @@ const username = computed(() => {
 const roomStore = useRoomStore()
 const { players, messages, impostors, discussionTime, myRole, mySecretWord } = storeToRefs(roomStore)
 const newMessage = ref('')
-const chatContainer = ref(null)
+const desktopChat = ref(null)
+const mobileChat  = ref(null)
+const showMobileChat    = ref(false)
+const mobileUnreadCount = ref(0)
 const currentPlayer = computed(() => roomStore.currentPlayer)
 const isHost = computed(() => roomStore.isHost)
 const currentReady = computed(() => !!currentPlayer.value && !!currentPlayer.value.ready)
@@ -68,7 +71,8 @@ onMounted(async () => {
   try {
     await roomStore.join(code)
     await nextTick()
-    if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight
+    if (desktopChat.value) desktopChat.value.scrollTop = desktopChat.value.scrollHeight
+    if (showMobileChat.value && mobileChat.value) mobileChat.value.scrollTop = mobileChat.value.scrollHeight
   } catch {
     setTimeout(() => router.push({ name: 'home' }), 1400)
   }
@@ -76,8 +80,22 @@ onMounted(async () => {
 
 watch(messages, async () => {
   await nextTick()
-  if (chatContainer.value) chatContainer.value.scrollTop = chatContainer.value.scrollHeight
+  if (desktopChat.value) desktopChat.value.scrollTop = desktopChat.value.scrollHeight
+  if (showMobileChat.value) {
+    if (mobileChat.value) mobileChat.value.scrollTop = mobileChat.value.scrollHeight
+    mobileUnreadCount.value = 0
+  } else {
+    mobileUnreadCount.value++
+  }
 }, { deep: true })
+
+watch(showMobileChat, async (val) => {
+  if (val) {
+    mobileUnreadCount.value = 0
+    await nextTick()
+    if (mobileChat.value) mobileChat.value.scrollTop = mobileChat.value.scrollHeight
+  }
+})
 
 watch(maxImpostors, (newMax) => {
   if (impostors.value > newMax) {
@@ -129,7 +147,7 @@ function onRolePopupDismiss() {
             <div class="flex items-center gap-3">
               <Avatar :name="p.displayName || p.username || p" :active="isCurrent(p)" size="sm" class="flex-shrink-0" />
               <div class="text-sm">
-                <span :class="isCurrent(p) ? 'font-bold' : ''">{{ p.displayName || p.username || p }}<span v-if="isCurrent(p)" class="font-extrabold"> (You)</span></span>
+                <span :class="isCurrent(p) ? 'font-bold' : ''">{{ p.displayName || p.username || p }}<span v-if="isCurrent(p)" class="text-violet-400 font-normal text-xs"> (You)</span></span>
               </div>
             </div>
             <div :class="[ 'text-xs font-semibold', statusClass(p) ]">{{ statusLabel(p) }}</div>
@@ -157,16 +175,16 @@ function onRolePopupDismiss() {
             <div class="mt-6">
               <label class="block text-sm text-gray-400 mb-2 font-semibold">DISCUSSION TIME</label>
               <div class="w-full bg-[rgba(0,0,0,0.15)] rounded-full flex overflow-hidden">
-                <button @click="setDiscussionTime(60)" :disabled="!isHost"
+                <button @click="setDiscussionTime(30)" :disabled="!isHost"
                   :title="!isHost ? 'Only host can change settings' : '60 seconds'"
-                  :class="discussionTime === 60 ? 'flex-1 py-3 text-center bg-violet-500 text-white font-semibold' : 'flex-1 py-3 text-center text-gray-300'"
-                  class-disabled="opacity-50 cursor-not-allowed">60s</button>
-                <button @click="setDiscussionTime(90)" :disabled="!isHost"
+                  :class="discussionTime === 30 ? 'flex-1 py-3 text-center bg-violet-500 text-white font-semibold' : 'flex-1 py-3 text-center text-gray-300'"
+                  class-disabled="opacity-50 cursor-not-allowed">30s</button>
+                <button @click="setDiscussionTime(60)" :disabled="!isHost"
                   :title="!isHost ? 'Only host can change settings' : '90 seconds'"
-                  :class="discussionTime === 90 ? 'flex-1 py-3 text-center bg-violet-500 text-white font-semibold' : 'flex-1 py-3 text-center text-gray-300'">90s</button>
-                <button @click="setDiscussionTime(120)" :disabled="!isHost"
+                  :class="discussionTime === 60 ? 'flex-1 py-3 text-center bg-violet-500 text-white font-semibold' : 'flex-1 py-3 text-center text-gray-300'">60s</button>
+                <button @click="setDiscussionTime(90)" :disabled="!isHost"
                   :title="!isHost ? 'Only host can change settings' : '120 seconds'"
-                  :class="discussionTime === 120 ? 'flex-1 py-3 text-center bg-violet-500 text-white font-semibold' : 'flex-1 py-3 text-center text-gray-300'">120s</button>
+                  :class="discussionTime === 90 ? 'flex-1 py-3 text-center bg-violet-500 text-white font-semibold' : 'flex-1 py-3 text-center text-gray-300'">90s</button>
               </div>
               <div v-if="!isHost" class="mt-2 text-xs text-gray-400">Only the host can modify game settings</div>
             </div>
@@ -182,10 +200,10 @@ function onRolePopupDismiss() {
         </div>
       </main>
 
-      <!-- Chat -->
-      <aside class="card pop-in order-3 md:order-none col-span-1 md:col-span-3 bg-[rgba(24,24,24,0.9)] p-3 md:p-4 rounded flex flex-col h-full min-h-0">
+      <!-- Desktop chat (hidden on small screens) -->
+      <aside class="hidden md:flex card pop-in order-3 md:order-none col-span-1 md:col-span-3 bg-[rgba(24,24,24,0.9)] p-3 md:p-4 rounded flex flex-col h-full min-h-0">
         <h3 class="text-sm text-gray-300 font-bold mb-4">CHAT</h3>
-        <div ref="chatContainer" class="h-64 md:h-[calc(100vh-300px)] overflow-y-auto mb-4 p-2 bg-[rgba(0,0,0,0.2)] rounded">
+        <div ref="desktopChat" class="flex-1 overflow-y-auto mb-4 p-2 bg-[rgba(0,0,0,0.2)] rounded">
           <div v-for="(m, i) in messages" :key="i" class="mb-3">
             <div>
               <div class="text-sm font-bold text-violet-300 leading-tight">{{ ((m.local || (m.senderId && String(m.senderId) === String(authStore.user?.id))) ? 'You' : (m.sender ?? m.displayName ?? m.from ?? m.senderId ?? 'Player')) + ':' }}</div>
@@ -194,11 +212,49 @@ function onRolePopupDismiss() {
           </div>
         </div>
 
-        <div class="flex gap-2 items-center">
-          <input v-model="newMessage" placeholder="Send a message..." class="flex-1 px-3 py-2 rounded bg-[rgba(0,0,0,0.25)] text-gray-100" />
-          <button @click="sendChat" class="px-4 py-2 rounded bg-violet-500">SEND</button>
+        <div class="p-0 w-full">
+          <div class="flex gap-2 items-center w-full">
+            <input v-model="newMessage" @keydown.enter="sendChat" placeholder="Send a message..." class="flex-1 min-w-0 w-full px-3 py-2 rounded bg-[rgba(0,0,0,0.25)] text-gray-100" />
+            <button @click="sendChat" class="flex-shrink-0 px-4 py-2 rounded bg-violet-500">SEND</button>
+          </div>
         </div>
       </aside>
+
+      <!-- Mobile chat toggle + panel -->
+      <div class="md:hidden fixed bottom-0 left-0 right-0 z-30 flex flex-col">
+        <button
+          v-if="!showMobileChat"
+          @click="showMobileChat = true"
+          class="w-full bg-[#1a1a2e] border-t border-violet-500/20 py-3 flex items-center justify-center gap-2">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 15l7-7 7 7" />
+          </svg>
+          <span class="text-sm font-bold tracking-widest text-gray-300">CHAT{{ mobileUnreadCount > 0 ? ` (${mobileUnreadCount} NEW)` : '' }}</span>
+        </button>
+
+        <div v-else class="bg-[#0f0f0f] border-t border-violet-500/20 flex flex-col" style="height: 50vh">
+          <div class="flex items-center justify-between px-4 py-2 border-b border-white/5">
+            <p class="text-[10px] text-gray-500 uppercase tracking-widest font-semibold">Chat</p>
+            <button @click="showMobileChat = false" class="text-gray-500 hover:text-white">
+              <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+              </svg>
+            </button>
+          </div>
+
+          <div ref="mobileChat" class="flex-1 overflow-y-auto p-4 space-y-3">
+            <div v-for="(m, i) in messages" :key="i">
+              <p class="text-xs font-bold text-violet-300">{{ (m.local || String(m.senderId) === String(authStore.user?.id)) ? 'You' : (m.sender || m.displayName || 'Player') }}</p>
+              <p class="text-sm text-gray-200 mt-0.5 break-words">{{ m.content || m.message }}</p>
+            </div>
+          </div>
+
+          <div class="p-3 border-t border-white/5 flex gap-2">
+            <input v-model="newMessage" @keydown.enter="sendChat" placeholder="Send a message..." class="flex-1 min-w-0 px-4 py-2 rounded-full bg-black/40 border border-white/10 text-gray-100 text-sm focus:outline-none" />
+            <button @click="sendChat" class="flex-shrink-0 px-4 py-2 rounded-full font-bold text-sm bg-violet-600 text-white">SEND</button>
+          </div>
+        </div>
+      </div>
       </div>
     </div>
   </div>

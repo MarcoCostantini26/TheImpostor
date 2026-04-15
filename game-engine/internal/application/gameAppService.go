@@ -30,7 +30,7 @@ func NewGameAppService(
 }
 
 func (app *GameAppService) CreateGameUseCase(gameID string, playerIDs []string, requestedImpostors int) error {
-	
+
 	// Ora passiamo solo 3 parametri: gameID, playerIDs, e requestedImpostors
 	game, err := app.gameFactory.CreateGame(gameID, playerIDs, requestedImpostors)
 	if err != nil {
@@ -96,7 +96,7 @@ func (app *GameAppService) ResolveVotingUseCase(gameID string) error {
 		if string(game.GetPlayerRole(eliminatedID)) == "IMPOSTOR" { // Cast a stringa per sicurezza
 			game.StartGuessingPhase()
 			app.gameRepo.Save(game)
-			
+
 			// 🔔 Telefona a Node.js
 			app.notifier.NotifyEvent("ImpostorGuessPhase", map[string]string{
 				"gameId":     gameID,
@@ -114,8 +114,20 @@ func (app *GameAppService) ResolveVotingUseCase(gameID string) error {
 		return nil
 	}
 
+	// Capture role before resetting state
+	eliminatedRole := ""
+	if eliminatedID != "" {
+		eliminatedRole = game.GetPlayerRole(eliminatedID)
+	}
+
+	// Reset the game to a fresh discussion round so the next clue cycle can start
+	game.StartNewRound()
 	app.gameRepo.Save(game)
-	app.notifier.NotifyEvent("VotingResolved", map[string]string{"gameId": gameID, "eliminatedId": eliminatedID})
+	app.notifier.NotifyEvent("VotingResolved", map[string]string{
+		"gameId":         gameID,
+		"eliminatedId":   eliminatedID,
+		"eliminatedRole": eliminatedRole,
+	})
 	return nil
 }
 
@@ -147,7 +159,7 @@ func (app *GameAppService) GuessSecretWordUseCase(gameID string, impostorID stri
 		game.EndGame("IMPOSTOR_WINS")
 		app.gameRepo.Save(game)
 		app.notifier.NotifyEvent("GameEnded", map[string]string{
-			"gameId": gameID, 
+			"gameId": gameID,
 			"winner": "IMPOSTOR_WINS",
 			"reason": "WORD_GUESSED",
 		})
@@ -155,7 +167,7 @@ func (app *GameAppService) GuessSecretWordUseCase(gameID string, impostorID stri
 		game.EndGame("CREWMATES_WIN")
 		app.gameRepo.Save(game)
 		app.notifier.NotifyEvent("GameEnded", map[string]string{
-			"gameId": gameID, 
+			"gameId": gameID,
 			"winner": "CREWMATES_WIN",
 			"reason": "WRONG_GUESS",
 		})
