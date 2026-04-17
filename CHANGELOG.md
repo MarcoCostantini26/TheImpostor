@@ -1,3 +1,51 @@
+## [3.0.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.6.2...3.0.0) (2026-04-15)
+
+### ⚠ BREAKING CHANGES
+
+* **gameplay:** tests passed on all phases of the game
+
+### Features
+
+* **gameplay:** developed and completed voting phase and elimination ([70b9e16](https://github.com/MarcoCostantini26/TheImpostor/commit/70b9e168f0f8ebe34a1eb5fe07a77b2e90ef2203))
+
+### Dependency updates
+
+* **deps:** update dependency @vitejs/plugin-vue to v6.0.6 ([#113](https://github.com/MarcoCostantini26/TheImpostor/issues/113)) ([bbcd954](https://github.com/MarcoCostantini26/TheImpostor/commit/bbcd954974cc2e9d25bdf87feb94b886a36a076c))
+* **deps:** update dependency globals to v17.5.0 ([#111](https://github.com/MarcoCostantini26/TheImpostor/issues/111)) ([5d9c4be](https://github.com/MarcoCostantini26/TheImpostor/commit/5d9c4be8d2ce55838237c7c425400931144d22a5))
+* **deps:** update dependency typescript-eslint to v8.58.2 ([#114](https://github.com/MarcoCostantini26/TheImpostor/issues/114)) ([238c7bd](https://github.com/MarcoCostantini26/TheImpostor/commit/238c7bd281c5e6d5e045e71d14a0e2e081081ce8))
+
+### Bug Fixes
+
+* **gameplay:** fixed comeback to submission phase if player refreshes page ([766a1ce](https://github.com/MarcoCostantini26/TheImpostor/commit/766a1cea0f0cf9edaf1286e3d82f913b4cf46988))
+
+### Tests
+
+* **frontend:** added gamesimulation automatic test and updated readme ([ab8a1f6](https://github.com/MarcoCostantini26/TheImpostor/commit/ab8a1f672752bb890e7c7b9fa6effc4c70abcbba))
+* **gameplay:** tests passed on all phases of the game ([6ca0b24](https://github.com/MarcoCostantini26/TheImpostor/commit/6ca0b24fb6f8a3664fb4c7130f1f39d6b617737d))
+
+## [2.6.2](https://github.com/MarcoCostantini26/TheImpostor/compare/2.6.1...2.6.2) (2026-04-12)
+
+### Bug Fixes
+
+* **frontend:** divided views into reusable components and updated readme ([5de9634](https://github.com/MarcoCostantini26/TheImpostor/commit/5de96340f2908a6b6b7ff4ce763024fa44106050))
+* **frontend:** solved graphic issues ([e91a940](https://github.com/MarcoCostantini26/TheImpostor/commit/e91a94053feaf9562dade87cab24922b7606f679))
+
+### Tests
+
+* **frontend:** added automatic navigation, creation and join tests ([57828f6](https://github.com/MarcoCostantini26/TheImpostor/commit/57828f626d8052c6ea348553737e9888188db8a2))
+
+## [2.6.1](https://github.com/MarcoCostantini26/TheImpostor/compare/2.6.0...2.6.1) (2026-04-12)
+
+### Bug Fixes
+
+* **deps:** update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v3.0.3 ([#110](https://github.com/MarcoCostantini26/TheImpostor/issues/110)) ([b43941b](https://github.com/MarcoCostantini26/TheImpostor/commit/b43941be39733e5d22871dd02debd0a45d95504e))
+
+## [2.6.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.5.0...2.6.0) (2026-04-11)
+
+### Features
+
+* **lobby-service:** fix minor bugs ([4d1125b](https://github.com/MarcoCostantini26/TheImpostor/commit/4d1125bd991597e4461f04c110e4a67b811cddf4))
+
 ## [2.5.0](https://github.com/MarcoCostantini26/TheImpostor/compare/2.4.0...2.5.0) (2026-04-11)
 
 ### Features

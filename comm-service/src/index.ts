@@ -30,7 +30,7 @@ const activeSockets = new Map<string, WebSocket>();
 const userSockets = new Map<string, WebSocket>(); // userId → ws (per messaggi privati come i ruoli)
 
 const userRooms = new Map<string, string>();
-const roomSettings = new Map<string, { impostors: number }>(); 
+const roomSettings = new Map<string, { impostors: number; discussionTime: number }>(); 
 const pendingLeaves = new Map<string, NodeJS.Timeout>();
 const LEAVE_GRACE_PERIOD_MS = 15_000;
 
@@ -39,7 +39,11 @@ const CLUE_TURN_SECONDS = 15;
 const FREE_DISCUSSION_SECONDS = 60;
 const roomDiscussionTimers = new Map<string, NodeJS.Timeout>(); 
 const roomDiscussionExpiry = new Map<string, number>(); 
-const roomClues = new Map<string, Record<string, string>>(); 
+const roomClues = new Map<string, Record<string, string>>();
+const roomVotingExpiry = new Map<string, number>();
+const roomVotes = new Map<string, { voterId: string; targetId: string }[]>();
+const roomAlivePlayers = new Map<string, string[]>();
+const NEW_ROUND_DELAY_MS = 5_000;
 interface TurnState {
     queue: string[];   
     index: number;     
@@ -82,10 +86,11 @@ function advanceTurn(roomCode: string) {
     state.index++;
     if (state.index >= state.queue.length) {
         roomTurns.delete(roomCode);
-        const discExpiry = Date.now() + FREE_DISCUSSION_SECONDS * 1000;
+        const roomDiscSeconds = roomSettings.get(roomCode)?.discussionTime ?? FREE_DISCUSSION_SECONDS;
+        const discExpiry = Date.now() + roomDiscSeconds * 1000;
         roomManager.broadcastToRoom(roomCode, {
             type: 'discussion_phase_started',
-            payload: { roomCode, seconds: FREE_DISCUSSION_SECONDS, expiresAt: discExpiry }
+            payload: { roomCode, seconds: roomDiscSeconds, expiresAt: discExpiry }
         });
         
         const discussionTimer = setTimeout(async () => {
@@ -96,10 +101,10 @@ function advanceTurn(roomCode: string) {
             }
             roomDiscussionTimers.delete(roomCode);
             roomDiscussionExpiry.delete(roomCode);
-        }, FREE_DISCUSSION_SECONDS * 1000);
+        }, roomDiscSeconds * 1000);
         
         roomDiscussionTimers.set(roomCode, discussionTimer);
-        roomDiscussionExpiry.set(roomCode, Date.now() + FREE_DISCUSSION_SECONDS * 1000);
+        roomDiscussionExpiry.set(roomCode, Date.now() + roomDiscSeconds * 1000);
         return;
     }
     startTurn(roomCode);
@@ -172,6 +177,7 @@ const server = createServer(async (req, res) => {
                         });
                         roomClues.set(roomCode, {});
                         const turnQueue: string[] = players.map((p: any) => String(p.ID)).filter(Boolean);
+                        roomAlivePlayers.set(roomCode, [...turnQueue]);
                         roomTurns.set(roomCode, { queue: turnQueue, index: 0, timer: null });
                         setTimeout(() => startTurn(roomCode), 500);
                     }
@@ -184,11 +190,20 @@ const server = createServer(async (req, res) => {
                     const dt = roomDiscussionTimers.get(roomCode);
                     if (dt) { clearTimeout(dt); roomDiscussionTimers.delete(roomCode); }
                     if (roomDiscussionExpiry.has(roomCode)) roomDiscussionExpiry.delete(roomCode);
-                    
+
+                    const newPhase = String(ep.newPhase || ep.NewPhase || 'VOTING').toUpperCase();
+                    const timerSeconds = Number(ep.timer || ep.Timer) || 60;
+                    if (newPhase === 'VOTING') {
+                        roomVotingExpiry.set(roomCode, Date.now() + timerSeconds * 1000);
+                        roomVotes.set(roomCode, []);
+                    }
+
+                    const votingExpiry = newPhase === 'VOTING' ? roomVotingExpiry.get(roomCode) : undefined;
                     roomManager.broadcastToRoom(roomCode, {
                         type: 'ENGINE_EVENT',
-                        payload: { eventName: 'PhaseChanged', gameId: roomCode, newPhase: ep.newPhase || ep.NewPhase || 'VOTING', timer: ep.timer || ep.Timer || 60 }
+                        payload: { eventName: 'PhaseChanged', gameId: roomCode, newPhase, timer: timerSeconds, ...(votingExpiry ? { expiresAt: votingExpiry } : {}) }
                     });
+                    console.log(`[Webhook] 🔁 PhaseChanged broadcast for room ${roomCode} -> ${newPhase}`);
                 } else if (eventName === 'GameEnded') {
                     const ep = engineEvent.payload || {};
                     const roomCode = String(ep.gameId || ep.GameID || '');
@@ -205,11 +220,57 @@ const server = createServer(async (req, res) => {
                     }
                 } else {
                     // Fallback per tutti gli altri eventi (es. VotingResolved, ImpostorGuessPhase)
-                    const eventToBroadcast = { type: 'ENGINE_EVENT', payload: engineEvent };
-                    const targetRoom = engineEvent.payload?.gameId || engineEvent.gameId || engineEvent.payload?.GameID;
+                    // Normalize engine event so payload fields are accessible at top-level
+                    const rawPayload = engineEvent.payload || {};
+                    const normalizedPayload = { eventName: engineEvent.eventName, ...rawPayload };
+                    const eventToBroadcast = { type: 'ENGINE_EVENT', payload: normalizedPayload };
+                    const targetRoom = rawPayload.gameId || engineEvent.gameId || rawPayload.GameID;
+
+                    // Track votes for reconnect recovery
+                    if (engineEvent.eventName === 'PlayerVoted' && targetRoom) {
+                        const voterId = String(rawPayload.voterId || rawPayload.VoterId || '');
+                        const targetId = String(rawPayload.targetId || rawPayload.TargetId || '');
+                        if (voterId && targetId) {
+                            const votes = roomVotes.get(String(targetRoom)) || [];
+                            const idx = votes.findIndex(v => v.voterId === voterId);
+                            if (idx !== -1) votes[idx] = { voterId, targetId };
+                            else votes.push({ voterId, targetId });
+                            roomVotes.set(String(targetRoom), votes);
+                        }
+                    }
+
+                    // Clear voting data and restart clue-submission round when resolved
+                    if ((engineEvent.eventName === 'VotingResolved') && targetRoom) {
+                        roomVotingExpiry.delete(String(targetRoom));
+                        roomVotes.delete(String(targetRoom));
+
+                        const eliminatedId = rawPayload.eliminatedId || rawPayload.EliminatedId || '';
+                        if (eliminatedId) {
+                            const alive = roomAlivePlayers.get(String(targetRoom)) || [];
+                            roomAlivePlayers.set(String(targetRoom), alive.filter(id => id !== eliminatedId));
+                        }
+
+                        // Delay before starting new round so clients can display the popup
+                        const roomCodeForNewRound = String(targetRoom);
+                        setTimeout(() => {
+                            const queue = [...(roomAlivePlayers.get(roomCodeForNewRound) || [])];
+                            if (queue.length > 0) {
+                                roomClues.set(roomCodeForNewRound, {});
+                                roomTurns.set(roomCodeForNewRound, { queue, index: 0, timer: null });
+                                startTurn(roomCodeForNewRound);
+                            }
+                        }, NEW_ROUND_DELAY_MS);
+                    }
+
+                    // Clean up alive-player tracking when the game ends
+                    if ((engineEvent.eventName === 'GameEnded') && targetRoom) {
+                        roomAlivePlayers.delete(String(targetRoom));
+                    }
+
+                    console.log(`[Webhook] 🔁 Broadcasting normalized event ${engineEvent.eventName} to room ${targetRoom || 'ALL'}`);
 
                     if (targetRoom) {
-                        roomManager.broadcastToRoom(targetRoom, eventToBroadcast);
+                        roomManager.broadcastToRoom(String(targetRoom), eventToBroadcast);
                     } else {
                         const messageString = JSON.stringify(eventToBroadcast);
                         wss.clients.forEach(client => {
@@ -318,6 +379,27 @@ wss.on('connection', async (ws: WebSocket) => {
                                     const isImpostor = (me.Role || me.role) === 'IMPOSTOR' || (me.Role || me.role) === 'Impostor';
                                     const secretWord = isImpostor ? (globalHint || me.Hint) : (globalSecret || me.SecretWord);
                                     ws.send(JSON.stringify({ type: 'ENGINE_EVENT', payload: { eventName: 'RoleAssigned', role: roleVal, secretWord, isImpostor } }));
+                                    // If engine reports voting phase, restore it for the reconnecting client
+                                    try {
+                                        const votingExpiry = roomVotingExpiry.get(roomCodeForUser);
+                                        if (votingExpiry && votingExpiry > Date.now()) {
+                                            const remaining = Math.max(0, Math.ceil((votingExpiry - Date.now()) / 1000));
+                                            console.log(`[Gateway] 🔁 Sending PhaseChanged voting recovery to ${currentUserId} for room ${roomCodeForUser} (remaining ${remaining}s)`);
+                                            ws.send(JSON.stringify({ type: 'ENGINE_EVENT', payload: { eventName: 'PhaseChanged', newPhase: 'VOTING', timer: remaining, expiresAt: votingExpiry, gameId: roomCodeForUser } }));
+                                            const votes = roomVotes.get(roomCodeForUser) || [];
+                                            for (const v of votes) {
+                                                ws.send(JSON.stringify({ type: 'ENGINE_EVENT', payload: { eventName: 'PlayerVoted', voterId: v.voterId, targetId: v.targetId, gameId: roomCodeForUser } }));
+                                            }
+                                        } else {
+                                            const reportedPhase = gameState?.Phase || gameState?.phase || gameState?.CurrentTurn?.Phase || gameState?.currentPhase;
+                                            const reportedTimer = gameState?.Timer || gameState?.timer || gameState?.CurrentTurn?.Timer || gameState?.timerSeconds;
+                                            if (reportedPhase && String(reportedPhase).toUpperCase() === 'VOTING') {
+                                                const timerValue = Number(reportedTimer) || 60;
+                                                console.log(`[Gateway] 🔁 Sending PhaseChanged recovery (engine fallback) to ${currentUserId} for room ${roomCodeForUser} (timer ${timerValue})`);
+                                                ws.send(JSON.stringify({ type: 'ENGINE_EVENT', payload: { eventName: 'PhaseChanged', newPhase: 'VOTING', timer: timerValue, gameId: roomCodeForUser } }));
+                                            }
+                                        }
+                                    } catch (e) { /* ignore recovery errors */ }
                                 }
                             }
                         } catch (e) {}
@@ -326,7 +408,13 @@ wss.on('connection', async (ws: WebSocket) => {
                         const discExpiry = roomDiscussionExpiry.get(roomCodeForUser);
                         if (discExpiry && discExpiry > Date.now()) {
                             const remaining = Math.max(0, Math.ceil((discExpiry - Date.now()) / 1000));
+                            console.log(`[Gateway] 🔁 Sending discussion_phase_started recovery to ${currentUserId} for room ${roomCodeForUser} (remaining ${remaining}s)`);
                             ws.send(JSON.stringify({ type: 'discussion_phase_started', payload: { roomCode: roomCodeForUser, seconds: remaining, expiresAt: discExpiry } }));
+                        }
+                        // Send alive players list so client can mark eliminated players as dead on reconnect
+                        const alivePlayerIdsForUser = roomAlivePlayers.get(roomCodeForUser);
+                        if (alivePlayerIdsForUser && alivePlayerIdsForUser.length > 0) {
+                            roomManager.broadcastToRoom(roomCodeForUser, { type: 'players_status', payload: { alivePlayerIds: alivePlayerIdsForUser, roomCode: roomCodeForUser } });
                         }
                     }
                 } catch (err) {}
@@ -367,7 +455,23 @@ wss.on('connection', async (ws: WebSocket) => {
                         if (discExpiry && discExpiry > Date.now()) {
                             const remaining = Math.max(0, Math.ceil((discExpiry - Date.now()) / 1000));
                             ws.send(JSON.stringify({ type: 'discussion_phase_started', payload: { roomCode, seconds: remaining, expiresAt: discExpiry } }));
+                        } else {
+                            // Recovery voting phase
+                            const votingExpiry = roomVotingExpiry.get(roomCode);
+                            if (votingExpiry && votingExpiry > Date.now()) {
+                                const remaining = Math.max(0, Math.ceil((votingExpiry - Date.now()) / 1000));
+                                ws.send(JSON.stringify({ type: 'ENGINE_EVENT', payload: { eventName: 'PhaseChanged', newPhase: 'VOTING', timer: remaining, expiresAt: votingExpiry, gameId: roomCode } }));
+                                const votes = roomVotes.get(roomCode) || [];
+                                for (const v of votes) {
+                                    ws.send(JSON.stringify({ type: 'ENGINE_EVENT', payload: { eventName: 'PlayerVoted', voterId: v.voterId, targetId: v.targetId, gameId: roomCode } }));
+                                }
+                            }
                         }
+                    }
+                    // Send alive players list so client can mark eliminated players as dead on reconnect
+                    const alivePlayerIds = roomAlivePlayers.get(roomCode);
+                    if (alivePlayerIds && alivePlayerIds.length > 0) {
+                        roomManager.broadcastToRoom(roomCode, { type: 'players_status', payload: { alivePlayerIds, roomCode } });
                     }
                 } catch (e) {}
                 
@@ -391,8 +495,8 @@ wss.on('connection', async (ws: WebSocket) => {
 
             if (eventType === 'update_settings' || eventType === 'UPDATE_SETTINGS') {
                 if (roomCode && payload.settings) {
-                    const cur = roomSettings.get(roomCode) || { impostors: 1 };
-                    roomSettings.set(roomCode, { impostors: payload.settings.impostors ?? cur.impostors });
+                    const cur = roomSettings.get(roomCode) || { impostors: 1, discussionTime: 60 };
+                    roomSettings.set(roomCode, { impostors: payload.settings.impostors ?? cur.impostors, discussionTime: payload.settings.discussionTime ?? cur.discussionTime });
                 }
                 await lobbyService.handleUpdateSettings(roomCode, currentUserId, payload.settings);
                 return;
@@ -457,6 +561,12 @@ wss.on('connection', async (ws: WebSocket) => {
             }
 
             if (eventType === 'CHAT') {
+                // Block eliminated players from sending messages
+                const aliveInRoom = roomAlivePlayers.get(roomCode);
+                if (aliveInRoom && !aliveInRoom.includes(currentUserId)) {
+                    ws.send(JSON.stringify({ type: 'error', payload: { message: 'Eliminated players cannot send messages' } }));
+                    return;
+                }
                 const message = new Message(roomCode, currentUserId, payload);
                 await chatAndSignalingService.processChatMessage(message, ws);
             } else if (eventType === 'WEBRTC') {

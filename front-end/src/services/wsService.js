@@ -15,7 +15,9 @@ function connect() {
 
   socket.onmessage = (ev) => {
     try {
+      console.debug('[ws] recv raw', ev.data)
       const parsed = JSON.parse(ev.data)
+      console.debug('[ws] recv parsed', parsed)
       listeners.forEach((cb) => cb(parsed))
     } catch (e) {
       console.warn('[ws] failed parse message', e)
