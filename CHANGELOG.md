@@ -1,3 +1,13 @@
+## [3.2.0](https://github.com/MarcoCostantini26/TheImpostor/compare/3.1.0...3.2.0) (2026-04-19)
+
+### Features
+
+* **lobby-service:** add word entry domain, seeder and next-word API endpoint ([0177043](https://github.com/MarcoCostantini26/TheImpostor/commit/01770438d1bae39ed37f4d1f1da19e259a9dd805))
+
+### Tests
+
+* **lobby:** implemented roomCode tests ([5d7dce0](https://github.com/MarcoCostantini26/TheImpostor/commit/5d7dce09a430898d3e7d0d64a14e74189df2ba98))
+
 ## [3.1.0](https://github.com/MarcoCostantini26/TheImpostor/compare/3.0.1...3.1.0) (2026-04-19)
 
 ### Features
