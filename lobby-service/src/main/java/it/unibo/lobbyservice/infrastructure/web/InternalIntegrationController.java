@@ -4,8 +4,10 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import it.unibo.lobbyservice.application.service.GameHistoryService;
 import it.unibo.lobbyservice.application.service.RoomService;
+import it.unibo.lobbyservice.application.service.WordService;
 import it.unibo.lobbyservice.domain.model.GameHistory;
 import it.unibo.lobbyservice.domain.model.Room;
+import it.unibo.lobbyservice.domain.model.WordEntry;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,10 +27,14 @@ public class InternalIntegrationController {
 
     private final RoomService roomService;
     private final GameHistoryService gameHistoryService;
+    private final WordService wordService;
 
-    public InternalIntegrationController(RoomService roomService, GameHistoryService gameHistoryService) {
+    public InternalIntegrationController(RoomService roomService,
+                                         GameHistoryService gameHistoryService,
+                                         WordService wordService) {
         this.roomService = Objects.requireNonNull(roomService);
         this.gameHistoryService = Objects.requireNonNull(gameHistoryService);
+        this.wordService = Objects.requireNonNull(wordService);
     }
 
     /**
@@ -111,6 +117,24 @@ public class InternalIntegrationController {
         return ResponseEntity.ok(GameHistoryResponse.from(session));
     }
 
+    /**
+     * GET /api/internal/games/{roomCode}/next-word
+     * Usato dal comm-service / game-engine all'inizio di ogni round.
+     * Restituisce una parola non ancora usata in questa partita.
+     * - "word"         va inviata a tutti i crewmate
+     * - "impostorClue" va inviata SOLO all'impostore
+     */
+    @GetMapping("/games/{roomCode}/next-word")
+    @Operation(summary = "Pesca la parola del prossimo round (mai usata in questa partita)")
+    public ResponseEntity<?> getNextWord(@PathVariable String roomCode) {
+        try {
+            WordEntry entry = wordService.pickWordForRoom(roomCode);
+            return ResponseEntity.ok(RoundWordResponse.from(entry));
+        } catch (IllegalStateException e) {
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(e.getMessage());
+        }
+    }
+
     // DTOs specifici per queste integrazioni interne
     public record TokenValidationRequest(String roomCode, String playerId, String username) {}
     public record TokenValidationResponse(boolean valid, String message) {}
@@ -140,6 +164,17 @@ public class InternalIntegrationController {
                     history.getTotalRounds(),
                     history.getCreatedAt().toString()
             );
+        }
+    }
+
+    /**
+     * Risposta all'endpoint next-word:
+     * - word         → visibile ai crewmate
+     * - impostorClue → visibile SOLO all'impostore
+     */
+    public record RoundWordResponse(String wordId, String word, String impostorClue) {
+        public static RoundWordResponse from(WordEntry entry) {
+            return new RoundWordResponse(entry.getId(), entry.getWord(), entry.getImpostorClue());
         }
     }
 }
