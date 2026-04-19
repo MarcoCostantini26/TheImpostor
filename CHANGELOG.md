@@ -1,3 +1,14 @@
+## [3.1.0](https://github.com/MarcoCostantini26/TheImpostor/compare/3.0.1...3.1.0) (2026-04-19)
+
+### Features
+
+* **lobby-service:** added test for business logic Room ([f002418](https://github.com/MarcoCostantini26/TheImpostor/commit/f002418c9589728fcf71d891c3a2b4b1c4c14969))
+* **lobby:** implemented services tests ([15329ee](https://github.com/MarcoCostantini26/TheImpostor/commit/15329ee2a3cc985109d26915f25cf9ff56278720))
+
+### Dependency updates
+
+* **deps:** update dependency eslint to v10.2.1 ([#119](https://github.com/MarcoCostantini26/TheImpostor/issues/119)) ([4343d52](https://github.com/MarcoCostantini26/TheImpostor/commit/4343d52e5caf378d9b7bcbc3dfd3e7e50d4a9584))
+
 ## [3.0.1](https://github.com/MarcoCostantini26/TheImpostor/compare/3.0.0...3.0.1) (2026-04-17)
 
 ### Dependency updates
