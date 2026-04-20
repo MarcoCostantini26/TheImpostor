@@ -48,7 +48,14 @@ async function joinRoom() {
     router.push({ name: 'lobby', params: { code } })
   } catch (e) {
     console.error('joinRoom failed', e)
-    toast.error('Room not found or join failed.')
+    const msg = e?.message || ''
+    if (msg.toLowerCase().includes('full')) {
+      toast.error('Room is full (max 8 players).')
+    } else if (msg.toLowerCase().includes('not found')) {
+      toast.error('Room not found. Check the code and try again.')
+    } else {
+      toast.error('Could not join room. Please try again.')
+    }
   }
 }
 </script>
