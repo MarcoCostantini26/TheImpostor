@@ -113,10 +113,10 @@ class RoomTest {
         }
 
         @Test
-        @DisplayName("lancia eccezione se la stanza è piena (> 10 giocatori)")
+        @DisplayName("lancia eccezione se la stanza è piena (> 8 giocatori)")
         void addPlayerToFullRoomThrows() {
             Room room = Room.create(code, host);
-            for (int i = 2; i <= 10; i++) {
+            for (int i = 2; i <= 8; i++) {
                 room.addPlayer(anon("player" + i));
             }
 
