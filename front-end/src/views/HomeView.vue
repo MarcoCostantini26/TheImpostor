@@ -5,10 +5,12 @@ import { useRoomStore } from '../stores/room'
 import { useRouter } from 'vue-router'
 import { createRoom as createRoomService, joinRoom as joinRoomService } from '../services/roomService'
 import Avatar from '../components/AvatarIcon.vue'
+import { useToast } from 'vue-toastification'
 
 const authStore = useAuthStore()
 const roomStore = useRoomStore()
 const router = useRouter()
+const toast = useToast()
 const joinCode = ref('')
 
 const username = computed(() => {
@@ -27,7 +29,7 @@ const createRoom = async () => {
     router.push({ name: 'lobby', params: { code: createdCode } })
   } catch (e) {
     console.error('createRoom failed', e)
-    alert('Unable to create room. Please try again.')
+    toast.error('Unable to create room. Please try again.')
   }
 }
 
@@ -46,7 +48,14 @@ async function joinRoom() {
     router.push({ name: 'lobby', params: { code } })
   } catch (e) {
     console.error('joinRoom failed', e)
-    alert('Room not found or join failed.')
+    const msg = e?.message || ''
+    if (msg.toLowerCase().includes('full')) {
+      toast.error('Room is full (max 8 players).')
+    } else if (msg.toLowerCase().includes('not found')) {
+      toast.error('Room not found. Check the code and try again.')
+    } else {
+      toast.error('Could not join room. Please try again.')
+    }
   }
 }
 </script>

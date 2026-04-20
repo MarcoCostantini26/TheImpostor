@@ -6,6 +6,7 @@ import { useAuthStore } from '../stores/auth'
 import { useRoomStore } from '../stores/room'
 import Avatar from '../components/AvatarIcon.vue'
 import EliminationPopup from '../components/EliminationPopup.vue'
+import { useToast } from 'vue-toastification'
 
 const route = useRoute()
 const router = useRouter()
@@ -13,6 +14,7 @@ const code = route.params.code || ''
 
 const authStore = useAuthStore()
 const roomStore = useRoomStore()
+const toast = useToast()
 
 const {
   players,
@@ -126,7 +128,7 @@ onMounted(() => {
         }
         try { roomStore.markAsJoined() } catch (err) { console.warn(err) }
       } else {
-        try { alert(msg || 'Could not join the room') } catch { /* void */}
+        try { toast.error(msg || 'Could not join the room') } catch { /* void */}
         router.push({ name: 'home' })
       }
     }
