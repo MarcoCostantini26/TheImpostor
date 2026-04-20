@@ -19,7 +19,7 @@ import java.util.concurrent.ThreadLocalRandom;
 @EqualsAndHashCode(onlyExplicitlyIncluded = true)
 public final class Room {
     private static final int MIN_PLAYERS = 4;
-    private static final int MAX_PLAYERS = 10;
+    private static final int MAX_PLAYERS = 8;
     private static final int DEFAULT_IMPOSTORS = 1;
     private static final int DEFAULT_DISCUSSION_TIME = 60;
 
