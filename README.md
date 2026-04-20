@@ -17,6 +17,7 @@ A social deduction game where players identify an impostor through debate.
 
 
 ## How to run 
+- Add a `.env` file into the main folder (`\TheImpostor`) in which to configure `MONGODB_URI=mongodb+srv://<username>:<password>@<cluster-url>/theimpostor?appName=TheImpostor`.
 - `docker-compose build` to build containers (_lobby-service_, _comm-service_, _frontend_, _game-engine_).
 - `docker-compose up` to run.
 - Visit http://localhost:5173.
