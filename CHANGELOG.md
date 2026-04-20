@@ -1,3 +1,11 @@
+## [3.4.0](https://github.com/MarcoCostantini26/TheImpostor/compare/3.3.0...3.4.0) (2026-04-20)
+
+### Features
+
+* **engine:** randomize player turn order at game start ([c1a7b98](https://github.com/MarcoCostantini26/TheImpostor/commit/c1a7b9897a2a81d82951710e3abce9f9f567c142))
+* **lobby-service:** change maxplayer variable ([dc094c7](https://github.com/MarcoCostantini26/TheImpostor/commit/dc094c7fa8d7dd1b86f4463693e42f5d969e24bc))
+* **lobby-service:** change maxplayer variable for test ([e71927a](https://github.com/MarcoCostantini26/TheImpostor/commit/e71927a237a9e03842667424488fcea33cdce1aa))
+
 ## [3.3.0](https://github.com/MarcoCostantini26/TheImpostor/compare/3.2.1...3.3.0) (2026-04-20)
 
 ### Features
