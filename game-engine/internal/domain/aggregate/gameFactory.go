@@ -64,6 +64,13 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 		return nil, ErrInvalidImpostorCount
 	}
 
+	shuffledPlayerIDs := make([]string, len(playerIDs))
+	copy(shuffledPlayerIDs, playerIDs)
+
+	rand.Shuffle(len(shuffledPlayerIDs), func(i, j int) {
+		shuffledPlayerIDs[i], shuffledPlayerIDs[j] = shuffledPlayerIDs[j], shuffledPlayerIDs[i]
+	})
+
 	shuffledIndices := rand.Perm(numPlayers)
 	impostorIndices := shuffledIndices[:requestedImpostors]
 
@@ -77,7 +84,7 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 	}
 
 	var players []entity.Player
-	for i, pid := range playerIDs {
+	for i, pid := range shuffledPlayerIDs {
 		role := valueobject.RoleCrewmate
 		if isImpostor(i) {
 			role = valueobject.RoleImpostor
@@ -102,7 +109,7 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 		},
 		Votes:      make([]valueobject.Vote, 0),
 		SecretWord: valueobject.SecretWord(pair[0]),
-		Hint: valueobject.Hint(pair[1]), 
+		Hint:       valueobject.Hint(pair[1]),
 	}
 
 	startedEvent := event.GameStarted{

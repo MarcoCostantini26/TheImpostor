@@ -31,7 +31,6 @@ func NewGameAppService(
 
 func (app *GameAppService) CreateGameUseCase(gameID string, playerIDs []string, requestedImpostors int) error {
 
-	// Ora passiamo solo 3 parametri: gameID, playerIDs, e requestedImpostors
 	game, err := app.gameFactory.CreateGame(gameID, playerIDs, requestedImpostors)
 	if err != nil {
 		return err
@@ -93,11 +92,10 @@ func (app *GameAppService) ResolveVotingUseCase(gameID string) error {
 	}
 
 	if eliminatedID != "" {
-		if string(game.GetPlayerRole(eliminatedID)) == "IMPOSTOR" { // Cast a stringa per sicurezza
+		if string(game.GetPlayerRole(eliminatedID)) == "IMPOSTOR" {
 			game.StartGuessingPhase()
 			app.gameRepo.Save(game)
 
-			// 🔔 Telefona a Node.js
 			app.notifier.NotifyEvent("ImpostorGuessPhase", map[string]string{
 				"gameId":     gameID,
 				"impostorId": eliminatedID,
@@ -108,19 +106,17 @@ func (app *GameAppService) ResolveVotingUseCase(gameID string) error {
 
 	winTeam := app.rulesSvc.CheckWinCondition(game)
 	if winTeam != service.WinNone {
-		game.EndGame(string(winTeam)) // Assicurati di castare a string
+		game.EndGame(string(winTeam))
 		app.gameRepo.Save(game)
 		app.notifier.NotifyEvent("GameEnded", map[string]string{"gameId": gameID, "winner": string(winTeam)})
 		return nil
 	}
 
-	// Capture role before resetting state
 	eliminatedRole := ""
 	if eliminatedID != "" {
 		eliminatedRole = game.GetPlayerRole(eliminatedID)
 	}
 
-	// Reset the game to a fresh discussion round so the next clue cycle can start
 	game.StartNewRound()
 	app.gameRepo.Save(game)
 	app.notifier.NotifyEvent("VotingResolved", map[string]string{

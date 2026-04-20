@@ -3,8 +3,10 @@ package main
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"net/http"
 	"os"
+	"time"
 
 	"game-engine/internal/application"
 	"game-engine/internal/domain/aggregate"
@@ -14,35 +16,30 @@ import (
 )
 
 func main() {
+	rand.Seed(time.Now().UnixNano())
+
 	fmt.Println("Avvio fase di cablaggio del Game Engine...")
 
-	// 1. Creiamo il Frigorifero (Il database in RAM)
 	repo := memory.NewInMemoryGameRepository()
 
-	// 2. Creiamo gli strumenti di base del dominio
 	factory := aggregate.NewGameFactory()
 	rules := service.NewGameRulesService()
 
 	commServiceURL := os.Getenv("COMM_SERVICE_URL")
 	if commServiceURL == "" {
-		commServiceURL = "http://localhost:3000" // NOTA: il tuo amico ha messo 3000 invece di 8080!
+		commServiceURL = "http://localhost:3000"
 	}
 
 	notifierURL := commServiceURL + "/internal/engine-callback"
 
-	// Creiamo il "telefono" HTTP
 	webhookNotifier := gameapi.NewHTTPGatewayNotifier(notifierURL)
 
-	// 3. Assumiamo lo Chef e gli diamo gli strumenti
 	appService := application.NewGameAppService(repo, factory, rules, webhookNotifier)
 
-	// 4. Assumiamo il Cameriere e gli presentiamo lo Chef
 	controller := gameapi.NewGameController(appService)
 
-	// 5. Prepariamo la Mappa del Ristorante (Rotte HTTP)
 	mux := http.NewServeMux()
 
-	// Qui diciamo al server quali URL corrispondono a quali funzioni
 	mux.HandleFunc("/games/create", controller.HandleCreateGame)
 	mux.HandleFunc("/games/advance-voting", controller.HandleAdvanceToVoting)
 	mux.HandleFunc("/games/vote", controller.HandleCastVote)
@@ -50,10 +47,8 @@ func main() {
 	mux.HandleFunc("/games/state", controller.HandleGetGameState)
 	mux.HandleFunc("/games/guess-word", controller.HandleGuessWord)
 
-	// 6. Alziamo la serranda! (Avviamo il server sulla porta 8081)
 	fmt.Println("🚀 Game Engine acceso e in ascolto sulla porta 8081!")
 
-	// Ascoltiamo sulla porta che hai scelto tu:
 	err := http.ListenAndServe(":8081", mux)
 	if err != nil {
 		log.Fatalf("Il server si è schiantato: %v", err)
