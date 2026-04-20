@@ -1,3 +1,13 @@
+## [3.3.0](https://github.com/MarcoCostantini26/TheImpostor/compare/3.2.1...3.3.0) (2026-04-20)
+
+### Features
+
+* **frontend:** changed alerts into toast notifications ([2b6e13e](https://github.com/MarcoCostantini26/TheImpostor/commit/2b6e13e113e301254258a02113251966f979188e))
+
+### Documentation
+
+* **readme:** updated readme, changed index.html title and differentiated toast notification ([150057f](https://github.com/MarcoCostantini26/TheImpostor/commit/150057f4d5d5af4b0f45e111398d5217fe3f6d78))
+
 ## [3.2.1](https://github.com/MarcoCostantini26/TheImpostor/compare/3.2.0...3.2.1) (2026-04-20)
 
 ### Dependency updates
