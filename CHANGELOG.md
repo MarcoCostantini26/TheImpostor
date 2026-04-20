@@ -1,3 +1,9 @@
+## [3.5.0](https://github.com/MarcoCostantini26/TheImpostor/compare/3.4.0...3.5.0) (2026-04-20)
+
+### Features
+
+* **lobby-service:** fixed  word entry ([689e9c1](https://github.com/MarcoCostantini26/TheImpostor/commit/689e9c15c6fe90419df1ed110da48b6cf5ff0672))
+
 ## [3.4.0](https://github.com/MarcoCostantini26/TheImpostor/compare/3.3.0...3.4.0) (2026-04-20)
 
 ### Features
