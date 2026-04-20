@@ -13,7 +13,6 @@ public interface WordEntryRepository extends MongoRepository<WordEntry, String> 
 
     Optional<WordEntry> findByWordIgnoreCase(String word);
 
-    boolean existsByWordIgnoreCase(String word);
 
     /** Ritorna tutte le entry il cui ID non è nella lista di esclusi. */
     List<WordEntry> findByIdNotIn(List<String> excludedIds);
