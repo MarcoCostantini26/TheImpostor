@@ -1,3 +1,10 @@
+## [3.2.1](https://github.com/MarcoCostantini26/TheImpostor/compare/3.2.0...3.2.1) (2026-04-20)
+
+### Dependency updates
+
+* **core-deps:** update dependency autoprefixer to v10.5.0 ([#115](https://github.com/MarcoCostantini26/TheImpostor/issues/115)) ([45225c2](https://github.com/MarcoCostantini26/TheImpostor/commit/45225c282d283519ce3dc803d2de3b1e18c61096))
+* **deps:** update dependency typescript to v6.0.3 ([#118](https://github.com/MarcoCostantini26/TheImpostor/issues/118)) ([d37b0b4](https://github.com/MarcoCostantini26/TheImpostor/commit/d37b0b4b182dd35064267400ff527b5a1246f6b2))
+
 ## [3.2.0](https://github.com/MarcoCostantini26/TheImpostor/compare/3.1.0...3.2.0) (2026-04-19)
 
 ### Features
