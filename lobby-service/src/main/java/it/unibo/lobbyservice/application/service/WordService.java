@@ -42,18 +42,20 @@ public class WordService {
     public WordEntry pickWordForRoom(String roomCode) {
         Objects.requireNonNull(roomCode, "Room code cannot be null");
 
-        List<String> usedWords = gameHistoryRepository.findByRoomCode(roomCode)
+        List<String> usedIds = gameHistoryRepository.findByRoomCode(roomCode)
                 .map(GameHistory::getAllRounds)
                 .orElse(List.of())
                 .stream()
                 .map(RoundResult::getSecretWord)
                 .filter(Objects::nonNull)
                 .distinct()
+                .map(word -> wordEntryRepository.findByWordIgnoreCase(word)
+                        .map(WordEntry::getId)
+                        .orElse(null))
+                .filter(Objects::nonNull)
                 .toList();
 
-        List<WordEntry> available = wordEntryRepository.findAll().stream()
-                .filter(e -> !usedWords.contains(e.getWord()))
-                .toList();
+        List<WordEntry> available = wordEntryRepository.findByIdNotIn(usedIds);
 
         if (available.isEmpty()) {
             throw new IllegalStateException(
