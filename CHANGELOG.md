@@ -1,3 +1,10 @@
+## [3.5.1](https://github.com/MarcoCostantini26/TheImpostor/compare/3.5.0...3.5.1) (2026-04-21)
+
+### Dependency updates
+
+* **core-deps:** update tailwindcss monorepo to v4.2.3 ([#129](https://github.com/MarcoCostantini26/TheImpostor/issues/129)) ([fe2947e](https://github.com/MarcoCostantini26/TheImpostor/commit/fe2947e74e0b96d2f5df8d8685647d54f90c7390))
+* **deps:** update dependency vite to v8.0.9 ([#123](https://github.com/MarcoCostantini26/TheImpostor/issues/123)) ([43e3c58](https://github.com/MarcoCostantini26/TheImpostor/commit/43e3c58d2b989bbd30e0c2507f080f42860131d8))
+
 ## [3.5.0](https://github.com/MarcoCostantini26/TheImpostor/compare/3.4.0...3.5.0) (2026-04-20)
 
 ### Features
