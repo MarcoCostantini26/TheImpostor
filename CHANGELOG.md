@@ -1,3 +1,9 @@
+## [3.6.0](https://github.com/MarcoCostantini26/TheImpostor/compare/3.5.2...3.6.0) (2026-04-21)
+
+### Features
+
+* **voice-chat:** implemented voice chat front-end side ([08c1c72](https://github.com/MarcoCostantini26/TheImpostor/commit/08c1c7285e7f564de676b31a4e1190e96cce1696))
+
 ## [3.5.2](https://github.com/MarcoCostantini26/TheImpostor/compare/3.5.1...3.5.2) (2026-04-21)
 
 ### Bug Fixes
