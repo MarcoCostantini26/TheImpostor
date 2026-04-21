@@ -133,15 +133,15 @@ public class UserController {
 
     // DTO Records
     public record RegisterRequest(
-            @NotBlank String username,
+            @NotBlank @Size(min = 3, max = 24) String username,
             @NotBlank @Email String email,
-            @NotBlank @Size(min = 8) String password
+            @NotBlank @Size(min = 8, max = 24) String password
     ) {}
 
     public record RegisterFullRequest(
-            @NotBlank String username,
+            @NotBlank @Size(min = 3, max = 24) String username,
             @NotBlank @Email String email,
-            @NotBlank @Size(min = 8) String password,
+            @NotBlank @Size(min = 8, max = 24) String password,
             Integer age,
             String country,
             String avatarUrl,

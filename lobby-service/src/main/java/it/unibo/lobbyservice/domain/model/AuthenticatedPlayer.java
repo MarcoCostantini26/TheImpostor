@@ -2,7 +2,6 @@ package it.unibo.lobbyservice.domain.model;
 
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
@@ -16,9 +15,6 @@ import java.time.Instant;
 @EqualsAndHashCode(callSuper = true)
 @Document(collection = "users") // crea collection o tabella su mongoDB
 public final class AuthenticatedPlayer extends User {
-
-    @Id
-    private final String id;
 
     @Indexed(unique = true)
     private final String email;
@@ -42,7 +38,6 @@ public final class AuthenticatedPlayer extends User {
         if (passwordHash == null || passwordHash.isBlank()) {
             throw new IllegalArgumentException("Password hash cannot be null or empty");
         }
-        this.id = super.getId();
         this.email = email.toLowerCase().trim();
         this.passwordHash = passwordHash;
         this.createdAt = createdAt != null ? createdAt : Instant.now();

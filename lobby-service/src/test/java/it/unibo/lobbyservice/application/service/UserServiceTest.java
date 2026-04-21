@@ -305,7 +305,7 @@ class UserServiceTest {
         @Test
         @DisplayName("usernameExists ritorna true se username già preso")
         void usernameExistsTrue() {
-            when(userRepository.existsByUsernameIgnoreCase("mario")).thenReturn(true);
+            when(userRepository.findByUsernameIgnoreCase("mario")).thenReturn(Optional.of(player));
             assertThat(userService.usernameExists("mario")).isTrue();
         }
 

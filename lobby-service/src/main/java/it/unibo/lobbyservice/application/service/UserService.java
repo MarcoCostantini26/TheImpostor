@@ -132,7 +132,7 @@ public class UserService {
      */
     public boolean usernameExists(String username) {
         Objects.requireNonNull(username, "Username cannot be null");
-        return userRepository.existsByUsernameIgnoreCase(username);
+        return userRepository.findByUsernameIgnoreCase(username).isPresent();
     }
 
     /**
