@@ -7,6 +7,7 @@ import { useRoomStore } from '../stores/room'
 import Avatar from '../components/AvatarIcon.vue'
 import EliminationPopup from '../components/EliminationPopup.vue'
 import { useToast } from 'vue-toastification'
+import * as voiceChat from '../services/voiceChatService.js'
 
 const route = useRoute()
 const router = useRouter()
@@ -47,6 +48,7 @@ function submitGuess() {
 const newMessage = ref('')
 const desktopChat = ref(null)
 const mobileChat  = ref(null)
+const micMuted = ref(false)
 const showMobileChat    = ref(false)
 const mobileUnreadCount = ref(0)
 const clueInput        = ref('')
@@ -82,10 +84,22 @@ watch(rolePopupVisible, (visible) => {
   } catch { /* void */ }
 })
 
-watch(displayPhase, (phase) => {
+watch(displayPhase, (phase, oldPhase) => {
   if (phase === 'CLUE_SUBMISSION') {
     const id = myUserId.value
     if (!id || !playerClues.value?.[id]) myClueSubmitted.value = false
+  }
+  if (phase === 'DISCUSSION') {
+    const id = myUserId.value
+    if (id) {
+      const peerIds = (players.value || [])
+        .map(p => p?.id || p?.userId)
+        .filter(pid => pid && pid !== id)
+      voiceChat.init(code, String(id), peerIds)
+    }
+  } else if (oldPhase === 'DISCUSSION') {
+    voiceChat.destroy()
+    micMuted.value = false
   }
 })
 
@@ -117,6 +131,7 @@ onMounted(() => {
       } else {
         roomStore.initWS(code)
       }
+
     } catch (e) {
       const msg = e?.message || ''
       if (typeof msg === 'string' && msg.includes('Cannot join room')) {
@@ -136,6 +151,7 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
+  voiceChat.destroy()
   roomStore.leave()
 })
 
@@ -153,6 +169,10 @@ function getClue(player) {
 function isSelf(player) {
   const uid = player?.id || player?.userId
   return uid && uid === myUserId.value
+}
+
+function toggleMic() {
+  micMuted.value = voiceChat.toggleMute()
 }
 
 function sendChat() {
@@ -235,10 +255,38 @@ function timerColor(t) {
           </p>
         </div>
         <Avatar :name="authStore.user?.username || authStore.user?.name || 'P'" :active="true" size="sm" class="flex-shrink-0" />
+        <!-- Mute button (mobile) -->
+        <button v-if="displayPhase === 'DISCUSSION'" @click="toggleMic" :title="micMuted ? 'Unmute mic' : 'Mute mic'"
+          :class="['w-8 h-8 rounded-full flex items-center justify-center transition-colors flex-shrink-0',
+            micMuted ? 'bg-red-700' : 'bg-white/10']">
+          <svg v-if="!micMuted" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 10a7 7 0 01-14 0M12 19v4M8 23h8" />
+          </svg>
+          <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <line x1="1" y1="1" x2="23" y2="23" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16.95A7 7 0 015 10M19 10a7 7 0 01-.34 2.19M12 19v4M8 23h8" />
+          </svg>
+        </button>
       </div>
 
       <!-- User avatar (desktop) -->
       <div class="hidden md:flex items-center gap-2 flex-shrink-0">
+        <!-- Mute button -->
+        <button v-if="displayPhase === 'DISCUSSION'" @click="toggleMic" :title="micMuted ? 'Unmute mic' : 'Mute mic'"
+          :class="['w-8 h-8 rounded-full flex items-center justify-center transition-colors',
+            micMuted ? 'bg-red-700 hover:bg-red-600' : 'bg-white/10 hover:bg-white/20']">
+          <svg v-if="!micMuted" xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 1a3 3 0 00-3 3v8a3 3 0 006 0V4a3 3 0 00-3-3z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M19 10a7 7 0 01-14 0M12 19v4M8 23h8" />
+          </svg>
+          <svg v-else xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <line x1="1" y1="1" x2="23" y2="23" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 9v3a3 3 0 005.12 2.12M15 9.34V4a3 3 0 00-5.94-.6" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16.95A7 7 0 015 10M19 10a7 7 0 01-.34 2.19M12 19v4M8 23h8" />
+          </svg>
+        </button>
         <span class="text-xs text-gray-400 font-semibold truncate max-w-[120px]">{{ authStore.user?.username || authStore.user?.name || 'Player' }}</span>
         <Avatar :name="authStore.user?.username || authStore.user?.name || 'P'" :active="true" size="sm" />
       </div>
