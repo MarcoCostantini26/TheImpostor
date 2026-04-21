@@ -1,3 +1,9 @@
+## [3.5.2](https://github.com/MarcoCostantini26/TheImpostor/compare/3.5.1...3.5.2) (2026-04-21)
+
+### Bug Fixes
+
+* **db:** fixed username availability check ([41dde94](https://github.com/MarcoCostantini26/TheImpostor/commit/41dde94467ae4b24bc52182b4cc024b6bca50dd5))
+
 ## [3.5.1](https://github.com/MarcoCostantini26/TheImpostor/compare/3.5.0...3.5.1) (2026-04-21)
 
 ### Dependency updates
