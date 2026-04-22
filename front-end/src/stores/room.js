@@ -3,6 +3,7 @@ import { ref, computed, watch } from 'vue'
 import * as wsService from '../services/wsService'
 import * as roomService from '../services/roomService'
 import { useAuthStore } from './auth'
+import { matchesId, findPlayerById } from '../helpers/player'
 
 export const useRoomStore = defineStore('room', () => {
   const players = ref([])
@@ -73,7 +74,7 @@ export const useRoomStore = defineStore('room', () => {
 
     return players.value.find((p) => {
       if (!p) return false
-      if (uidCandidates.some((id) => id && (p.id === id || p.userId === id || p.user_id === id))) return true
+      if (uidCandidates.some((id) => matchesId(p, id))) return true
       if (username && (p.username === username || p.displayName === username)) return true
       if (typeof p === 'string' && username && p === username) return true
       return false
@@ -94,7 +95,7 @@ export const useRoomStore = defineStore('room', () => {
 
     if (cp) {
       if (cp.host) return true
-      return allIds.some((id) => id && (cp.id === id || cp.userId === id || cp.user_id === id))
+      return allIds.some((id) => matchesId(cp, id))
     }
 
     return false
@@ -102,11 +103,12 @@ export const useRoomStore = defineStore('room', () => {
 
   function upsertPlayer(incoming) {
     if (!incoming) return
-    const idx = players.value.findIndex((pl) => (
-      (pl.id && incoming.id && pl.id === incoming.id) ||
-      (pl.userId && incoming.userId && pl.userId === incoming.userId) ||
-      (pl.username && incoming.username && pl.username === incoming.username)
-    ))
+    const incomingId = incoming.id || incoming.userId
+    const idx = players.value.findIndex((pl) => {
+      if (!pl) return false
+      if (incomingId && matchesId(pl, incomingId)) return true
+      return pl.username && incoming.username && pl.username === incoming.username
+    })
     if (idx !== -1) {
       const existing = players.value[idx]
       const merged = { ...existing, ...incoming }
@@ -125,7 +127,7 @@ export const useRoomStore = defineStore('room', () => {
     return incoming.map(p => {
       if (!p) return p
       const pid = p.id || p.userId
-      const existing = pid ? players.value.find(e => e && (e.id === pid || e.userId === pid)) : null
+      const existing = pid ? findPlayerById(players.value, pid) : null
       if (existing && (existing.status === 'DEAD' || existing.eliminated)) {
         return { ...p, status: 'DEAD', eliminated: true }
       }
@@ -135,282 +137,266 @@ export const useRoomStore = defineStore('room', () => {
 
   function removePlayerById(id) {
     if (!id) return
-    players.value = players.value.filter((pl) => !(pl && (pl.id === id || pl.userId === id || pl.user_id === id)))
+    players.value = players.value.filter((pl) => !(pl && matchesId(pl, id)))
+  }
+
+  // --- WS action handlers ---
+
+  function onRoomUpdate(payload) {
+    players.value = mergePlayersPreserveDeadStatus(payload.players || payload.room?.players || [])
+    roomStatus.value = payload.room?.status || payload.status || null
+    roomHostId.value = payload.room?.hostId || payload.hostId || null
+  }
+
+  function onPlayerJoined(payload) {
+    upsertPlayer(payload.player || payload.user || payload)
+  }
+
+  function onPlayerReady(payload) {
+    const id = payload.userId || payload.playerId || payload.senderId || (payload.player && (payload.player.id || payload.player.userId))
+    const ready = payload.ready ?? payload.isReady ?? (payload.player && payload.player.ready)
+    if (id) {
+      const idx = players.value.findIndex(pl => matchesId(pl, id))
+      if (idx !== -1) players.value.splice(idx, 1, { ...players.value[idx], ready })
+    } else if (payload.username) {
+      players.value = players.value.map(p => (p && (p.username === payload.username || p.displayName === payload.username)) ? { ...p, ready } : p)
+    }
+  }
+
+  function onPlayerLeft(payload) {
+    const id = payload.userId || payload.playerId || payload.id
+    const uname = payload.username || payload.user || payload.displayName
+    if (id) removePlayerById(id)
+    else if (uname) players.value = players.value.filter((pl) => !(pl && (pl.username === uname || pl.displayName === uname)))
+  }
+
+  function onSettingsUpdate(payload) {
+    const settings = payload.settings || payload || {}
+    if (settings.impostors !== undefined) impostors.value = settings.impostors
+    if (settings.discussionTime !== undefined) discussionTime.value = settings.discussionTime
+  }
+
+  function onChatMessage(msg, payload) {
+    const p = payload || {}
+    const senderId = p.senderId || p.userId || p.fromId || p.from || null
+    let senderName = p.sender || p.displayName || p.username || p.from || null
+    if (!senderName && senderId) {
+      const pl = findPlayerById(players.value, senderId)
+      if (pl) senderName = pl.username || pl.displayName || (typeof pl === 'string' ? pl : null)
+    }
+    if (!senderName) senderName = p.username || p.displayName || senderId || 'Player'
+    messages.value.push({
+      sender: senderName,
+      senderId: senderId || null,
+      content: p.content || p.message || '',
+      timestamp: p.timestamp || new Date().toISOString(),
+      _raw: p
+    })
+    messages.value = messages.value.slice(-MAX_PERSISTED)
+  }
+
+  function onGameStarted() {
+    roomStatus.value = 'STARTED'
+    gamePhase.value = 'DISCUSSION'
+    displayPhase.value = 'CLUE_SUBMISSION'
+  }
+
+  function onClueSubmitted(payload) {
+    const uid = payload.userId || payload.senderId
+    const clue = payload.clue || ''
+    if (uid && clue) playerClues.value = { ...playerClues.value, [uid]: clue }
+    try { stopTimer() } catch { /* void */ }
+    _pendingTimerSeconds = 0
+  }
+
+  function onCluesState(msg) {
+    const clues = (msg.payload || {}).clues || {}
+    playerClues.value = { ...playerClues.value, ...clues }
+  }
+
+  function onPlayersStatus(msg) {
+    const aliveIds = ((msg.payload || {}).alivePlayerIds || []).map(String)
+    if (aliveIds.length > 0) {
+      players.value = players.value.map(player => {
+        if (!player) return player
+        const pid = player.id || player.userId
+        if (!pid) return player
+        return aliveIds.includes(String(pid))
+          ? { ...player, status: 'ALIVE' }
+          : { ...player, status: 'DEAD', eliminated: true }
+      })
+    }
+  }
+
+  function onTurnStarted(msg) {
+    const p = msg.payload || {}
+    const fullSecs = p.fullSeconds || p.seconds || 15
+    turnSeconds.value = fullSecs
+    displayPhase.value = 'CLUE_SUBMISSION'
+    currentTurnUserId.value = p.yourTurn ? (useAuthStore().user?.id || null) : (p.activePlayerId || null)
+    _pendingTimerSeconds = 0
+    if (p.expiresAt) {
+      const expiresTs = typeof p.expiresAt === 'number' ? p.expiresAt : Date.parse(p.expiresAt)
+      startTimer(Math.max(0, Math.ceil((expiresTs - Date.now()) / 1000)))
+    } else {
+      startTimer(fullSecs)
+    }
+  }
+
+  function onDiscussionPhaseStarted(msg) {
+    const p = msg.payload || {}
+    allCluesSubmitted.value = true
+    currentTurnUserId.value = null
+    discussionFreeSeconds.value = p.seconds || 60
+    displayPhase.value = 'DISCUSSION'
+    if (p.expiresAt) {
+      const expiresTs = typeof p.expiresAt === 'number' ? p.expiresAt : Date.parse(p.expiresAt)
+      startTimer(Math.max(0, Math.ceil((expiresTs - Date.now()) / 1000)))
+    } else {
+      startTimer(p.seconds || 60)
+    }
+  }
+
+  // --- ENGINE_EVENT handlers ---
+
+  function onRoleAssigned(ep) {
+    myRole.value = ep.role || null
+    mySecretWord.value = ep.secretWord || null
+    rolePopupVisible.value = true
+    try {
+      if (currentRoomCode) {
+        sessionStorage.setItem(ROLE_STORAGE_PREFIX + currentRoomCode, JSON.stringify({ role: myRole.value, secretWord: mySecretWord.value }))
+      }
+    } catch { /* void */ }
+  }
+
+  function onPhaseChanged(ep) {
+    gamePhase.value = ep.newPhase || null
+    if (ep.newPhase === 'VOTING') {
+      votedPlayers.value = []
+      voteCounts.value = {}
+      votedBy.value = {}
+      displayPhase.value = 'VOTING'
+      if (ep.expiresAt) {
+        const expiresTs = typeof ep.expiresAt === 'number' ? ep.expiresAt : Date.parse(ep.expiresAt)
+        startTimer(Math.max(0, Math.ceil((expiresTs - Date.now()) / 1000)))
+      } else {
+        startTimer(ep.timer || 60)
+      }
+    }
+  }
+
+  function onPlayerVoted(ep) {
+    const voter = ep.voterId
+    const target = ep.targetId || null
+    if (!voter) return
+    if (!votedPlayers.value.includes(voter)) votedPlayers.value = [...votedPlayers.value, voter]
+    const prev = votedBy.value[voter]
+    if (prev) voteCounts.value = { ...voteCounts.value, [prev]: Math.max(0, (voteCounts.value[prev] || 0) - 1) }
+    if (target) {
+      voteCounts.value = { ...voteCounts.value, [target]: (voteCounts.value[target] || 0) + 1 }
+      votedBy.value = { ...votedBy.value, [voter]: target }
+    }
+  }
+
+  function onVotingResolved(ep) {
+    resolveVotingInProgress.value = false
+    const eliminated = ep.eliminatedId || ''
+    lastEliminatedId.value = eliminated || null
+    gamePhase.value = 'DISCUSSION'
+    displayPhase.value = 'CLUE_SUBMISSION'
+    currentTurnUserId.value = null
+    votedPlayers.value = []
+    voteCounts.value = {}
+    votedBy.value = {}
+    playerClues.value = {}
+    allCluesSubmitted.value = false
+    stopTimer()
+    if (eliminated) {
+      const eliminatedPlayer = findPlayerById(players.value, eliminated)
+      players.value = players.value.map(p => {
+        if (!p) return p
+        return matchesId(p, eliminated) ? { ...p, status: 'DEAD', eliminated: true } : p
+      })
+      eliminationData.value = {
+        eliminatedId: eliminated,
+        eliminatedName: eliminatedPlayer?.username || eliminatedPlayer?.displayName || eliminated,
+        eliminatedRole: ep.eliminatedRole || null,
+        isTie: false
+      }
+    } else {
+      eliminationData.value = { eliminatedId: null, eliminatedName: null, eliminatedRole: null, isTie: true }
+    }
+    eliminationPopupVisible.value = true
+  }
+
+  function onImpostorGuessPhase(ep) {
+    resolveVotingInProgress.value = false
+    const impostorId = ep.impostorId || ep.ImpostorId || null
+    impostorIdForGuess.value = impostorId
+    gamePhase.value = 'GUESSING_WORD'
+    displayPhase.value = 'GUESSING_WORD'
+    votedPlayers.value = []
+    voteCounts.value = {}
+    votedBy.value = {}
+    stopTimer()
+    if (impostorId) {
+      players.value = players.value.map(p => {
+        if (!p) return p
+        return matchesId(p, impostorId) ? { ...p, status: 'DEAD', eliminated: true } : p
+      })
+    }
+  }
+
+  function onPlayerEliminated(ep) {
+    if (!ep.playerId) return
+    players.value = players.value.map(p => {
+      if (!p) return p
+      return matchesId(p, ep.playerId) ? { ...p, status: 'DEAD', eliminated: true } : p
+    })
+  }
+
+  function onGameEnded(ep) {
+    gameWinner.value = ep.winner || null
+    roomStatus.value = 'ENDED'
+  }
+
+  const engineEventHandlers = {
+    RoleAssigned: onRoleAssigned,
+    PhaseChanged: onPhaseChanged,
+    PlayerVoted: onPlayerVoted,
+    VotingResolved: onVotingResolved,
+    ImpostorGuessPhase: onImpostorGuessPhase,
+    PlayerEliminated: onPlayerEliminated,
+    GameEnded: onGameEnded,
+  }
+
+  const actionHandlers = {
+    room_update: onRoomUpdate, room_state: onRoomUpdate, 'room:updated': onRoomUpdate,
+    player_joined: onPlayerJoined, player_join: onPlayerJoined, joined: onPlayerJoined,
+    player_ready: onPlayerReady, PLAYER_READY: onPlayerReady, toggle_ready: onPlayerReady,
+    player_left: onPlayerLeft, left: onPlayerLeft, player_removed: onPlayerLeft,
+    update_settings: onSettingsUpdate, UPDATE_SETTINGS: onSettingsUpdate, 'settings:update': onSettingsUpdate,
+    game_started: onGameStarted, GAME_STARTED: onGameStarted,
+    clue_submitted: onClueSubmitted,
   }
 
   function handleIncoming(msg) {
     const payload = msg.payload || msg || {}
     const action = payload.action || msg.type || payload.type
 
-    if (payload.room && Array.isArray(payload.room.players)) {
-      players.value = mergePlayersPreserveDeadStatus(payload.room.players)
-      roomStatus.value = payload.room.status || null
-      roomHostId.value = payload.room.hostId || null
-      return
-    }
+    if (payload.room && Array.isArray(payload.room.players)) { onRoomUpdate(payload); return }
+    if (Array.isArray(payload.players)) { onRoomUpdate(payload); return }
 
-    if (Array.isArray(payload.players)) {
-      players.value = mergePlayersPreserveDeadStatus(payload.players)
-      roomStatus.value = payload.status || null
-      roomHostId.value = payload.hostId || null
-      return
-    }
+    if (msg.type === 'CHAT' || action === 'chat_message' || payload.type === 'CHAT') { onChatMessage(msg, payload); return }
+    if (msg.type === 'clues_state') { onCluesState(msg); return }
+    if (msg.type === 'players_status') { onPlayersStatus(msg); return }
+    if (msg.type === 'turn_started') { onTurnStarted(msg); return }
+    if (msg.type === 'discussion_phase_started') { onDiscussionPhaseStarted(msg); return }
+    if (action === 'clue_submitted' || msg.type === 'clue_submitted') { onClueSubmitted(payload); return }
+    if (msg.type === 'ENGINE_EVENT') { const ep = msg.payload || {}; engineEventHandlers[ep.eventName]?.(ep); return }
 
-    if (action === 'room_update' || action === 'room_state' || action === 'room:updated') {
-      players.value = mergePlayersPreserveDeadStatus(payload.players || payload.room?.players || [])
-      roomStatus.value = payload.room?.status || payload.status || null
-      roomHostId.value = payload.room?.hostId || payload.hostId || null
-      return
-    }
-
-    if (action === 'player_joined' || action === 'player_join' || action === 'joined') {
-      const incoming = payload.player || payload.user || payload
-      upsertPlayer(incoming)
-      return
-    }
-
-    if (action === 'player_ready' || action === 'PLAYER_READY' || action === 'toggle_ready') {
-      const id = payload.userId || payload.playerId || payload.senderId || (payload.player && (payload.player.id || payload.player.userId))
-      const ready = payload.ready ?? payload.isReady ?? (payload.player && payload.player.ready)
-      if (id) {
-        const idx = players.value.findIndex(pl => pl && (pl.id === id || pl.userId === id || pl.user_id === id))
-        if (idx !== -1) players.value.splice(idx, 1, { ...players.value[idx], ready })
-      } else if (payload.username) {
-        players.value = players.value.map(p => (p && (p.username === payload.username || p.displayName === payload.username)) ? { ...p, ready } : p)
-      }
-      return
-    }
-
-    if (action === 'player_left' || action === 'left' || action === 'player_removed') {
-      const id = payload.userId || payload.playerId || payload.id
-      const uname = payload.username || payload.user || payload.displayName
-      if (id) removePlayerById(id)
-      else if (uname) players.value = players.value.filter((pl) => !(pl && (pl.username === uname || pl.displayName === uname)))
-      return
-    }
-
-    if (action === 'update_settings' || action === 'UPDATE_SETTINGS' || action === 'settings:update') {
-      const settings = payload.settings || payload || {}
-      if (settings.impostors !== undefined) impostors.value = settings.impostors
-      if (settings.discussionTime !== undefined) discussionTime.value = settings.discussionTime
-      return
-    }
-
-    if (msg.type === 'CHAT' || action === 'chat_message' || payload.type === 'CHAT') {
-      const p = payload || {}
-      const senderId = p.senderId || p.userId || p.fromId || p.from || null
-      let senderName = p.sender || p.displayName || p.username || p.from || null
-
-      if (!senderName && senderId) {
-        const pl = players.value.find(pl => {
-          if (!pl) return false
-          const ids = [pl.id, pl.userId, pl.user_id, pl._id, pl.connectionId, pl.socketId]
-          return ids.some(id => id !== undefined && id !== null && String(id) === String(senderId))
-        })
-        if (pl) senderName = pl.username || pl.displayName || (typeof pl === 'string' ? pl : null)
-      }
-
-      if (!senderName) {
-        senderName = p.username || p.displayName || senderId || 'Player'
-      }
-
-      messages.value.push({
-        sender: senderName,
-        senderId: senderId || null,
-        content: p.content || p.message || '',
-        timestamp: p.timestamp || new Date().toISOString(),
-        _raw: p
-      })
-      messages.value = messages.value.slice(-MAX_PERSISTED)
-      return
-    }
-
-    if (action === 'game_started' || action === 'GAME_STARTED') {
-      roomStatus.value = 'STARTED'
-      gamePhase.value = 'DISCUSSION'
-      displayPhase.value = 'CLUE_SUBMISSION'
-      return
-    }
-
-    if (action === 'clue_submitted' || msg.type === 'clue_submitted') {
-      const uid = payload.userId || payload.senderId
-      const clue = payload.clue || ''
-      if (uid && clue) playerClues.value = { ...playerClues.value, [uid]: clue }
-      try { stopTimer() } catch { /* void */ }
-      _pendingTimerSeconds = 0
-      return
-    }
-
-    if (msg.type === 'clues_state') {
-      const p = msg.payload || {}
-      const clues = p.clues || {}
-      playerClues.value = { ...playerClues.value, ...clues }
-      return
-    }
-
-    if (msg.type === 'players_status') {
-      const p = msg.payload || {}
-      const aliveIds = (p.alivePlayerIds || []).map(String)
-      if (aliveIds.length > 0) {
-        players.value = players.value.map(player => {
-          if (!player) return player
-          const pid = player.id || player.userId
-          if (!pid) return player
-          return aliveIds.includes(String(pid))
-            ? { ...player, status: 'ALIVE' }
-            : { ...player, status: 'DEAD', eliminated: true }
-        })
-      }
-      return
-    }
-
-    if (msg.type === 'turn_started') {
-      const p = msg.payload || {}
-      const fullSecs = p.fullSeconds || p.seconds || 15
-      turnSeconds.value = fullSecs
-      displayPhase.value = 'CLUE_SUBMISSION'
-      if (p.yourTurn) {
-        const myId = useAuthStore().user?.id
-        currentTurnUserId.value = myId || null
-      } else {
-        currentTurnUserId.value = p.activePlayerId || null
-      }
-      _pendingTimerSeconds = 0
-      if (p.expiresAt) {
-        const expiresTs = typeof p.expiresAt === 'number' ? p.expiresAt : Date.parse(p.expiresAt)
-        const now = Date.now()
-        const remaining = Math.max(0, Math.ceil((expiresTs - now) / 1000))
-        startTimer(remaining)
-      } else {
-        startTimer(fullSecs)
-      }
-      return
-    }
-
-    if (msg.type === 'discussion_phase_started') {
-      const p = msg.payload || {}
-      allCluesSubmitted.value = true
-      currentTurnUserId.value = null
-      discussionFreeSeconds.value = p.seconds || 60
-      displayPhase.value = 'DISCUSSION'
-      if (p.expiresAt) {
-        const expiresTs = typeof p.expiresAt === 'number' ? p.expiresAt : Date.parse(p.expiresAt)
-        const now = Date.now()
-        const remaining = Math.max(0, Math.ceil((expiresTs - now) / 1000))
-        startTimer(remaining)
-      } else {
-        startTimer(p.seconds || 60)
-      }
-      return
-    }
-
-    if (msg.type === 'ENGINE_EVENT') {
-      const ep = msg.payload || {}
-      if (ep.eventName === 'RoleAssigned') {
-        myRole.value = ep.role || null
-        mySecretWord.value = ep.secretWord || null
-        rolePopupVisible.value = true
-        try {
-          if (currentRoomCode) {
-            sessionStorage.setItem(ROLE_STORAGE_PREFIX + currentRoomCode, JSON.stringify({ role: myRole.value, secretWord: mySecretWord.value }))
-          }
-        } catch { /* void */ }
-      } else if (ep.eventName === 'PhaseChanged') {
-        gamePhase.value = ep.newPhase || null
-        if (ep.newPhase === 'VOTING') {
-          votedPlayers.value = []
-          voteCounts.value = {}
-          votedBy.value = {}
-          displayPhase.value = 'VOTING'
-          if (ep.expiresAt) {
-            const expiresTs = typeof ep.expiresAt === 'number' ? ep.expiresAt : Date.parse(ep.expiresAt)
-            const remaining = Math.max(0, Math.ceil((expiresTs - Date.now()) / 1000))
-            startTimer(remaining)
-          } else {
-            startTimer(ep.timer || 60)
-          }
-        }
-      } else if (ep.eventName === 'PlayerVoted') {
-        const voter = ep.voterId
-        const target = ep.targetId || null
-        if (voter) {
-          if (!votedPlayers.value.includes(voter)) votedPlayers.value = [...votedPlayers.value, voter]
-          const prev = votedBy.value[voter]
-          if (prev) {
-            const prevCount = voteCounts.value[prev] || 0
-            voteCounts.value = { ...voteCounts.value, [prev]: Math.max(0, prevCount - 1) }
-          }
-          if (target) {
-            const cur = voteCounts.value[target] || 0
-            voteCounts.value = { ...voteCounts.value, [target]: cur + 1 }
-            votedBy.value = { ...votedBy.value, [voter]: target }
-          }
-        }
-      } else if (ep.eventName === 'VotingResolved') {
-        resolveVotingInProgress.value = false
-        const eliminated = ep.eliminatedId || ''
-        lastEliminatedId.value = eliminated || null
-        gamePhase.value = 'DISCUSSION'
-        displayPhase.value = 'CLUE_SUBMISSION'
-        currentTurnUserId.value = null
-        votedPlayers.value = []
-        voteCounts.value = {}
-        votedBy.value = {}
-        playerClues.value = {}
-        allCluesSubmitted.value = false
-        stopTimer()
-        if (eliminated) {
-          const eliminatedPlayer = players.value.find(p => {
-            if (!p) return false
-            const pid = p.id || p.userId
-            return pid === eliminated
-          })
-          players.value = players.value.map(p => {
-            if (!p) return p
-            const pid = p.id || p.userId
-            return pid === eliminated ? { ...p, status: 'DEAD', eliminated: true } : p
-          })
-          eliminationData.value = {
-            eliminatedId: eliminated,
-            eliminatedName: eliminatedPlayer?.username || eliminatedPlayer?.displayName || eliminated,
-            eliminatedRole: ep.eliminatedRole || null,
-            isTie: false
-          }
-        } else {
-          eliminationData.value = { eliminatedId: null, eliminatedName: null, eliminatedRole: null, isTie: true }
-        }
-        eliminationPopupVisible.value = true
-      } else if (ep.eventName === 'ImpostorGuessPhase') {
-        resolveVotingInProgress.value = false
-        const impostorId = ep.impostorId || ep.ImpostorId || null
-        impostorIdForGuess.value = impostorId
-        gamePhase.value = 'GUESSING_WORD'
-        displayPhase.value = 'GUESSING_WORD'
-        votedPlayers.value = []
-        voteCounts.value = {}
-        votedBy.value = {}
-        stopTimer()
-        if (impostorId) {
-          players.value = players.value.map(p => {
-            if (!p) return p
-            const pid = p.id || p.userId
-            return pid === impostorId ? { ...p, status: 'DEAD', eliminated: true } : p
-          })
-        }
-      } else if (ep.eventName === 'PlayerEliminated') {
-        if (ep.playerId) {
-          players.value = players.value.map(p => {
-            if (!p) return p
-            const pid = p.id || p.userId
-            return pid === ep.playerId ? { ...p, status: 'DEAD', eliminated: true } : p
-          })
-        }
-      } else if (ep.eventName === 'GameEnded') {
-        gameWinner.value = ep.winner || null
-        roomStatus.value = 'ENDED'
-      }
-      return
-    }
+    actionHandlers[action]?.(payload)
   }
 
   function initWS(roomCode) {
