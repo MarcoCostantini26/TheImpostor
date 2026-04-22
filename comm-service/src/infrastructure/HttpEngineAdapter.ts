@@ -7,8 +7,8 @@ export class HttpEngineAdapter implements EngineGateway {
         this.engineUrl = process.env.ENGINE_URL || 'http://localhost:8081';
     }
 
-    async createGame(gameId: string, playerIds: string[], requestedImpostors: number, secretWord: string): Promise<void> {
-        await this.post(`/games/create`, { gameId, playerIds, requestedImpostors, secretWord });
+    async createGame(gameId: string, playerIds: string[], requestedImpostors: number, secretWord: string, hint: string): Promise<void> {
+        await this.post(`/games/create`, { gameId, playerIds, requestedImpostors, secretWord, hint });
     }
 
     async guessSecretWord(gameId: string, impostorId: string, guessedWord: string): Promise<void> {

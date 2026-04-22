@@ -29,6 +29,7 @@ type CreateGameRequest struct {
 	PlayerIDs          []string `json:"playerIds"`
 	RequestedImpostors int      `json:"requestedImpostors"`
 	SecretWord         string   `json:"secretWord"`
+	Hint               string   `json:"hint"`
 }
 
 type CastVoteRequest struct {
@@ -58,7 +59,7 @@ func (c *GameController) HandleCreateGame(w http.ResponseWriter, r *http.Request
 		return
 	}
 
-	err := c.appService.CreateGameUseCase(req.GameID, req.PlayerIDs, req.RequestedImpostors)
+	err := c.appService.CreateGameUseCase(req.GameID, req.PlayerIDs, req.RequestedImpostors, req.SecretWord, req.Hint)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
 		return
@@ -75,7 +76,7 @@ func (c *GameController) HandleAdvanceToVoting(w http.ResponseWriter, r *http.Re
 		return
 	}
 
-	// In una vera app, prenderesti l'ID dall'URL. 
+	// In una vera app, prenderesti l'ID dall'URL.
 	// Per semplicità ora lo leggiamo da un parametro di query: ?gameId=123
 	gameID := r.URL.Query().Get("gameId")
 	if gameID == "" {
@@ -144,7 +145,6 @@ func (c *GameController) HandleResolveVoting(w http.ResponseWriter, r *http.Requ
 	w.WriteHeader(http.StatusOK)
 	json.NewEncoder(w).Encode(map[string]string{"message": "Votazione conclusa. Eventuali giocatori eliminati e condizioni di vittoria controllate."})
 }
-
 
 // HandleGetGameState risponde a GET /games/state?gameId={id}
 func (c *GameController) HandleGetGameState(w http.ResponseWriter, r *http.Request) {

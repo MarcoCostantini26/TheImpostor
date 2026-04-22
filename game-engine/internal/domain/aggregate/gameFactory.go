@@ -48,8 +48,8 @@ func NewGameFactory() *GameFactory {
 	return &GameFactory{}
 }
 
-// Nota: ho tolto 'secretWord string' dai parametri, perché ora la sceglie lui!
-func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImpostors int) (*Game, error) {
+// Se secretWord e hint sono forniti (da DB), vengono usati; altrimenti si sceglie dalla lista hardcoded.
+func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImpostors int, secretWord string, hint string) (*Game, error) {
 	numPlayers := len(playerIDs)
 
 	if numPlayers < 4 {
@@ -97,6 +97,9 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 	}
 
 	pair := wordPairs[rand.Intn(len(wordPairs))]
+	if secretWord != "" && hint != "" {
+		pair = [2]string{secretWord, hint}
+	}
 
 	game := &Game{
 		ID:      gameID,
