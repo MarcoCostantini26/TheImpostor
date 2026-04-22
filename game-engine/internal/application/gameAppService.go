@@ -29,9 +29,9 @@ func NewGameAppService(
 	}
 }
 
-func (app *GameAppService) CreateGameUseCase(gameID string, playerIDs []string, requestedImpostors int) error {
+func (app *GameAppService) CreateGameUseCase(gameID string, playerIDs []string, requestedImpostors int, secretWord string, hint string) error {
 
-	game, err := app.gameFactory.CreateGame(gameID, playerIDs, requestedImpostors)
+	game, err := app.gameFactory.CreateGame(gameID, playerIDs, requestedImpostors, secretWord, hint)
 	if err != nil {
 		return err
 	}

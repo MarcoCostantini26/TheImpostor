@@ -537,10 +537,15 @@ wss.on('connection', async (ws: WebSocket) => {
                 // 1. Aggiorna lo stato della lobby e prendi la lista finale dei playerIds restituiti
                 const playerIds = await lobbyService.handleStartGame(roomCode, hostId) || [];
 
-                // 2. Inoltra l'intero payload (arricchito con gameId, playerIds e impostori) al RoutingService
+                // 2. Recupera la parola del round dal lobby-service (DB)
+                const wordEntry = await lobbyService.getNextWord(roomCode);
+                const secretWord = wordEntry?.word || '';
+                const hint = wordEntry?.impostorClue || '';
+
+                // 3. Inoltra l'intero payload (arricchito con gameId, playerIds, impostori e parola) al RoutingService
                 const settings = roomSettings.get(roomCode);
                 const requestedImpostors = settings?.impostors ?? 1;
-                const enrichedPayload = { ...payload, gameId: roomCode, playerIds, requestedImpostors };
+                const enrichedPayload = { ...payload, gameId: roomCode, playerIds, requestedImpostors, secretWord, hint };
                 const event = new Event('START_GAME', enrichedPayload);
                 await routingService.handleClientEvent(currentUserId, event);
                 return;

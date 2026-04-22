@@ -109,4 +109,18 @@ export class LobbyService {
             console.error(`[LobbyService] ❌ Errore in handleUpdateSettings: ${error.message}`);
         }
     }
+
+    async getNextWord(roomCode: string): Promise<{ word: string; impostorClue: string } | null> {
+        try {
+            const response = await fetch(`${this.lobbyUrl}/api/internal/games/${roomCode}/next-word`);
+            if (response.ok) {
+                const data = await response.json();
+                return { word: String(data.word || ''), impostorClue: String(data.impostorClue || '') };
+            }
+            console.error(`[LobbyService] ❌ getNextWord HTTP ${response.status} per ${roomCode}`);
+        } catch (error: any) {
+            console.error(`[LobbyService] ❌ Errore getNextWord per ${roomCode}: ${error.message}`);
+        }
+        return null;
+    }
 }

@@ -1,7 +1,7 @@
 import { Event } from './Event';
 
 export interface EngineGateway {
-    createGame(gameId: string, playerIds: string[], requestedImpostors: number, secretWord: string): Promise<void>;
+    createGame(gameId: string, playerIds: string[], requestedImpostors: number, secretWord: string, hint: string): Promise<void>;
     
     castVote(gameId: string, voterId: string, targetId: string): Promise<void>;
 

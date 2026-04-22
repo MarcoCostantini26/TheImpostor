@@ -19,7 +19,8 @@ export class RoutingService {
                         String(payload.gameId || payload.roomCode || payload.roomId),
                         Array.isArray(payload.playerIds) ? payload.playerIds : [],
                         Number(payload.requestedImpostors) || 1,
-                        String(payload.secretWord || "")
+                        String(payload.secretWord || ""),
+                        String(payload.hint || "")
                     );
                     break;
 
