@@ -1,3 +1,13 @@
+## [3.7.1](https://github.com/MarcoCostantini26/TheImpostor/compare/3.7.0...3.7.1) (2026-04-22)
+
+### Dependency updates
+
+* **core-deps:** update dependency vue to v3.5.33 ([#135](https://github.com/MarcoCostantini26/TheImpostor/issues/135)) ([813663a](https://github.com/MarcoCostantini26/TheImpostor/commit/813663aa3aff05010046612433175dcffec4e066))
+
+### Refactoring
+
+* **frontend:** refactored room.js with helpers ([00c45f4](https://github.com/MarcoCostantini26/TheImpostor/commit/00c45f4f1d31d0f3b5d613628f23bcd05509dffc))
+
 ## [3.7.0](https://github.com/MarcoCostantini26/TheImpostor/compare/3.6.1...3.7.0) (2026-04-22)
 
 ### Features
