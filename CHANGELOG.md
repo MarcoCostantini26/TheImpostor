@@ -1,3 +1,9 @@
+## [3.7.0](https://github.com/MarcoCostantini26/TheImpostor/compare/3.6.1...3.7.0) (2026-04-22)
+
+### Features
+
+* **words:** secret words and hints now taken from db through comm service ([f94648d](https://github.com/MarcoCostantini26/TheImpostor/commit/f94648d0346510d09f89a34cdfa75a2619633d1c))
+
 ## [3.6.1](https://github.com/MarcoCostantini26/TheImpostor/compare/3.6.0...3.6.1) (2026-04-21)
 
 ### Dependency updates
