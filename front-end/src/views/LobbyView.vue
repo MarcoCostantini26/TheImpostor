@@ -6,6 +6,7 @@ import { useAuthStore } from '../stores/auth'
 import { useRoomStore } from '../stores/room'
 import Avatar from '../components/AvatarIcon.vue'
 import RolePopup from '../components/RolePopup.vue'
+import { matchesId } from '../helpers/player'
 
 const route = useRoute()
 const router = useRouter()
@@ -36,14 +37,13 @@ const canStart = computed(() => allReady.value && enoughPlayers.value)
 const maxImpostors = computed(() => players.value.length >= 6 ? 2 : 1)
 
 function isCurrent(p) {
-  const uid = authStore.user?.id
   if (!p) return false
-  return (
-    (uid && (p.id === uid || p.userId === uid)) ||
-    (p.username && p.username === authStore.user?.username) ||
-    (p.displayName && p.displayName === (authStore.user?.username || authStore.user?.name)) ||
-    (typeof p === 'string' && p === (authStore.user?.username || authStore.user?.name))
-  )
+  const uid = authStore.user?.id
+  const uname = authStore.user?.username || authStore.user?.name
+  if (uid && matchesId(p, uid)) return true
+  if (uname && (p.username === uname || p.displayName === uname)) return true
+  if (typeof p === 'string' && p === uname) return true
+  return false
 }
 
 function isPlayerHost(p) {
