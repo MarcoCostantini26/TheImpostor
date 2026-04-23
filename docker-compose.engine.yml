@@ -1,0 +1,14 @@
+# ============================================================
+# Mac 3 - game-engine (172.20.10.6)
+# Esegui con: docker compose -f docker-compose.engine.yml up --build
+# ============================================================
+services:
+  game-engine:
+    build:
+      context: ./game-engine
+      dockerfile: Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      - COMM_SERVICE_URL=http://172.20.10.5:3000
+

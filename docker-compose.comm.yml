@@ -1,0 +1,16 @@
+# ============================================================
+# Mac 2 - comm-service (172.20.10.5)
+# Esegui con: docker compose -f docker-compose.comm.yml up --build
+# ============================================================
+services:
+  comm-service:
+    build:
+      context: ./comm-service
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - PORT=3000
+      - ENGINE_URL=http://172.20.10.6:8081
+      - LOBBY_URL=http://172.20.10.2:8080
+

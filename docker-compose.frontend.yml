@@ -1,0 +1,15 @@
+# ============================================================
+# Mac 4 - frontend (172.20.10.7)
+# Esegui con: docker compose -f docker-compose.frontend.yml up --build
+# ============================================================
+services:
+  frontend:
+    build:
+      context: ./front-end
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://172.20.10.2:8080
+      - VITE_WS_URL=ws://172.20.10.5:3000
+
