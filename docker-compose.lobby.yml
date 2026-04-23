@@ -11,6 +11,6 @@ services:
       - "8080:8080"
     environment:
       - SPRING_PROFILES_ACTIVE=dev
-      - MONGODB_URI=${MONGODB_URI}
+      - MONGODB_URI=mongodb+srv://danielmeco20_db_user:gszuPhM8DxIAb50B@theimpostor.q4obqb7.mongodb.net/theimpostor?appName=TheImpostor
       - APP_COMM_SERVICE_URL=http://172.20.10.5:3000
 
