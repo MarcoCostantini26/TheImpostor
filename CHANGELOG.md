@@ -1,3 +1,21 @@
+## [3.8.0](https://github.com/MarcoCostantini26/TheImpostor/compare/3.7.2...3.8.0) (2026-04-26)
+
+### Features
+
+* **room:** added leave room button and fixed guest issue ([d11127f](https://github.com/MarcoCostantini26/TheImpostor/commit/d11127f592427f89a38c94649b2bfb34019e9091))
+
+### Dependency updates
+
+* **deps:** update dependency @commitlint/cli to v20.5.2 ([#140](https://github.com/MarcoCostantini26/TheImpostor/issues/140)) ([366dba3](https://github.com/MarcoCostantini26/TheImpostor/commit/366dba31a00f8348f1e189af0809d0ad63f11449))
+* **deps:** update dependency vite to v8.0.10 ([#138](https://github.com/MarcoCostantini26/TheImpostor/issues/138)) ([f50ff48](https://github.com/MarcoCostantini26/TheImpostor/commit/f50ff488c0e984bc318f77b622c212d1c4962b97))
+* **deps:** update plugin org.springframework.boot to v4.0.6 ([#139](https://github.com/MarcoCostantini26/TheImpostor/issues/139)) ([25e07e8](https://github.com/MarcoCostantini26/TheImpostor/commit/25e07e81a4dd35a52ec5908823c5f46fae1bdb6d))
+
+### Bug Fixes
+
+* **chatbox:** fixed chatbox size ([bfb6d8b](https://github.com/MarcoCostantini26/TheImpostor/commit/bfb6d8b6dfb3d3d4bdf9f17d288cd1520316c1b6))
+* **game:** cleared clues after submission ([656ac38](https://github.com/MarcoCostantini26/TheImpostor/commit/656ac38d26aa362f86699bada6423632b017c9c3))
+* **lint:** removed unused value ([9cb9de1](https://github.com/MarcoCostantini26/TheImpostor/commit/9cb9de11f3f2831e3d1ab494af221d74f5476f5f))
+
 ## [3.7.2](https://github.com/MarcoCostantini26/TheImpostor/compare/3.7.1...3.7.2) (2026-04-24)
 
 ### Dependency updates
