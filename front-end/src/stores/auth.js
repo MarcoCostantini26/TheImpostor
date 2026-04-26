@@ -56,8 +56,17 @@ export const useAuthStore = defineStore('auth', () => {
     }
 
     function setUserId(id) {
-        if (user.value && !user.value.id) {
+        if (user.value) {
             user.value = { ...user.value, id }
+            localStorage.setItem('user', JSON.stringify(user.value))
+        }
+    }
+
+    function clearGuestId() {
+        if (user.value?.guest) {
+            const rest = { ...user.value }
+            delete rest.id
+            user.value = rest
             localStorage.setItem('user', JSON.stringify(user.value))
         }
     }
@@ -89,5 +98,5 @@ export const useAuthStore = defineStore('auth', () => {
 
     const isAuthenticated = computed(() => !!token.value && !!user.value && !user.value.guest)
 
-    return { user, token, isAuthenticated, login, register, logout, guest, setUserId }
+    return { user, token, isAuthenticated, login, register, logout, guest, setUserId, clearGuestId }
 })

@@ -111,6 +111,10 @@ onBeforeUnmount(() => {
 
 const { startGame, toggleReady, setDiscussionTime, decrementImpostors, incrementImpostors } = roomStore
 function sendChat() { if (!newMessage.value) return; roomStore.sendChat(newMessage.value); newMessage.value = '' }
+function leaveRoom() {
+  roomStore.leave()
+  router.push({ name: 'home' })
+}
 function onRolePopupDismiss() {
   roomStore.dismissRole()
   router.push({ name: 'game', params: { code } })
@@ -120,10 +124,17 @@ function onRolePopupDismiss() {
 <template>
   <div class="min-h-screen bg-[#0f0f0f] text-gray-100 flex flex-col">
     <header class="w-full bg-[#171717] px-6 py-4 flex items-center justify-between shadow-md">
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-3">
         <router-link to="/">
           <img src="/logo.png" alt="The Impostor" class="h-12 md:h-20 object-contain" />
         </router-link>
+        <button @click="leaveRoom" title="Leave room"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-red-600/80 text-gray-400 hover:text-white text-xs font-semibold transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
+          </svg>
+          <span class="hidden sm:inline">LEAVE</span>
+        </button>
       </div>
 
       <div class="flex-1 flex justify-center">
@@ -136,12 +147,12 @@ function onRolePopupDismiss() {
       </div>
     </header>
 
-    <div class="p-4 md:p-6 flex-1 min-h-0">
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 h-full min-h-0">
+    <div class="p-4 md:p-6">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 pb-20 md:pb-0">
       <!-- Players column -->
-      <aside class="card pop-in order-2 md:order-none col-span-1 md:col-span-3 bg-[rgba(24,24,24,0.9)] p-3 md:p-4 rounded flex flex-col h-full min-h-0">
+      <aside class="card pop-in order-2 md:order-none col-span-1 md:col-span-3 bg-[rgba(24,24,24,0.9)] p-3 md:p-4 rounded flex flex-col">
         <h3 class="text-sm text-gray-300 font-bold mb-4">PLAYERS ({{ players.length }})</h3>
-        <ul class="space-y-3 flex-1 overflow-auto">
+        <ul class="space-y-3 overflow-auto">
             <li v-for="(p, idx) in players" :key="idx"
               :class="[ 'flex items-center justify-between py-3 rounded-lg', isCurrent(p) ? 'bg-violet-700/30 ring-1 ring-violet-500' : 'bg-[rgba(0,0,0,0.2)]', 'w-full px-2 md:px-3' ]">
             <div class="flex items-center gap-3">
@@ -156,7 +167,7 @@ function onRolePopupDismiss() {
       </aside>
 
       <!-- Main settings -->
-      <main class="card pop-in order-1 md:order-none col-span-1 md:col-span-6 bg-[rgba(18,18,18,0.95)] p-3 md:p-4 rounded flex flex-col h-full min-h-0">
+      <main class="card pop-in order-1 md:order-none col-span-1 md:col-span-6 bg-[rgba(18,18,18,0.95)] p-3 md:p-4 rounded flex flex-col">
         <h2 class="text-2xl font-bold mb-4">GAME SETTINGS</h2>
         <!-- settings UI: number of impostors selector -->
         <div class="flex-1">
@@ -201,9 +212,9 @@ function onRolePopupDismiss() {
       </main>
 
       <!-- Desktop chat (hidden on small screens) -->
-      <aside class="hidden md:flex card pop-in order-3 md:order-none col-span-1 md:col-span-3 bg-[rgba(24,24,24,0.9)] p-3 md:p-4 rounded flex flex-col h-full min-h-0">
+      <aside class="hidden md:flex card pop-in order-3 md:order-none col-span-1 md:col-span-3 bg-[rgba(24,24,24,0.9)] p-3 md:p-4 rounded flex-col">
         <h3 class="text-sm text-gray-300 font-bold mb-4">CHAT</h3>
-        <div ref="desktopChat" class="flex-1 overflow-y-auto mb-4 p-2 bg-[rgba(0,0,0,0.2)] rounded">
+        <div ref="desktopChat" class="h-64 overflow-y-auto mb-4 p-2 bg-[rgba(0,0,0,0.2)] rounded">
           <div v-for="(m, i) in messages" :key="i" class="mb-3">
             <div>
               <div class="text-sm font-bold text-violet-300 leading-tight">{{ ((m.local || (m.senderId && String(m.senderId) === String(authStore.user?.id))) ? 'You' : (m.sender ?? m.displayName ?? m.from ?? m.senderId ?? 'Player')) + ':' }}</div>

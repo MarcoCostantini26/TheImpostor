@@ -87,7 +87,10 @@ watch(rolePopupVisible, (visible) => {
 watch(displayPhase, (phase, oldPhase) => {
   if (phase === 'CLUE_SUBMISSION') {
     const id = myUserId.value
-    if (!id || !playerClues.value?.[id]) myClueSubmitted.value = false
+    if (!id || !playerClues.value?.[id]) {
+      myClueSubmitted.value = false
+      clueInput.value = ''
+    }
   }
   if (phase === 'DISCUSSION') {
     const id = myUserId.value
@@ -185,6 +188,7 @@ function sendClue() {
   if (!clueInput.value.trim() || myClueSubmitted.value) return
   roomStore.submitClue(clueInput.value.trim().toUpperCase())
   myClueSubmitted.value = true
+  clueInput.value = ''
 }
 
 function castVoteFor(player) {
@@ -203,18 +207,30 @@ function timerColor(t) {
   if (t <= 30) return 'bg-orange-500'
   return 'bg-red-500'
 }
+
+function leaveRoom() {
+  roomStore.leave()
+  router.push({ name: 'home' })
+}
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#0d0d0d] text-gray-100 flex flex-col select-none">
+  <div class="h-screen overflow-y-auto bg-[#0d0d0d] text-gray-100 flex flex-col select-none">
 
       <!-- ═══════════ HEADER ═══════════ -->
     <header class="sticky top-0 z-40 bg-[#111] border-b border-white/5 px-4 md:px-8 py-3 flex items-center justify-between gap-4">
 
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-3">
         <router-link to="/">
           <img src="/logo.png" alt="The Impostor" class="h-10 md:h-14 object-contain" />
         </router-link>
+        <button @click="leaveRoom" title="Leave room"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-red-600/80 text-gray-400 hover:text-white text-xs font-semibold transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
+          </svg>
+          <span class="hidden sm:inline">LEAVE</span>
+        </button>
       </div>
 
       <!-- Desktop: role | divider | secret word -->
@@ -537,7 +553,7 @@ function timerColor(t) {
           </h2>
           <p class="text-sm text-gray-400">The game has ended.</p>
           <button
-            @click="router.push({ name: 'login' })"
+            @click="leaveRoom"
             :class="['mt-4 w-full py-4 rounded-full font-bold text-white tracking-widest',
               gameWinner === 'CREWMATES_WIN'
                 ? 'bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600'

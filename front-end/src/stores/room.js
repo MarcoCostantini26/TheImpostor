@@ -410,7 +410,7 @@ export const useRoomStore = defineStore('room', () => {
   }
 
   function resolveGuestId(playersList, displayName) {
-    if (authStore.user?.id || !playersList) return
+    if (!playersList || !authStore.user?.guest) return
     const me = playersList.find(p => p.username === displayName)
     if (me?.id) authStore.setUserId(me.id)
   }
@@ -487,6 +487,7 @@ export const useRoomStore = defineStore('room', () => {
       if (pid) {
         roomService.leaveRoom(code, pid).catch(() => {})
       }
+      authStore.clearGuestId()
     }
     players.value = []
     messages.value = []
