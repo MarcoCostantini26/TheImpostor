@@ -136,12 +136,12 @@ function onRolePopupDismiss() {
       </div>
     </header>
 
-    <div class="p-4 md:p-6 flex-1 min-h-0">
-      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 h-full min-h-0">
+    <div class="p-4 md:p-6">
+      <div class="grid grid-cols-1 md:grid-cols-12 gap-4 md:gap-6 pb-20 md:pb-0">
       <!-- Players column -->
-      <aside class="card pop-in order-2 md:order-none col-span-1 md:col-span-3 bg-[rgba(24,24,24,0.9)] p-3 md:p-4 rounded flex flex-col h-full min-h-0">
+      <aside class="card pop-in order-2 md:order-none col-span-1 md:col-span-3 bg-[rgba(24,24,24,0.9)] p-3 md:p-4 rounded flex flex-col">
         <h3 class="text-sm text-gray-300 font-bold mb-4">PLAYERS ({{ players.length }})</h3>
-        <ul class="space-y-3 flex-1 overflow-auto">
+        <ul class="space-y-3 overflow-auto">
             <li v-for="(p, idx) in players" :key="idx"
               :class="[ 'flex items-center justify-between py-3 rounded-lg', isCurrent(p) ? 'bg-violet-700/30 ring-1 ring-violet-500' : 'bg-[rgba(0,0,0,0.2)]', 'w-full px-2 md:px-3' ]">
             <div class="flex items-center gap-3">
@@ -156,7 +156,7 @@ function onRolePopupDismiss() {
       </aside>
 
       <!-- Main settings -->
-      <main class="card pop-in order-1 md:order-none col-span-1 md:col-span-6 bg-[rgba(18,18,18,0.95)] p-3 md:p-4 rounded flex flex-col h-full min-h-0">
+      <main class="card pop-in order-1 md:order-none col-span-1 md:col-span-6 bg-[rgba(18,18,18,0.95)] p-3 md:p-4 rounded flex flex-col">
         <h2 class="text-2xl font-bold mb-4">GAME SETTINGS</h2>
         <!-- settings UI: number of impostors selector -->
         <div class="flex-1">
@@ -201,9 +201,9 @@ function onRolePopupDismiss() {
       </main>
 
       <!-- Desktop chat (hidden on small screens) -->
-      <aside class="hidden md:flex card pop-in order-3 md:order-none col-span-1 md:col-span-3 bg-[rgba(24,24,24,0.9)] p-3 md:p-4 rounded flex flex-col h-full min-h-0">
+      <aside class="hidden md:flex card pop-in order-3 md:order-none col-span-1 md:col-span-3 bg-[rgba(24,24,24,0.9)] p-3 md:p-4 rounded flex-col">
         <h3 class="text-sm text-gray-300 font-bold mb-4">CHAT</h3>
-        <div ref="desktopChat" class="flex-1 overflow-y-auto mb-4 p-2 bg-[rgba(0,0,0,0.2)] rounded">
+        <div ref="desktopChat" class="h-64 overflow-y-auto mb-4 p-2 bg-[rgba(0,0,0,0.2)] rounded">
           <div v-for="(m, i) in messages" :key="i" class="mb-3">
             <div>
               <div class="text-sm font-bold text-violet-300 leading-tight">{{ ((m.local || (m.senderId && String(m.senderId) === String(authStore.user?.id))) ? 'You' : (m.sender ?? m.displayName ?? m.from ?? m.senderId ?? 'Player')) + ':' }}</div>

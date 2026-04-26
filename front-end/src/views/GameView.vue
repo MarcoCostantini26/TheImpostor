@@ -206,7 +206,7 @@ function timerColor(t) {
 </script>
 
 <template>
-  <div class="min-h-screen bg-[#0d0d0d] text-gray-100 flex flex-col select-none">
+  <div class="h-screen overflow-y-auto bg-[#0d0d0d] text-gray-100 flex flex-col select-none">
 
       <!-- ═══════════ HEADER ═══════════ -->
     <header class="sticky top-0 z-40 bg-[#111] border-b border-white/5 px-4 md:px-8 py-3 flex items-center justify-between gap-4">
