@@ -87,7 +87,10 @@ watch(rolePopupVisible, (visible) => {
 watch(displayPhase, (phase, oldPhase) => {
   if (phase === 'CLUE_SUBMISSION') {
     const id = myUserId.value
-    if (!id || !playerClues.value?.[id]) myClueSubmitted.value = false
+    if (!id || !playerClues.value?.[id]) {
+      myClueSubmitted.value = false
+      clueInput.value = ''
+    }
   }
   if (phase === 'DISCUSSION') {
     const id = myUserId.value
@@ -185,6 +188,7 @@ function sendClue() {
   if (!clueInput.value.trim() || myClueSubmitted.value) return
   roomStore.submitClue(clueInput.value.trim().toUpperCase())
   myClueSubmitted.value = true
+  clueInput.value = ''
 }
 
 function castVoteFor(player) {
@@ -549,7 +553,7 @@ function leaveRoom() {
           </h2>
           <p class="text-sm text-gray-400">The game has ended.</p>
           <button
-            @click="router.push({ name: 'login' })"
+            @click="leaveRoom"
             :class="['mt-4 w-full py-4 rounded-full font-bold text-white tracking-widest',
               gameWinner === 'CREWMATES_WIN'
                 ? 'bg-gradient-to-r from-violet-500 to-indigo-500 hover:from-violet-600 hover:to-indigo-600'
