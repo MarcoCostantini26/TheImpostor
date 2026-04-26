@@ -64,8 +64,8 @@ export const useAuthStore = defineStore('auth', () => {
 
     function clearGuestId() {
         if (user.value?.guest) {
-            user.value = { ...user.value, id: undefined }
-            const { id: _omit, ...rest } = user.value
+            const rest = { ...user.value }
+            delete rest.id
             user.value = rest
             localStorage.setItem('user', JSON.stringify(user.value))
         }
