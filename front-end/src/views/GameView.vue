@@ -203,6 +203,11 @@ function timerColor(t) {
   if (t <= 30) return 'bg-orange-500'
   return 'bg-red-500'
 }
+
+function leaveRoom() {
+  roomStore.leave()
+  router.push({ name: 'home' })
+}
 </script>
 
 <template>
@@ -211,10 +216,17 @@ function timerColor(t) {
       <!-- ═══════════ HEADER ═══════════ -->
     <header class="sticky top-0 z-40 bg-[#111] border-b border-white/5 px-4 md:px-8 py-3 flex items-center justify-between gap-4">
 
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-3">
         <router-link to="/">
           <img src="/logo.png" alt="The Impostor" class="h-10 md:h-14 object-contain" />
         </router-link>
+        <button @click="leaveRoom" title="Leave room"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-red-600/80 text-gray-400 hover:text-white text-xs font-semibold transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
+          </svg>
+          <span class="hidden sm:inline">LEAVE</span>
+        </button>
       </div>
 
       <!-- Desktop: role | divider | secret word -->

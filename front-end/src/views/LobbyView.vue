@@ -111,6 +111,10 @@ onBeforeUnmount(() => {
 
 const { startGame, toggleReady, setDiscussionTime, decrementImpostors, incrementImpostors } = roomStore
 function sendChat() { if (!newMessage.value) return; roomStore.sendChat(newMessage.value); newMessage.value = '' }
+function leaveRoom() {
+  roomStore.leave()
+  router.push({ name: 'home' })
+}
 function onRolePopupDismiss() {
   roomStore.dismissRole()
   router.push({ name: 'game', params: { code } })
@@ -120,10 +124,17 @@ function onRolePopupDismiss() {
 <template>
   <div class="min-h-screen bg-[#0f0f0f] text-gray-100 flex flex-col">
     <header class="w-full bg-[#171717] px-6 py-4 flex items-center justify-between shadow-md">
-      <div class="flex items-center gap-4">
+      <div class="flex items-center gap-3">
         <router-link to="/">
           <img src="/logo.png" alt="The Impostor" class="h-12 md:h-20 object-contain" />
         </router-link>
+        <button @click="leaveRoom" title="Leave room"
+          class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/5 hover:bg-red-600/80 text-gray-400 hover:text-white text-xs font-semibold transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h6a2 2 0 012 2v1" />
+          </svg>
+          <span class="hidden sm:inline">LEAVE</span>
+        </button>
       </div>
 
       <div class="flex-1 flex justify-center">

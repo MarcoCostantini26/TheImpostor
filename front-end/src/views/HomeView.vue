@@ -20,8 +20,10 @@ const username = computed(() => {
 const createRoom = async () => {
   const hostName = authStore.user?.username || authStore.user?.name || username.value || 'Host'
   try {
-    const room = await createRoomService(hostName, authStore.user?.id || null, !!authStore.user?.id)
-    if (!authStore.user?.id && room.hostId) {
+    const isAuth = authStore.isAuthenticated
+    const userId = isAuth ? (authStore.user?.id || null) : null
+    const room = await createRoomService(hostName, userId, isAuth)
+    if (!isAuth && room.hostId) {
       authStore.setUserId(room.hostId)
     }
     const createdCode = room.code
@@ -39,8 +41,10 @@ async function joinRoom() {
 
   try {
     const displayName = authStore.user?.username || authStore.user?.name || username.value || 'Guest'
-    const room = await joinRoomService(code, displayName, authStore.user?.id || null, !!authStore.user?.id)
-    if (!authStore.user?.id && room?.players) {
+    const isAuth = authStore.isAuthenticated
+    const userId = isAuth ? (authStore.user?.id || null) : null
+    const room = await joinRoomService(code, displayName, userId, isAuth)
+    if (!isAuth && room?.players) {
       const me = room.players.find(p => p.username === displayName)
       if (me?.id) authStore.setUserId(me.id)
     }
