@@ -1,3 +1,9 @@
+## [4.0.1](https://github.com/MarcoCostantini26/TheImpostor/compare/4.0.0...4.0.1) (2026-04-27)
+
+### Dependency updates
+
+* **core-deps:** update dependency lint to v1.2.2 ([#141](https://github.com/MarcoCostantini26/TheImpostor/issues/141)) ([1becfd0](https://github.com/MarcoCostantini26/TheImpostor/commit/1becfd0fa8befc992d30cd52afb608722b930eb6))
+
 ## [4.0.0](https://github.com/MarcoCostantini26/TheImpostor/compare/3.8.1...4.0.0) (2026-04-27)
 
 ### ⚠ BREAKING CHANGES
