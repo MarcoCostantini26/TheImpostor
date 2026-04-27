@@ -1,3 +1,14 @@
+## [4.0.0](https://github.com/MarcoCostantini26/TheImpostor/compare/3.8.1...4.0.0) (2026-04-27)
+
+### ⚠ BREAKING CHANGES
+
+* **engine:** integrate lobby service dependency for round result persistence
+
+### Features
+
+* **engine:** integrate lobby service dependency for round result persistence ([6081bce](https://github.com/MarcoCostantini26/TheImpostor/commit/6081bced8e09bc6f61ad0a6cf687a6eeca8eb198))
+* **stats:** implemented stats popup to view player statistics ([2788a76](https://github.com/MarcoCostantini26/TheImpostor/commit/2788a76b31ce4715ead65bb8cf1176f5ac7ccd96))
+
 ## [3.8.1](https://github.com/MarcoCostantini26/TheImpostor/compare/3.8.0...3.8.1) (2026-04-27)
 
 ### Dependency updates
