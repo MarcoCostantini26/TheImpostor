@@ -17,14 +17,15 @@ const (
 )
 
 type Game struct {
-	ID           string
-	State        string
-	Players      []entity.Player
-	CurrentTurn  valueobject.Turn
-	SecretWord   valueobject.SecretWord
-	Hint         valueobject.Hint
-	Votes        []valueobject.Vote
-	domainEvents []event.DomainEvent
+	ID             string
+	State          string
+	Players        []entity.Player
+	CurrentTurn    valueobject.Turn
+	SecretWord     valueobject.SecretWord
+	Hint           valueobject.Hint
+	Votes          []valueobject.Vote
+	RoundStartedAt time.Time
+	domainEvents   []event.DomainEvent
 }
 
 // ==========================================
@@ -251,6 +252,17 @@ func (g *Game) StartNewRound() {
 	g.CurrentTurn.Phase = valueobject.PhaseDiscussion
 	g.CurrentTurn.Timer = 0
 	g.Votes = make([]valueobject.Vote, 0)
+	g.RoundStartedAt = time.Now()
+}
+
+// Returns the ID of the first impostor found or empty string
+func (g *Game) GetImpostorID() string {
+	for _, p := range g.Players {
+		if p.Role.IsImpostor() {
+			return p.ID
+		}
+	}
+	return ""
 }
 
 // CheckSecretWord verifica se la parola è corretta

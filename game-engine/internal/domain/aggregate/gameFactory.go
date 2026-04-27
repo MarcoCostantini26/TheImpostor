@@ -110,9 +110,10 @@ func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImp
 			Phase:       valueobject.PhaseDiscussion,
 			Timer:       120,
 		},
-		Votes:      make([]valueobject.Vote, 0),
-		SecretWord: valueobject.SecretWord(pair[0]),
-		Hint:       valueobject.Hint(pair[1]),
+		Votes:          make([]valueobject.Vote, 0),
+		SecretWord:     valueobject.SecretWord(pair[0]),
+		Hint:           valueobject.Hint(pair[1]),
+		RoundStartedAt: time.Now(),
 	}
 
 	startedEvent := event.GameStarted{
