@@ -30,11 +30,17 @@ func main() {
 		commServiceURL = "http://localhost:3000"
 	}
 
+	lobbyServiceURL := os.Getenv("LOBBY_SERVICE_URL")
+	if lobbyServiceURL == "" {
+		lobbyServiceURL = "http://localhost:8080"
+	}
+
 	notifierURL := commServiceURL + "/internal/engine-callback"
 
 	webhookNotifier := gameapi.NewHTTPGatewayNotifier(notifierURL)
+	lobbyClient := gameapi.NewLobbyServiceClient(lobbyServiceURL)
 
-	appService := application.NewGameAppService(repo, factory, rules, webhookNotifier)
+	appService := application.NewGameAppService(repo, factory, rules, webhookNotifier, lobbyClient)
 
 	controller := gameapi.NewGameController(appService)
 
@@ -47,7 +53,7 @@ func main() {
 	mux.HandleFunc("/games/state", controller.HandleGetGameState)
 	mux.HandleFunc("/games/guess-word", controller.HandleGuessWord)
 
-	fmt.Println("🚀 Game Engine acceso e in ascolto sulla porta 8081!")
+	fmt.Println("Game Engine acceso e in ascolto sulla porta 8081!")
 
 	err := http.ListenAndServe(":8081", mux)
 	if err != nil {

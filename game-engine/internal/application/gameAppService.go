@@ -2,6 +2,7 @@ package application
 
 import (
 	"errors"
+	"time"
 
 	"game-engine/internal/domain/aggregate"
 	"game-engine/internal/domain/repository"
@@ -9,10 +10,11 @@ import (
 )
 
 type GameAppService struct {
-	gameRepo    repository.GameRepository
-	gameFactory *aggregate.GameFactory
-	rulesSvc    *service.GameRulesService
-	notifier    GatewayNotifier
+	gameRepo     repository.GameRepository
+	gameFactory  *aggregate.GameFactory
+	rulesSvc     *service.GameRulesService
+	notifier     GatewayNotifier
+	lobbyGateway LobbyGateway
 }
 
 func NewGameAppService(
@@ -20,12 +22,14 @@ func NewGameAppService(
 	factory *aggregate.GameFactory,
 	rules *service.GameRulesService,
 	notifier GatewayNotifier,
+	lobbyGateway LobbyGateway,
 ) *GameAppService {
 	return &GameAppService{
-		gameRepo:    repo,
-		gameFactory: factory,
-		rulesSvc:    rules,
-		notifier:    notifier,
+		gameRepo:     repo,
+		gameFactory:  factory,
+		rulesSvc:     rules,
+		notifier:     notifier,
+		lobbyGateway: lobbyGateway,
 	}
 }
 
@@ -39,6 +43,17 @@ func (app *GameAppService) CreateGameUseCase(gameID string, playerIDs []string, 
 	if err != nil {
 		return err
 	}
+
+	// Registra la sessione nel Lobby Service in modo asincrono (best-effort).
+	hostID := ""
+	if len(playerIDs) > 0 {
+		hostID = playerIDs[0]
+	}
+	go func() {
+		if lobbyErr := app.lobbyGateway.CreateGameSession(gameID, playerIDs, hostID); lobbyErr != nil {
+			// Il fallimento non blocca la partita
+		}
+	}()
 
 	app.notifier.NotifyEvent("GameCreated", game)
 	return nil
@@ -108,6 +123,29 @@ func (app *GameAppService) ResolveVotingUseCase(gameID string) error {
 	if winTeam != service.WinNone {
 		game.EndGame(string(winTeam))
 		app.gameRepo.Save(game)
+
+		impostorID := game.GetImpostorID()
+		winnerID := ""
+		if winTeam == service.WinImpostors {
+			winnerID = impostorID
+		}
+		roundResult := LobbyRoundResult{
+			RoomCode:            gameID,
+			RoundNumber:         game.CurrentTurn.RoundNumber,
+			ImpostorID:          impostorID,
+			WinnerID:            winnerID,
+			ImpostorWon:         winTeam == service.WinImpostors,
+			StartedAt:           game.RoundStartedAt,
+			EndedAt:             time.Now(),
+			TotalVotes:          len(game.Votes),
+			EliminatedPlayerID:  eliminatedID,
+			ImpostorGuessedWord: false,
+			SecretWord:          string(game.SecretWord),
+		}
+		go func() {
+			app.lobbyGateway.SaveRoundResult(roundResult)
+		}()
+
 		app.notifier.NotifyEvent("GameEnded", map[string]string{"gameId": gameID, "winner": string(winTeam)})
 		return nil
 	}
@@ -154,6 +192,24 @@ func (app *GameAppService) GuessSecretWordUseCase(gameID string, impostorID stri
 	if game.CheckSecretWord(guessedWord) {
 		game.EndGame("IMPOSTOR_WINS")
 		app.gameRepo.Save(game)
+
+		impostorID := game.GetImpostorID()
+		roundResult := LobbyRoundResult{
+			RoomCode:            gameID,
+			RoundNumber:         game.CurrentTurn.RoundNumber,
+			ImpostorID:          impostorID,
+			WinnerID:            impostorID,
+			ImpostorWon:         true,
+			StartedAt:           game.RoundStartedAt,
+			EndedAt:             time.Now(),
+			TotalVotes:          len(game.Votes),
+			ImpostorGuessedWord: true,
+			SecretWord:          string(game.SecretWord),
+		}
+		go func() {
+			app.lobbyGateway.SaveRoundResult(roundResult)
+		}()
+
 		app.notifier.NotifyEvent("GameEnded", map[string]string{
 			"gameId": gameID,
 			"winner": "IMPOSTOR_WINS",
@@ -162,6 +218,24 @@ func (app *GameAppService) GuessSecretWordUseCase(gameID string, impostorID stri
 	} else {
 		game.EndGame("CREWMATES_WIN")
 		app.gameRepo.Save(game)
+
+		impostorID := game.GetImpostorID()
+		roundResult := LobbyRoundResult{
+			RoomCode:            gameID,
+			RoundNumber:         game.CurrentTurn.RoundNumber,
+			ImpostorID:          impostorID,
+			WinnerID:            "",
+			ImpostorWon:         false,
+			StartedAt:           game.RoundStartedAt,
+			EndedAt:             time.Now(),
+			TotalVotes:          len(game.Votes),
+			ImpostorGuessedWord: false,
+			SecretWord:          string(game.SecretWord),
+		}
+		go func() {
+			app.lobbyGateway.SaveRoundResult(roundResult)
+		}()
+
 		app.notifier.NotifyEvent("GameEnded", map[string]string{
 			"gameId": gameID,
 			"winner": "CREWMATES_WIN",
