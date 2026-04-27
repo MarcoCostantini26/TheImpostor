@@ -5,6 +5,7 @@ import { useRoomStore } from '../stores/room'
 import { useRouter } from 'vue-router'
 import { createRoom as createRoomService, joinRoom as joinRoomService } from '../services/roomService'
 import Avatar from '../components/AvatarIcon.vue'
+import StatsPopup from '../components/StatsPopup.vue'
 import { useToast } from 'vue-toastification'
 
 const authStore = useAuthStore()
@@ -12,6 +13,14 @@ const roomStore = useRoomStore()
 const router = useRouter()
 const toast = useToast()
 const joinCode = ref('')
+const showStats = ref(false)
+
+const isGuest = computed(() => !authStore.isAuthenticated)
+const currentUserId = computed(() => authStore.user?.id ? String(authStore.user.id) : null)
+
+function openStats() {
+  showStats.value = true
+}
 
 const username = computed(() => {
   return authStore.user?.name || authStore.user?.username || (authStore.user ? `${authStore.user.firstName || ''} ${authStore.user.lastName || ''}`.trim() : '') || 'Player'
@@ -74,7 +83,7 @@ async function joinRoom() {
       </div>
       <div class="flex items-center gap-3">
         <div class="text-sm text-gray-200">{{ username }}</div>
-        <Avatar :name="username" />
+        <Avatar :name="username" :clickable="true" @click="openStats" />
       </div>
     </header>
 
@@ -116,6 +125,14 @@ async function joinRoom() {
       </div>
     </main>
   </div>
+
+  <StatsPopup
+    v-if="showStats"
+    :player-id="currentUserId"
+    :player-name="username"
+    :is-guest="isGuest"
+    @close="showStats = false"
+  />
 </template>
 
 <style scoped>
