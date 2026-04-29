@@ -125,6 +125,7 @@ func (app *GameAppService) ResolveVotingUseCase(gameID string) error {
 		app.gameRepo.Save(game)
 
 		impostorID := game.GetImpostorID()
+		impostorIDs := game.GetImpostorIDs()
 		winnerID := ""
 		if winTeam == service.WinImpostors {
 			winnerID = impostorID
@@ -146,7 +147,7 @@ func (app *GameAppService) ResolveVotingUseCase(gameID string) error {
 			app.lobbyGateway.SaveRoundResult(roundResult)
 		}()
 
-		app.notifier.NotifyEvent("GameEnded", map[string]string{"gameId": gameID, "winner": string(winTeam)})
+		app.notifier.NotifyEvent("GameEnded", map[string]interface{}{"gameId": gameID, "winner": string(winTeam), "impostorIds": impostorIDs})
 		return nil
 	}
 
@@ -194,6 +195,7 @@ func (app *GameAppService) GuessSecretWordUseCase(gameID string, impostorID stri
 		app.gameRepo.Save(game)
 
 		impostorID := game.GetImpostorID()
+		impostorIDs := game.GetImpostorIDs()
 		roundResult := LobbyRoundResult{
 			RoomCode:            gameID,
 			RoundNumber:         game.CurrentTurn.RoundNumber,
@@ -210,16 +212,18 @@ func (app *GameAppService) GuessSecretWordUseCase(gameID string, impostorID stri
 			app.lobbyGateway.SaveRoundResult(roundResult)
 		}()
 
-		app.notifier.NotifyEvent("GameEnded", map[string]string{
-			"gameId": gameID,
-			"winner": "IMPOSTOR_WINS",
-			"reason": "WORD_GUESSED",
+		app.notifier.NotifyEvent("GameEnded", map[string]interface{}{
+			"gameId":      gameID,
+			"winner":      "IMPOSTOR_WINS",
+			"reason":      "WORD_GUESSED",
+			"impostorIds": impostorIDs,
 		})
 	} else {
 		game.EndGame("CREWMATES_WIN")
 		app.gameRepo.Save(game)
 
 		impostorID := game.GetImpostorID()
+		impostorIDs := game.GetImpostorIDs()
 		roundResult := LobbyRoundResult{
 			RoomCode:            gameID,
 			RoundNumber:         game.CurrentTurn.RoundNumber,
@@ -236,10 +240,11 @@ func (app *GameAppService) GuessSecretWordUseCase(gameID string, impostorID stri
 			app.lobbyGateway.SaveRoundResult(roundResult)
 		}()
 
-		app.notifier.NotifyEvent("GameEnded", map[string]string{
-			"gameId": gameID,
-			"winner": "CREWMATES_WIN",
-			"reason": "WRONG_GUESS",
+		app.notifier.NotifyEvent("GameEnded", map[string]interface{}{
+			"gameId":      gameID,
+			"winner":      "CREWMATES_WIN",
+			"reason":      "WRONG_GUESS",
+			"impostorIds": impostorIDs,
 		})
 	}
 
