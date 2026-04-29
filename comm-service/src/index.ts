@@ -214,7 +214,8 @@ const server = createServer(async (req, res) => {
                                 eventName: 'GameEnded',
                                 gameId: roomCode,
                                 winner: ep.winner || ep.Winner || '',
-                                reason: ep.reason || ep.Reason || '' // Essenziale per "WORD_GUESSED"
+                                reason: ep.reason || ep.Reason || '',
+                                impostorIds: Array.isArray(ep.impostorIds) ? ep.impostorIds : []
                             }
                         });
                     }
