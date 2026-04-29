@@ -1,3 +1,15 @@
+## [4.1.0](https://github.com/MarcoCostantini26/TheImpostor/compare/4.0.1...4.1.0) (2026-04-29)
+
+### Features
+
+* **gameplay:** added impostor names on the victory announcement popup ([8571491](https://github.com/MarcoCostantini26/TheImpostor/commit/857149124571af2d8291500ae31d8c37c4e07e5f))
+
+### Dependency updates
+
+* **deps:** update dependency eslint-plugin-vue to v10.9.0 ([#133](https://github.com/MarcoCostantini26/TheImpostor/issues/133)) ([d455b7d](https://github.com/MarcoCostantini26/TheImpostor/commit/d455b7d959d966b2a0b3e7dfe63f58727757187d))
+* **deps:** update dependency typescript-eslint to v8.59.1 ([#128](https://github.com/MarcoCostantini26/TheImpostor/issues/128)) ([288f4db](https://github.com/MarcoCostantini26/TheImpostor/commit/288f4db63fd8cd49a98ff52a5d7846702ff2748e))
+* **deps:** update gradle to v9.5.0 ([#145](https://github.com/MarcoCostantini26/TheImpostor/issues/145)) ([0159684](https://github.com/MarcoCostantini26/TheImpostor/commit/0159684b00b4f070023c1ca5f277af27f7e8218d))
+
 ## [4.0.1](https://github.com/MarcoCostantini26/TheImpostor/compare/4.0.0...4.0.1) (2026-04-27)
 
 ### Dependency updates
