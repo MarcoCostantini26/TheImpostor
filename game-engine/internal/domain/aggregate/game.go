@@ -265,6 +265,17 @@ func (g *Game) GetImpostorID() string {
 	return ""
 }
 
+// Returns the IDs of all impostors
+func (g *Game) GetImpostorIDs() []string {
+	ids := []string{}
+	for _, p := range g.Players {
+		if p.Role.IsImpostor() {
+			ids = append(ids, p.ID)
+		}
+	}
+	return ids
+}
+
 // CheckSecretWord verifica se la parola è corretta
 func (g *Game) CheckSecretWord(guessedWord string) bool {
 	// Convertiamo in stringa il valueobject SecretWord per fare il paragone

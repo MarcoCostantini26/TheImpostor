@@ -31,7 +31,8 @@ const {
   votedPlayers, voteCounts, isHost,
   eliminationPopupVisible, eliminationData,
   currentPlayer, resolveVotingInProgress,
-  impostorIdForGuess
+  impostorIdForGuess,
+  gameEndImpostorIds
 } = storeToRefs(roomStore)
 
 const isEliminated = computed(() => !!(currentPlayer.value?.status === 'DEAD' || currentPlayer.value?.eliminated))
@@ -159,6 +160,15 @@ onBeforeUnmount(() => {
 })
 
 const isImpostor = computed(() => myRole.value === 'IMPOSTOR')
+
+const gameEndImpostorNames = computed(() => {
+  const ids = gameEndImpostorIds.value
+  if (!ids || ids.length === 0) return []
+  return ids.map(id => {
+    const p = players.value.find(pl => pl && (String(pl.id) === String(id) || String(pl.userId) === String(id)))
+    return p?.displayName || p?.username || null
+  }).filter(Boolean)
+})
 
 const alivePlayers = computed(() =>
   players.value.filter(p => p && p.status !== 'DEAD' && !p.eliminated)
@@ -551,6 +561,10 @@ function leaveRoom() {
             gameWinner === 'CREWMATES_WIN' ? 'text-violet-300' : 'text-red-400']">
             {{ gameWinner === 'CREWMATES_WIN' ? 'CREWMATES WIN!' : 'IMPOSTOR WINS!' }}
           </h2>
+          <p v-if="gameWinner === 'IMPOSTOR_WINS' && gameEndImpostorNames.length" class="text-sm text-gray-300">
+            {{ gameEndImpostorNames.length === 1 ? 'The impostor was' : 'The impostors were' }}
+            <span class="font-bold text-red-300">{{ gameEndImpostorNames.join(' &amp; ') }}</span>.
+          </p>
           <p class="text-sm text-gray-400">The game has ended.</p>
           <button
             @click="leaveRoom"

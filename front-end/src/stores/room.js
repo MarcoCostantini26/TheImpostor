@@ -41,6 +41,7 @@ export const useRoomStore = defineStore('room', () => {
   const eliminationData = ref(null)    
   const resolveVotingInProgress = ref(false)
   const impostorIdForGuess = ref(null)  
+  const gameEndImpostorIds = ref([])    
 
   let unsubscribe = null
   let currentRoomCode = null
@@ -359,6 +360,7 @@ export const useRoomStore = defineStore('room', () => {
   function onGameEnded(ep) {
     gameWinner.value = ep.winner || null
     roomStatus.value = 'ENDED'
+    gameEndImpostorIds.value = Array.isArray(ep.impostorIds) ? ep.impostorIds : []
   }
 
   const engineEventHandlers = {
@@ -507,6 +509,7 @@ export const useRoomStore = defineStore('room', () => {
     eliminationData.value = null
     resolveVotingInProgress.value = false
     impostorIdForGuess.value = null
+    gameEndImpostorIds.value = []
     playerClues.value = {}
     currentTurnUserId.value = null
     allCluesSubmitted.value = false
@@ -674,7 +677,8 @@ export const useRoomStore = defineStore('room', () => {
     dismissElimination,
     resolveVotingInProgress,
     impostorIdForGuess,
-    guessSecretWord
+    guessSecretWord,
+    gameEndImpostorIds
   }
 })
 
