@@ -1,3 +1,10 @@
+## [4.1.1](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.0...4.1.1) (2026-05-01)
+
+### Dependency updates
+
+* **core-deps:** update dependency postcss to v8.5.13 ([#149](https://github.com/MarcoCostantini26/TheImpostor/issues/149)) ([b75d964](https://github.com/MarcoCostantini26/TheImpostor/commit/b75d964eabbc7f7a1cb41f127c95a18587e4273c))
+* **deps:** update commitlint monorepo to v20.5.3 ([#148](https://github.com/MarcoCostantini26/TheImpostor/issues/148)) ([3a39ac6](https://github.com/MarcoCostantini26/TheImpostor/commit/3a39ac6022e65fc3a08681f6fd82c92e6353c223))
+
 ## [4.1.0](https://github.com/MarcoCostantini26/TheImpostor/compare/4.0.1...4.1.0) (2026-04-29)
 
 ### Features
