@@ -1,3 +1,12 @@
+## [4.1.2](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.1...4.1.2) (2026-05-05)
+
+### Dependency updates
+
+* **core-deps:** update dependency postcss to v8.5.14 ([#153](https://github.com/MarcoCostantini26/TheImpostor/issues/153)) ([c665eb9](https://github.com/MarcoCostantini26/TheImpostor/commit/c665eb9f07eb5437d2da48dcd50d2197522b3f4a))
+* **deps:** update dependency @eslint/css to v1.2.0 ([#150](https://github.com/MarcoCostantini26/TheImpostor/issues/150)) ([d03a105](https://github.com/MarcoCostantini26/TheImpostor/commit/d03a1056bec41d018f5b854d19b023376bb2f1f1))
+* **deps:** update dependency eslint to v10.3.0 ([#151](https://github.com/MarcoCostantini26/TheImpostor/issues/151)) ([d2a268c](https://github.com/MarcoCostantini26/TheImpostor/commit/d2a268c44d939e8c0409032eb65798f900838df9))
+* **deps:** update dependency globals to v17.6.0 ([#152](https://github.com/MarcoCostantini26/TheImpostor/issues/152)) ([66fe6c7](https://github.com/MarcoCostantini26/TheImpostor/commit/66fe6c74c55eb6c2def789e4fab6bf2f31d8b975))
+
 ## [4.1.1](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.0...4.1.1) (2026-05-01)
 
 ### Dependency updates
