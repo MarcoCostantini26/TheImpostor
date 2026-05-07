@@ -31,16 +31,13 @@ func (s *GameRulesService) CheckWinCondition(game *aggregate.Game) string {
 		}
 	}
 
-	// Regola 1: Se l'impostore muore, vincono i Crewmate
 	if impostorsAlive == 0 {
 		return WinCrewmates
 	}
 
-	// Regola 2: Se i Crewmate vivi sono <= degli Impostori, vince l'Impostore
 	if crewmatesAlive <= impostorsAlive {
 		return WinImpostors
 	}
 
-	// Nessuno ha ancora vinto
 	return WinNone
 }

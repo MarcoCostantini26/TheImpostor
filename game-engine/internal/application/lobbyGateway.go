@@ -12,7 +12,7 @@ type LobbyRoundResult struct {
 	RoomCode            string
 	RoundNumber         int
 	ImpostorID          string
-	WinnerID            string // ID dell'impostore se vince lui, altrimenti vuoto
+	WinnerID            string
 	ImpostorWon         bool
 	StartedAt           time.Time
 	EndedAt             time.Time
