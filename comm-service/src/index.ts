@@ -27,7 +27,7 @@ const routingService = new RoutingService(sessionRepository, engineAdapter);
 const chatAndSignalingService = new ChatAndSignalingService(sessionRepository, roomManager);
 
 const activeSockets = new Map<string, WebSocket>();
-const userSockets = new Map<string, WebSocket>(); // userId → ws (per messaggi privati come i ruoli)
+const userSockets = new Map<string, WebSocket>(); 
 
 const userRooms = new Map<string, string>();
 const roomSettings = new Map<string, { impostors: number; discussionTime: number }>(); 
@@ -97,7 +97,7 @@ function advanceTurn(roomCode: string) {
             try {
                 await engineAdapter.advanceToVoting(roomCode);
             } catch (e: any) {
-                console.error(`[Turn] ❌ Errore auto-advance voting: ${e.message}`);
+                console.error(`[Turn] Errore auto-advance voting: ${e.message}`);
             }
             roomDiscussionTimers.delete(roomCode);
             roomDiscussionExpiry.delete(roomCode);
@@ -126,7 +126,6 @@ const server = createServer(async (req, res) => {
         return;
     }
 
-    // Absorb fire-and-forget notifications from lobby-service (no-op, comm-service drives the flow)
     if (req.method === 'POST' && req.url?.startsWith('/api/internal/lobby/')) {
         console.log(`[Internal] ${req.method} ${req.url} received from ${req.headers['x-forwarded-for'] || req.socket.remoteAddress}`);
         res.writeHead(200, { 'Content-Type': 'application/json' });
@@ -149,7 +148,7 @@ const server = createServer(async (req, res) => {
                     const hint = String(game.Hint || '');
                     const roomCode = String(game.ID || '');
 
-                    // Invio privato dei ruoli (e della parola segreta)
+                    // Invio privato dei ruoli e della parola/indizio segreta
                     const players: any[] = game.Players || [];
                     players.forEach((player: any) => {
                         const playerWs = userSockets.get(String(player.ID));
@@ -164,9 +163,9 @@ const server = createServer(async (req, res) => {
                                     isImpostor
                                 }
                             }));
-                            console.log(`[Webhook] 📨 Role ${player.Role} sent to player ${player.ID}`);
+                            console.log(`[Webhook] Role ${player.Role} sent to player ${player.ID}`);
                         } else {
-                            console.log(`[Webhook] ⚠️ No active socket for player ${player.ID}`);
+                            console.log(`[Webhook] No active socket for player ${player.ID}`);
                         }
                     });
 
@@ -203,7 +202,7 @@ const server = createServer(async (req, res) => {
                         type: 'ENGINE_EVENT',
                         payload: { eventName: 'PhaseChanged', gameId: roomCode, newPhase, timer: timerSeconds, ...(votingExpiry ? { expiresAt: votingExpiry } : {}) }
                     });
-                    console.log(`[Webhook] 🔁 PhaseChanged broadcast for room ${roomCode} -> ${newPhase}`);
+                    console.log(`[Webhook] PhaseChanged broadcast for room ${roomCode} -> ${newPhase}`);
                 } else if (eventName === 'GameEnded') {
                     const ep = engineEvent.payload || {};
                     const roomCode = String(ep.gameId || ep.GameID || '');
@@ -220,14 +219,12 @@ const server = createServer(async (req, res) => {
                         });
                     }
                 } else {
-                    // Fallback per tutti gli altri eventi (es. VotingResolved, ImpostorGuessPhase)
-                    // Normalize engine event so payload fields are accessible at top-level
+                    // Fallback per tutti gli altri eventi della partita (es. VotingResolved, ImpostorGuessPhase)
                     const rawPayload = engineEvent.payload || {};
                     const normalizedPayload = { eventName: engineEvent.eventName, ...rawPayload };
                     const eventToBroadcast = { type: 'ENGINE_EVENT', payload: normalizedPayload };
                     const targetRoom = rawPayload.gameId || engineEvent.gameId || rawPayload.GameID;
 
-                    // Track votes for reconnect recovery
                     if (engineEvent.eventName === 'PlayerVoted' && targetRoom) {
                         const voterId = String(rawPayload.voterId || rawPayload.VoterId || '');
                         const targetId = String(rawPayload.targetId || rawPayload.TargetId || '');
@@ -240,7 +237,6 @@ const server = createServer(async (req, res) => {
                         }
                     }
 
-                    // Clear voting data and restart clue-submission round when resolved
                     if ((engineEvent.eventName === 'VotingResolved') && targetRoom) {
                         roomVotingExpiry.delete(String(targetRoom));
                         roomVotes.delete(String(targetRoom));
@@ -251,7 +247,6 @@ const server = createServer(async (req, res) => {
                             roomAlivePlayers.set(String(targetRoom), alive.filter(id => id !== eliminatedId));
                         }
 
-                        // Delay before starting new round so clients can display the popup
                         const roomCodeForNewRound = String(targetRoom);
                         setTimeout(() => {
                             const queue = [...(roomAlivePlayers.get(roomCodeForNewRound) || [])];
@@ -263,12 +258,11 @@ const server = createServer(async (req, res) => {
                         }, NEW_ROUND_DELAY_MS);
                     }
 
-                    // Clean up alive-player tracking when the game ends
                     if ((engineEvent.eventName === 'GameEnded') && targetRoom) {
                         roomAlivePlayers.delete(String(targetRoom));
                     }
 
-                    console.log(`[Webhook] 🔁 Broadcasting normalized event ${engineEvent.eventName} to room ${targetRoom || 'ALL'}`);
+                    console.log(`[Webhook] Broadcasting normalized event ${engineEvent.eventName} to room ${targetRoom || 'ALL'}`);
 
                     if (targetRoom) {
                         roomManager.broadcastToRoom(String(targetRoom), eventToBroadcast);
@@ -312,7 +306,7 @@ wss.on('connection', async (ws: WebSocket) => {
     session.addConnection(new Connection(socketId));
     await sessionRepository.save(session);
 
-    console.log(`[Gateway] 🔌 Nuova connessione. ID provvisorio: ${currentUserId}`);
+    console.log(`[Gateway] Nuova connessione. ID provvisorio: ${currentUserId}`);
 
     ws.on('message', async (data: RawData) => {
         let parsedData;
@@ -328,11 +322,11 @@ wss.on('connection', async (ws: WebSocket) => {
             const eventType = parsedData.type === 'EVENT' ? parsedData.payload?.action : parsedData.type;
             const payload = parsedData.type === 'EVENT' ? parsedData.payload : (parsedData.payload || parsedData);
             
-            console.log(`[Gateway] 📥 Ricevuto evento: ${eventType}`);
+            console.log(`[Gateway] Ricevuto evento: ${eventType}`);
 
             if (eventType === 'IDENTIFY') {
                 const newUserId = payload.userId;
-                console.log(`[Gateway] 🆔 Cambio identità: ${currentUserId} -> ${newUserId}`);
+                console.log(`[Gateway] Cambio identità: ${currentUserId} -> ${newUserId}`);
                 
                 await sessionRepository.remove(currentUserId);
 
@@ -343,7 +337,7 @@ wss.on('connection', async (ws: WebSocket) => {
                 }
 
                 userSockets.delete(currentUserId);
-                userSockets.set(newUserId, ws); // Tracciamo il socket per i ruoli privati
+                userSockets.set(newUserId, ws); 
 
                 currentUserId = newUserId;
                 
@@ -380,7 +374,7 @@ wss.on('connection', async (ws: WebSocket) => {
                                     const isImpostor = (me.Role || me.role) === 'IMPOSTOR' || (me.Role || me.role) === 'Impostor';
                                     const secretWord = isImpostor ? (globalHint || me.Hint) : (globalSecret || me.SecretWord);
                                     ws.send(JSON.stringify({ type: 'ENGINE_EVENT', payload: { eventName: 'RoleAssigned', role: roleVal, secretWord, isImpostor } }));
-                                    // If engine reports voting phase, restore it for the reconnecting client
+                                    
                                     try {
                                         const votingExpiry = roomVotingExpiry.get(roomCodeForUser);
                                         if (votingExpiry && votingExpiry > Date.now()) {
@@ -400,19 +394,19 @@ wss.on('connection', async (ws: WebSocket) => {
                                                 ws.send(JSON.stringify({ type: 'ENGINE_EVENT', payload: { eventName: 'PhaseChanged', newPhase: 'VOTING', timer: timerValue, gameId: roomCodeForUser } }));
                                             }
                                         }
-                                    } catch (e) { /* ignore recovery errors */ }
+                                    } catch (e) {  }
                                 }
                             }
                         } catch (e) {}
 
-                        // Recovery discussion phase
+                        // Recovery della fase di discussione
                         const discExpiry = roomDiscussionExpiry.get(roomCodeForUser);
                         if (discExpiry && discExpiry > Date.now()) {
                             const remaining = Math.max(0, Math.ceil((discExpiry - Date.now()) / 1000));
                             console.log(`[Gateway] 🔁 Sending discussion_phase_started recovery to ${currentUserId} for room ${roomCodeForUser} (remaining ${remaining}s)`);
                             ws.send(JSON.stringify({ type: 'discussion_phase_started', payload: { roomCode: roomCodeForUser, seconds: remaining, expiresAt: discExpiry } }));
                         }
-                        // Send alive players list so client can mark eliminated players as dead on reconnect
+
                         const alivePlayerIdsForUser = roomAlivePlayers.get(roomCodeForUser);
                         if (alivePlayerIdsForUser && alivePlayerIdsForUser.length > 0) {
                             roomManager.broadcastToRoom(roomCodeForUser, { type: 'players_status', payload: { alivePlayerIds: alivePlayerIdsForUser, roomCode: roomCodeForUser } });
@@ -451,13 +445,13 @@ wss.on('connection', async (ws: WebSocket) => {
                         const remaining = ts.expiresAt ? Math.max(0, Math.ceil((ts.expiresAt - Date.now()) / 1000)) : CLUE_TURN_SECONDS;
                         ws.send(JSON.stringify({ type: 'turn_started', payload: { yourTurn: currentUserId === activePlayerId, activePlayerId, seconds: remaining, fullSeconds: CLUE_TURN_SECONDS, expiresAt: ts.expiresAt } }));
                     } else {
-                        // Recovery discussion phase
+                        // Recovery fase di discussione 
                         const discExpiry = roomDiscussionExpiry.get(roomCode);
                         if (discExpiry && discExpiry > Date.now()) {
                             const remaining = Math.max(0, Math.ceil((discExpiry - Date.now()) / 1000));
                             ws.send(JSON.stringify({ type: 'discussion_phase_started', payload: { roomCode, seconds: remaining, expiresAt: discExpiry } }));
                         } else {
-                            // Recovery voting phase
+                            // Recovery fase di voting
                             const votingExpiry = roomVotingExpiry.get(roomCode);
                             if (votingExpiry && votingExpiry > Date.now()) {
                                 const remaining = Math.max(0, Math.ceil((votingExpiry - Date.now()) / 1000));
@@ -469,7 +463,7 @@ wss.on('connection', async (ws: WebSocket) => {
                             }
                         }
                     }
-                    // Send alive players list so client can mark eliminated players as dead on reconnect
+
                     const alivePlayerIds = roomAlivePlayers.get(roomCode);
                     if (alivePlayerIds && alivePlayerIds.length > 0) {
                         roomManager.broadcastToRoom(roomCode, { type: 'players_status', payload: { alivePlayerIds, roomCode } });
@@ -522,7 +516,6 @@ wss.on('connection', async (ws: WebSocket) => {
                 existing[currentUserId] = clueText;
                 roomClues.set(roomCode, existing);
 
-                // Notify all clients (includiamo anche il mittente) so everyone resets/updates the timer consistently
                 roomManager.broadcastToRoom(roomCode, {
                     type: 'clue_submitted',
                     payload: { userId: currentUserId, username: payload.username || '', clue: clueText }
@@ -535,15 +528,15 @@ wss.on('connection', async (ws: WebSocket) => {
             if (eventType === 'start_game' || eventType === 'START_GAME') {
                 const hostId = payload.hostId || currentUserId;
 
-                // 1. Aggiorna lo stato della lobby e prendi la lista finale dei playerIds restituiti
+                // Aggiorna lo stato della lobby e prendi la lista finale dei playerIds restituiti
                 const playerIds = await lobbyService.handleStartGame(roomCode, hostId) || [];
 
-                // 2. Recupera la parola del round dal lobby-service (DB)
+                // Recupera la parola del round dal lobby-service
                 const wordEntry = await lobbyService.getNextWord(roomCode);
                 const secretWord = wordEntry?.word || '';
                 const hint = wordEntry?.impostorClue || '';
 
-                // 3. Inoltra l'intero payload (arricchito con gameId, playerIds, impostori e parola) al RoutingService
+                // Inoltra l'intero payload al RoutingService
                 const settings = roomSettings.get(roomCode);
                 const requestedImpostors = settings?.impostors ?? 1;
                 const enrichedPayload = { ...payload, gameId: roomCode, playerIds, requestedImpostors, secretWord, hint };
@@ -567,7 +560,7 @@ wss.on('connection', async (ws: WebSocket) => {
             }
 
             if (eventType === 'CHAT') {
-                // Block eliminated players from sending messages
+                // Impedisce ai giocatori eliminati di inviare messaggi, ma consente loro di riceverli per rimanere coinvolti nella partita
                 const aliveInRoom = roomAlivePlayers.get(roomCode);
                 if (aliveInRoom && !aliveInRoom.includes(currentUserId)) {
                     ws.send(JSON.stringify({ type: 'error', payload: { message: 'Eliminated players cannot send messages' } }));
@@ -585,7 +578,7 @@ wss.on('connection', async (ws: WebSocket) => {
                 await routingService.handleClientEvent(currentUserId, event);
             }
         } catch (error: any) {
-            console.error(`[Gateway] ❌ Errore elaborazione messaggio da ${currentUserId}: ${error.message}`);
+            console.error(`[Gateway] Errore elaborazione messaggio da ${currentUserId}: ${error.message}`);
             ws.send(JSON.stringify({ type: 'error', payload: { message: error.message } })); 
         }
     });
@@ -604,18 +597,18 @@ wss.on('connection', async (ws: WebSocket) => {
                 try {
                     await lobbyService.handleLeaveRoom(roomCode, closedUserId, ws);
                 } catch (e: any) {
-                    console.error(`[Gateway] ❌ Error during grace period leave: ${e.message}`);
+                    console.error(`[Gateway] Error during grace period leave: ${e.message}`);
                 }
                 pendingLeaves.delete(closedUserId);
             }, LEAVE_GRACE_PERIOD_MS);
             pendingLeaves.set(closedUserId, timeout);
         }
 
-        console.log(`[Gateway] 🚪 Client disconnesso: ${currentUserId}`);
+        console.log(`[Gateway] Client disconnesso: ${currentUserId}`);
     });
 
     ws.on('error', (error) => {
-        console.error(`[Gateway] 🔥 Errore socket per ${currentUserId}:`, error);
+        console.error(`[Gateway] Errore socket per ${currentUserId}:`, error);
     });
 });
 
@@ -643,5 +636,5 @@ process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
 
 server.listen(port, '0.0.0.0', () => {
-    console.log(`🚀 Gateway pronto sulla porta ${port}`);
+    console.log(`Gateway pronto sulla porta ${port}`);
 });

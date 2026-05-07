@@ -30,9 +30,9 @@ export class ChatAndSignalingService {
             if (senderName) chatEvent.payload.sender = senderName
 
             this.roomManager.broadcastToRoom(message.roomId, chatEvent, ws);
-            console.log(`[Chat] 💬 ${message.senderId} (${senderName || 'unknown'}) -> Stanza ${message.roomId}: ${content}`);
+            console.log(`[Chat] ${message.senderId} (${senderName || 'unknown'}) -> Stanza ${message.roomId}: ${content}`);
         } catch (error: any) {
-            console.error(`[Chat] ❌ Errore processChatMessage: ${error.message}`);
+            console.error(`[Chat] Errore processChatMessage: ${error.message}`);
         }
     }
 
@@ -47,9 +47,9 @@ export class ChatAndSignalingService {
             };
 
             this.roomManager.broadcastToRoom(message.roomId, signalingEvent, ws);
-            console.log(`[WebRTC] 📡 Segnale da ${message.senderId} -> Stanza ${message.roomId}`);
+            console.log(`[WebRTC] Segnale da ${message.senderId} -> Stanza ${message.roomId}`);
         } catch (error: any) {
-            console.error(`[WebRTC] ❌ Errore processWebRTCSignaling: ${error.message}`);
+            console.error(`[WebRTC] Errore processWebRTCSignaling: ${error.message}`);
         }
     }
 }

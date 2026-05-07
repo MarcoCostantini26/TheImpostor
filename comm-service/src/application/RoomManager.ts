@@ -7,26 +7,26 @@ export class RoomManager {
     joinRoom(roomId: string, ws: WebSocket) {
         if (!this.rooms.has(roomId)) {
             this.rooms.set(roomId, new Set());
-            console.log(`[RoomManager] 🏠 Creata nuova stanza in memoria: ${roomId}`);
+            console.log(`[RoomManager] Creata nuova stanza in memoria: ${roomId}`);
         }
         this.rooms.get(roomId)!.add(ws);
-        console.log(`[RoomManager] 👤 Socket aggiunto alla stanza: ${roomId}`);
+        console.log(`[RoomManager] Socket aggiunto alla stanza: ${roomId}`);
     }
 
     leaveRoom(roomId: string, ws: WebSocket) {
         const room = this.rooms.get(roomId);
         if (room) {
             room.delete(ws);
-            console.log(`[RoomManager] 🚪 Socket rimosso dalla stanza: ${roomId}`);
+            console.log(`[RoomManager] Socket rimosso dalla stanza: ${roomId}`);
             // Se la stanza è vuota, puliamo la memoria
             if (room.size === 0) {
                 this.rooms.delete(roomId);
-                console.log(`[RoomManager] 🧹 Stanza ${roomId} vuota e rimossa.`);
+                console.log(`[RoomManager] Stanza ${roomId} vuota e rimossa.`);
             }
         }
     }
 
-    // Utile quando un socket si disconnette brutalmente (chiude il browser)
+    // Utile quando un socket si disconnette brutalmente (chiusura del browser)
     leaveAllRooms(ws: WebSocket) {
         this.rooms.forEach((clients, roomId) => {
             if (clients.has(ws)) {
@@ -42,7 +42,7 @@ export class RoomManager {
 
         const messageString = JSON.stringify(messageObj);
         roomClients.forEach(client => {
-            // Inviamo a tutti tranne a chi ha generato l'evento (se specificato)
+            // Inviamo a tutti tranne a chi ha generato l'evento
             if (client !== excludeWs && client.readyState === WebSocket.OPEN) {
                 client.send(messageString);
             }

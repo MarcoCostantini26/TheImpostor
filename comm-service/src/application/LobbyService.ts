@@ -15,7 +15,7 @@ export class LobbyService {
                 this.roomManager.broadcastToRoom(roomCode, { type: 'room_update', payload: roomState });
             }
         } catch (error: any) {
-            console.error(`[LobbyService] ❌ Errore syncRoomState per ${roomCode}: ${error.message}`);
+            console.error(`[LobbyService] Errore syncRoomState per ${roomCode}: ${error.message}`);
         }
     }
 
@@ -25,9 +25,9 @@ export class LobbyService {
                 type: 'player_ready',
                 payload: { userId, ready }
             });
-            console.log(`[LobbyService] 🔄 Stato ready aggiornato per ${userId}.`);
+            console.log(`[LobbyService] Stato ready aggiornato per ${userId}.`);
         } catch (error: any) {
-            console.error(`[LobbyService] ❌ Errore in handlePlayerReady: ${error.message}`);
+            console.error(`[LobbyService] Errore in handlePlayerReady: ${error.message}`);
         }
     }
 
@@ -50,11 +50,11 @@ export class LobbyService {
                 payload: { roomId }
             });
             await this.syncRoomState(roomId);
-            console.log(`[LobbyService] 🚀 Partita ${roomId} avviata! Broadcast inviato.`);
+            console.log(`[LobbyService] Partita ${roomId} avviata! Broadcast inviato.`);
             return Array.isArray(data.playerIds) ? data.playerIds : [];
 
         } catch (error: any) {
-            console.error(`[LobbyService] ❌ Errore in handleStartGame: ${error.message}`);
+            console.error(`[LobbyService] Errore in handleStartGame: ${error.message}`);
             return null;
         }
     }
@@ -70,7 +70,7 @@ export class LobbyService {
                     body: JSON.stringify({ playerId: userId })
                 });
             } catch (apiError: any) {
-                console.error(`[LobbyService] ⚠️ Could not call leave API for ${userId}: ${apiError.message}`);
+                console.error(`[LobbyService] Could not call leave API for ${userId}: ${apiError.message}`);
             }
 
             this.roomManager.broadcastToRoom(roomId, {
@@ -78,9 +78,9 @@ export class LobbyService {
                 payload: { userId }
             });
             await this.syncRoomState(roomId);
-            console.log(`[LobbyService] 👋 ${userId} ha lasciato la stanza ${roomId}.`);
+            console.log(`[LobbyService] ${userId} ha lasciato la stanza ${roomId}.`);
         } catch (error: any) {
-            console.error(`[LobbyService] ❌ Errore in handleLeaveRoom: ${error.message}`);
+            console.error(`[LobbyService] Errore in handleLeaveRoom: ${error.message}`);
         }
     }
 
@@ -97,16 +97,16 @@ export class LobbyService {
                     })
                 });
             } catch (apiError: any) {
-                console.error(`[LobbyService] ⚠️ Could not persist settings for ${roomId}: ${apiError.message}`);
+                console.error(`[LobbyService] Could not persist settings for ${roomId}: ${apiError.message}`);
             }
 
             this.roomManager.broadcastToRoom(roomId, {
                 type: 'update_settings',
                 payload: settings
             });
-            console.log(`[LobbyService] ⚙️ Impostazioni stanza ${roomId} aggiornate da ${userId}.`);
+            console.log(`[LobbyService] Impostazioni stanza ${roomId} aggiornate da ${userId}.`);
         } catch (error: any) {
-            console.error(`[LobbyService] ❌ Errore in handleUpdateSettings: ${error.message}`);
+            console.error(`[LobbyService] Errore in handleUpdateSettings: ${error.message}`);
         }
     }
 
@@ -117,9 +117,9 @@ export class LobbyService {
                 const data = await response.json();
                 return { word: String(data.word || ''), impostorClue: String(data.impostorClue || '') };
             }
-            console.error(`[LobbyService] ❌ getNextWord HTTP ${response.status} per ${roomCode}`);
+            console.error(`[LobbyService] getNextWord HTTP ${response.status} per ${roomCode}`);
         } catch (error: any) {
-            console.error(`[LobbyService] ❌ Errore getNextWord per ${roomCode}: ${error.message}`);
+            console.error(`[LobbyService] Errore getNextWord per ${roomCode}: ${error.message}`);
         }
         return null;
     }

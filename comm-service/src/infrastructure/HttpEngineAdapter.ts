@@ -39,7 +39,7 @@ export class HttpEngineAdapter implements EngineGateway {
 
     private async post(path: string, body: any): Promise<void> {
         const url = `${this.engineUrl}${path}`;
-        console.log(`[Adapter] 📡 INVIO a Go: ${url}`); 
+        console.log(`[Adapter] INVIO a Go: ${url}`); 
         
         try {
             const response = await fetch(url, {
@@ -48,14 +48,14 @@ export class HttpEngineAdapter implements EngineGateway {
                 body: JSON.stringify(body)
             });
 
-            console.log(`[Adapter] 📥 RISPOSTA da Go: ${response.status} ${response.statusText}`);
+            console.log(`[Adapter] RISPOSTA da Go: ${response.status} ${response.statusText}`);
 
             if (!response.ok) {
                 const errorMsg = await response.text();
                 throw new Error(`Engine Error (${response.status}): ${errorMsg}`);
             }
         } catch (error: any) {
-            console.error(`[Adapter] ❌ ERRORE FISICO: Go è acceso sulla 8081? -> ${error.message}`);
+            console.error(`[Adapter] ERRORE FISICO: Go è acceso sulla 8081? -> ${error.message}`);
             throw error;
         }
     }
