@@ -7,19 +7,16 @@ import (
 	"net/http"
 )
 
-// HTTPGatewayNotifier implementa l'interfaccia GatewayNotifier usando richieste HTTP POST
 type HTTPGatewayNotifier struct {
 	WebhookURL string
 }
 
-// NewHTTPGatewayNotifier crea un nuovo notifier con l'URL di destinazione
 func NewHTTPGatewayNotifier(url string) *HTTPGatewayNotifier {
 	return &HTTPGatewayNotifier{
 		WebhookURL: url,
 	}
 }
 
-// Struttura fissa che il Node.js si aspetterà di ricevere
 type WebhookMessage struct {
 	Event   string      `json:"eventName"`
 	Payload interface{} `json:"payload"`

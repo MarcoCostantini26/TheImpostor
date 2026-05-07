@@ -16,7 +16,6 @@ var (
 	ErrInvalidImpostorCount = errors.New("numero di impostori richiesto non consentito per questo numero di giocatori")
 )
 
-// wordPairs contains [secretWord, hint] pairs used to assign secrets each game.
 var wordPairs = [][2]string{
 	{"PIZZA", "ITALIAN DISH"},
 	{"GUITAR", "MUSICAL INSTRUMENT"},
@@ -48,7 +47,6 @@ func NewGameFactory() *GameFactory {
 	return &GameFactory{}
 }
 
-// Se secretWord e hint sono forniti (da DB), vengono usati; altrimenti si sceglie dalla lista hardcoded.
 func (f *GameFactory) CreateGame(gameID string, playerIDs []string, requestedImpostors int, secretWord string, hint string) (*Game, error) {
 	numPlayers := len(playerIDs)
 

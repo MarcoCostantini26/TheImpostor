@@ -44,14 +44,13 @@ func (app *GameAppService) CreateGameUseCase(gameID string, playerIDs []string, 
 		return err
 	}
 
-	// Registra la sessione nel Lobby Service in modo asincrono (best-effort).
 	hostID := ""
 	if len(playerIDs) > 0 {
 		hostID = playerIDs[0]
 	}
 	go func() {
 		if lobbyErr := app.lobbyGateway.CreateGameSession(gameID, playerIDs, hostID); lobbyErr != nil {
-			// Il fallimento non blocca la partita
+			
 		}
 	}()
 

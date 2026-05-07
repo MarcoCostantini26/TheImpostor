@@ -12,17 +12,11 @@ type GameController struct {
 	appService *application.GameAppService
 }
 
-// NewGameController crea una nuova istanza del controller
 func NewGameController(appService *application.GameAppService) *GameController {
 	return &GameController{
 		appService: appService,
 	}
 }
-
-// ==========================================
-// DTOs (Data Transfer Objects)
-// Strutture per leggere il JSON in entrata
-// ==========================================
 
 type CreateGameRequest struct {
 	GameID             string   `json:"gameId"`
@@ -34,7 +28,7 @@ type CreateGameRequest struct {
 
 type CastVoteRequest struct {
 	VoterID  string `json:"voterId"`
-	TargetID string `json:"targetId"` // Può essere vuoto per uno "Skip"
+	TargetID string `json:"targetId"` 
 }
 
 type GuessWordRequest struct {
@@ -42,11 +36,6 @@ type GuessWordRequest struct {
 	GuessedWord string `json:"guessedWord"`
 }
 
-// ==========================================
-// HANDLERS HTTP
-// ==========================================
-
-// HandleCreateGame risponde a POST /games/create
 func (c *GameController) HandleCreateGame(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Metodo non consentito", http.StatusMethodNotAllowed)
@@ -69,15 +58,12 @@ func (c *GameController) HandleCreateGame(w http.ResponseWriter, r *http.Request
 	json.NewEncoder(w).Encode(map[string]string{"message": "Partita creata con successo"})
 }
 
-// HandleAdvanceToVoting risponde a POST /games/{id}/advance-voting
 func (c *GameController) HandleAdvanceToVoting(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Metodo non consentito", http.StatusMethodNotAllowed)
 		return
 	}
 
-	// In una vera app, prenderesti l'ID dall'URL.
-	// Per semplicità ora lo leggiamo da un parametro di query: ?gameId=123
 	gameID := r.URL.Query().Get("gameId")
 	if gameID == "" {
 		http.Error(w, "Manca il gameId", http.StatusBadRequest)
@@ -94,7 +80,6 @@ func (c *GameController) HandleAdvanceToVoting(w http.ResponseWriter, r *http.Re
 	json.NewEncoder(w).Encode(map[string]string{"message": "Fase di voto iniziata"})
 }
 
-// HandleCastVote risponde a POST /games/{id}/vote
 func (c *GameController) HandleCastVote(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Metodo non consentito", http.StatusMethodNotAllowed)
@@ -123,7 +108,6 @@ func (c *GameController) HandleCastVote(w http.ResponseWriter, r *http.Request) 
 	json.NewEncoder(w).Encode(map[string]string{"message": "Voto registrato in segreto"})
 }
 
-// HandleResolveVoting risponde a POST /games/{id}/resolve-voting
 func (c *GameController) HandleResolveVoting(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Metodo non consentito", http.StatusMethodNotAllowed)
@@ -146,7 +130,6 @@ func (c *GameController) HandleResolveVoting(w http.ResponseWriter, r *http.Requ
 	json.NewEncoder(w).Encode(map[string]string{"message": "Votazione conclusa. Eventuali giocatori eliminati e condizioni di vittoria controllate."})
 }
 
-// HandleGetGameState risponde a GET /games/state?gameId={id}
 func (c *GameController) HandleGetGameState(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		http.Error(w, "Metodo non consentito", http.StatusMethodNotAllowed)

@@ -10,17 +10,14 @@ import (
 	"game-engine/internal/application"
 )
 
-// Implementa application.LobbyGateway chiamando il Lobby Service via HTTP.
 type LobbyServiceClient struct {
 	baseURL string
 }
 
-// Crea un client puntato all'URL base del Lobby Service.
 func NewLobbyServiceClient(baseURL string) *LobbyServiceClient {
 	return &LobbyServiceClient{baseURL: baseURL}
 }
 
-// ----- DTOs -----
 
 type createSessionRequest struct {
 	RoomCode        string   `json:"roomCode"`
@@ -44,10 +41,6 @@ type roundResultRequest struct {
 	SecretWord               string `json:"secretWord,omitempty"`
 }
 
-// ----- Interface implementation -----
-
-// Chiama POST /api/internal/games/session.
-// Gli username vengono impostati uguali agli ID
 func (c *LobbyServiceClient) CreateGameSession(gameID string, playerIDs []string, hostID string) error {
 	usernames := make([]string, len(playerIDs))
 	copy(usernames, playerIDs)
@@ -68,8 +61,6 @@ func (c *LobbyServiceClient) CreateGameSession(gameID string, playerIDs []string
 	return nil
 }
 
-// Chiama POST /api/internal/games/{roomCode}/round-result.
-// Gli username vengono impostati uguali agli ID quando non disponibili.
 func (c *LobbyServiceClient) SaveRoundResult(payload application.LobbyRoundResult) error {
 	req := roundResultRequest{
 		RoundNumber:              payload.RoundNumber,
@@ -98,7 +89,6 @@ func (c *LobbyServiceClient) SaveRoundResult(payload application.LobbyRoundResul
 	return nil
 }
 
-// Esegue una richiesta HTTP POST verso il Lobby Service.
 func (c *LobbyServiceClient) post(path string, body interface{}) error {
 	jsonBody, err := json.Marshal(body)
 	if err != nil {
