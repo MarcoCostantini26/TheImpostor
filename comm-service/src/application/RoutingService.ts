@@ -9,7 +9,7 @@ export class RoutingService {
     ) {}
 
     async handleClientEvent(userId: string, event: Event): Promise<void> {
-        console.log(`[Routing] ⚙️ Inizio "${event.type}" per: ${userId}`);
+        console.log(`[Routing] Inizio "${event.type}" per: ${userId}`);
         const payload = event.payload || {};
 
         try {
@@ -51,9 +51,9 @@ export class RoutingService {
                 default:
                     console.log(`[Routing] Evento non gestito: ${event.type}`);
             }
-            console.log(`[Routing] ✅ Operazione "${event.type}" completata.`);
+            console.log(`[Routing] Operazione "${event.type}" completata.`);
         } catch (error: any) {
-            console.error(`[Routing] ❌ Errore durante "${event.type}": ${error.message}`);
+            console.error(`[Routing] Errore durante "${event.type}": ${error.message}`);
             throw error;
         }
     }
