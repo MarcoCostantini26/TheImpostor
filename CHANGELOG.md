@@ -1,3 +1,16 @@
+## [4.1.4](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.3...4.1.4) (2026-05-09)
+
+### Dependency updates
+
+* **core-deps:** update semantic-release monorepo ([#165](https://github.com/MarcoCostantini26/TheImpostor/issues/165)) ([da5c2a7](https://github.com/MarcoCostantini26/TheImpostor/commit/da5c2a72043cf9cac7bc75d54347203eb25b6e97))
+* **deps:** update dependency @types/node to v25.6.1 ([#161](https://github.com/MarcoCostantini26/TheImpostor/issues/161)) ([a02bf50](https://github.com/MarcoCostantini26/TheImpostor/commit/a02bf5099620b5a3e44f4f2c35357929c6203a06))
+* **deps:** update dependency vite to v8.0.11 ([#158](https://github.com/MarcoCostantini26/TheImpostor/issues/158)) ([ebd37ce](https://github.com/MarcoCostantini26/TheImpostor/commit/ebd37cebcbbfaf365c20a7b562b99415a332f7a3))
+
+### General maintenance
+
+* **comm-service:** remove useless comments and dead code ([2026c9f](https://github.com/MarcoCostantini26/TheImpostor/commit/2026c9fd11845b7509a5978968596cd39e84e3f8))
+* **engine:** remove useless comments and dead code ([a19251e](https://github.com/MarcoCostantini26/TheImpostor/commit/a19251e1554d8e2fd2dc4e22287a556484100132))
+
 ## [4.1.3](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.2...4.1.3) (2026-05-07)
 
 ### Dependency updates
