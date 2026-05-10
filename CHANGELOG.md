@@ -1,3 +1,11 @@
+## [4.1.5](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.4...4.1.5) (2026-05-10)
+
+### Dependency updates
+
+* **core-deps:** update tailwindcss monorepo to v4.3.0 ([#166](https://github.com/MarcoCostantini26/TheImpostor/issues/166)) ([342ad2a](https://github.com/MarcoCostantini26/TheImpostor/commit/342ad2a5ba81ebd5596aefd995212bea1b9e0f58))
+* **deps:** update dependency @types/node to v25.6.2 ([#162](https://github.com/MarcoCostantini26/TheImpostor/issues/162)) ([f04f2f1](https://github.com/MarcoCostantini26/TheImpostor/commit/f04f2f11421d7a530e1b79ea13ff7aaadcaed0df))
+* **deps:** update eclipse-temurin docker tag ([#163](https://github.com/MarcoCostantini26/TheImpostor/issues/163)) ([7556b68](https://github.com/MarcoCostantini26/TheImpostor/commit/7556b68e6a29b0933e7a55366fe4e448155839e6))
+
 ## [4.1.4](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.3...4.1.4) (2026-05-09)
 
 ### Dependency updates
