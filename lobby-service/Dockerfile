@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21.0.10_7-jdk-alpine AS builder
+FROM eclipse-temurin:21.0.11_10-jdk-alpine AS builder
 
 WORKDIR /app
 
@@ -23,7 +23,7 @@ COPY src src
 RUN ./gradlew build -x test --no-daemon
 
 # --- Runtime Stage ---
-FROM eclipse-temurin:21.0.10_7-jre-alpine
+FROM eclipse-temurin:21.0.11_10-jre-alpine
 
 WORKDIR /app
 
