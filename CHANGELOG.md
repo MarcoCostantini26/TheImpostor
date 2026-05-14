@@ -1,3 +1,10 @@
+## [4.1.7](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.6...4.1.7) (2026-05-14)
+
+### Dependency updates
+
+* **core-deps:** update dependency vue-router to v5.0.7 ([#174](https://github.com/MarcoCostantini26/TheImpostor/issues/174)) ([d7cf772](https://github.com/MarcoCostantini26/TheImpostor/commit/d7cf7720131c8937e59f863060672b8005992978))
+* **deps:** update commitlint monorepo to v21.0.1 ([#171](https://github.com/MarcoCostantini26/TheImpostor/issues/171)) ([4269717](https://github.com/MarcoCostantini26/TheImpostor/commit/4269717dd8deddb1ae8515c9051764e0cee7e8df))
+
 ## [4.1.6](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.5...4.1.6) (2026-05-12)
 
 ### Dependency updates
