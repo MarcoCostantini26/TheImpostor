@@ -1,3 +1,18 @@
+## [4.1.8](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.7...4.1.8) (2026-05-20)
+
+### Dependency updates
+
+* **core-deps:** update dependency postcss to v8.5.15 ([#180](https://github.com/MarcoCostantini26/TheImpostor/issues/180)) ([b6b23a2](https://github.com/MarcoCostantini26/TheImpostor/commit/b6b23a24e6e8a7675712c83fbd92f8815bb1af4d))
+* **deps:** update dependency @playwright/test to v1.60.0 ([#169](https://github.com/MarcoCostantini26/TheImpostor/issues/169)) ([1d48ae4](https://github.com/MarcoCostantini26/TheImpostor/commit/1d48ae4b358c29ad6f13e6d4b3bc32311c5fb157))
+* **deps:** update dependency @types/node to v25.8.0 ([#170](https://github.com/MarcoCostantini26/TheImpostor/issues/170)) ([b254ca2](https://github.com/MarcoCostantini26/TheImpostor/commit/b254ca214c6cd1df8829be9fbe5ab6f34cbdd9cd))
+* **deps:** update dependency @types/node to v25.9.0 ([#179](https://github.com/MarcoCostantini26/TheImpostor/issues/179)) ([5303418](https://github.com/MarcoCostantini26/TheImpostor/commit/5303418da12d89d6a74c8b2df3fc59bdb162c32f))
+* **deps:** update dependency @vitejs/plugin-vue to v6.0.7 ([#176](https://github.com/MarcoCostantini26/TheImpostor/issues/176)) ([4dcd82b](https://github.com/MarcoCostantini26/TheImpostor/commit/4dcd82bd35fb22b05c127b7ba9ad1270f6d08d03))
+* **deps:** update dependency eslint to v10.4.0 ([#177](https://github.com/MarcoCostantini26/TheImpostor/issues/177)) ([9270fa5](https://github.com/MarcoCostantini26/TheImpostor/commit/9270fa5d6294a7164ee26fb31e56be8e851afe49))
+* **deps:** update dependency lint-staged to v17 ([#157](https://github.com/MarcoCostantini26/TheImpostor/issues/157)) ([3c6a80d](https://github.com/MarcoCostantini26/TheImpostor/commit/3c6a80dac7f98626b7aaa5f139b39c7c97ed1248))
+* **deps:** update dependency typescript-eslint to v8.59.4 ([#178](https://github.com/MarcoCostantini26/TheImpostor/issues/178)) ([1fee766](https://github.com/MarcoCostantini26/TheImpostor/commit/1fee766c046d1c911774426320840300e1a3c7d7))
+* **deps:** update dependency vite to v8.0.13 ([#175](https://github.com/MarcoCostantini26/TheImpostor/issues/175)) ([aa5d378](https://github.com/MarcoCostantini26/TheImpostor/commit/aa5d378650d5bcb7dbea33e5cbd92e6a0edd3ebc))
+* **deps:** update gradle to v9.5.1 ([#172](https://github.com/MarcoCostantini26/TheImpostor/issues/172)) ([31e59df](https://github.com/MarcoCostantini26/TheImpostor/commit/31e59df7d024e7fb45c975e450783c1bdf588c2e))
+
 ## [4.1.7](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.6...4.1.7) (2026-05-14)
 
 ### Dependency updates
