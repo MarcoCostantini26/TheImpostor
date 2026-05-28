@@ -1,3 +1,10 @@
+## [4.1.10](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.9...4.1.10) (2026-05-28)
+
+### Dependency updates
+
+* **core-deps:** update dependency vue to v3.5.35 ([#185](https://github.com/MarcoCostantini26/TheImpostor/issues/185)) ([7e15065](https://github.com/MarcoCostantini26/TheImpostor/commit/7e15065ab74ec25bba59124834b41a66e3b87d2e))
+* **deps:** update dependency typescript-eslint to v8.60.0 ([#184](https://github.com/MarcoCostantini26/TheImpostor/issues/184)) ([052c2d8](https://github.com/MarcoCostantini26/TheImpostor/commit/052c2d8d30795e379a13f0074c752708616d5307))
+
 ## [4.1.9](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.8...4.1.9) (2026-05-23)
 
 ### Dependency updates
