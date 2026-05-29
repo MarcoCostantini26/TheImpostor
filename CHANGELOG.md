@@ -1,3 +1,9 @@
+## [4.1.11](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.10...4.1.11) (2026-05-29)
+
+### Dependency updates
+
+* **core-deps:** update dependency vue-router to v5.1.0 ([#186](https://github.com/MarcoCostantini26/TheImpostor/issues/186)) ([b359776](https://github.com/MarcoCostantini26/TheImpostor/commit/b359776bbd166c9afdf7e5d414191b26ae3c9222))
+
 ## [4.1.10](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.9...4.1.10) (2026-05-28)
 
 ### Dependency updates
