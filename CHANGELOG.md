@@ -1,3 +1,20 @@
+## [4.1.12](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.11...4.1.12) (2026-06-11)
+
+### Dependency updates
+
+* **core-deps:** update vue monorepo to v3.5.38 ([#199](https://github.com/MarcoCostantini26/TheImpostor/issues/199)) ([23608ff](https://github.com/MarcoCostantini26/TheImpostor/commit/23608ff5e773f9967aa4961802885666f6716f0c))
+* **deps:** update commitlint monorepo to v21.0.2 ([#188](https://github.com/MarcoCostantini26/TheImpostor/issues/188)) ([21754b3](https://github.com/MarcoCostantini26/TheImpostor/commit/21754b3c8c7554beed70be58946b1967c534e0da))
+* **deps:** update dependency @eslint/css to v1.3.0 ([#187](https://github.com/MarcoCostantini26/TheImpostor/issues/187)) ([509c413](https://github.com/MarcoCostantini26/TheImpostor/commit/509c41395bc827e2da1332a28f559b2436021133))
+* **deps:** update dependency @types/node to v25.9.2 ([#195](https://github.com/MarcoCostantini26/TheImpostor/issues/195)) ([96d7d9b](https://github.com/MarcoCostantini26/TheImpostor/commit/96d7d9b97c32a2f728f43c53e9de4be8d5a3426c))
+* **deps:** update dependency eslint to v10.4.1 ([#189](https://github.com/MarcoCostantini26/TheImpostor/issues/189)) ([e72e543](https://github.com/MarcoCostantini26/TheImpostor/commit/e72e54385e50d6d1731075818420ad965a96bf3e))
+* **deps:** update dependency eslint-plugin-vue to v10.9.2 ([#194](https://github.com/MarcoCostantini26/TheImpostor/issues/194)) ([87aeb90](https://github.com/MarcoCostantini26/TheImpostor/commit/87aeb90bf326a964573788ff30ae5f92777da0b2))
+* **deps:** update dependency lint-staged to v17.0.6 ([#190](https://github.com/MarcoCostantini26/TheImpostor/issues/190)) ([94b85f3](https://github.com/MarcoCostantini26/TheImpostor/commit/94b85f35c712ae67607d1168aafe075d730b8643))
+* **deps:** update dependency lint-staged to v17.0.7 ([#191](https://github.com/MarcoCostantini26/TheImpostor/issues/191)) ([62b0c78](https://github.com/MarcoCostantini26/TheImpostor/commit/62b0c78fa63ecb5ad7f92615cca7c9e687e8013e))
+* **deps:** update dependency typescript-eslint to v8.60.1 ([#192](https://github.com/MarcoCostantini26/TheImpostor/issues/192)) ([e03044f](https://github.com/MarcoCostantini26/TheImpostor/commit/e03044f2f05542b52c0abb5ca89a132e12cf43a3))
+* **deps:** update dependency vite to v8.0.16 ([#193](https://github.com/MarcoCostantini26/TheImpostor/issues/193)) ([7566eb8](https://github.com/MarcoCostantini26/TheImpostor/commit/7566eb86ca1d38c9a399e65f2deb51676a4cc75a))
+* **deps:** update spring boot to v4.1.0 ([#197](https://github.com/MarcoCostantini26/TheImpostor/issues/197)) ([b2b8eab](https://github.com/MarcoCostantini26/TheImpostor/commit/b2b8eab44ab5d57cf709c8fe9400adb658e458cc))
+* **deps:** update typescript-eslint monorepo to v8.61.0 ([#196](https://github.com/MarcoCostantini26/TheImpostor/issues/196)) ([e0ce549](https://github.com/MarcoCostantini26/TheImpostor/commit/e0ce5494097a72351eb9f99ce96d0e0f107f2dfc))
+
 ## [4.1.11](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.10...4.1.11) (2026-05-29)
 
 ### Dependency updates
