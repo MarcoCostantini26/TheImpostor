@@ -19,7 +19,7 @@ jobs:
 
   build-lobby:
     name: Build & Test Lobby Service (Java 21)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: lobby-service
