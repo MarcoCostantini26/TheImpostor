@@ -1,3 +1,18 @@
+## [4.1.14](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.13...4.1.14) (2026-06-23)
+
+### Dependency updates
+
+* **core-deps:** update dependency autoprefixer to v10.5.1 ([#212](https://github.com/MarcoCostantini26/TheImpostor/issues/212)) ([483a471](https://github.com/MarcoCostantini26/TheImpostor/commit/483a471d3c78cef94a8c9d6684231ab0ebe8b4bc))
+* **deps:** update actions/checkout action to v7 ([#205](https://github.com/MarcoCostantini26/TheImpostor/issues/205)) ([033f0ca](https://github.com/MarcoCostantini26/TheImpostor/commit/033f0ca6ab68a5d66cae8bade666c6e734140385))
+* **deps:** update dependency @types/node to v25.9.4 ([#207](https://github.com/MarcoCostantini26/TheImpostor/issues/207)) ([76e20be](https://github.com/MarcoCostantini26/TheImpostor/commit/76e20bee7f9b75283108625a882f899198359186))
+* **deps:** update dependency globals to v17.7.0 ([#209](https://github.com/MarcoCostantini26/TheImpostor/issues/209)) ([5c717d2](https://github.com/MarcoCostantini26/TheImpostor/commit/5c717d27851e1bc68925076bd84bad32d9fbf04a))
+* **deps:** update dependency lint-staged to v17.0.8 ([#208](https://github.com/MarcoCostantini26/TheImpostor/issues/208)) ([acd7618](https://github.com/MarcoCostantini26/TheImpostor/commit/acd7618ece076539b9ac5ae2dfd57babf25f5d73))
+* **deps:** update eslint monorepo to v10.5.0 ([#201](https://github.com/MarcoCostantini26/TheImpostor/issues/201)) ([1dec053](https://github.com/MarcoCostantini26/TheImpostor/commit/1dec0532227182dfe733a818b12de8677848342e))
+* **deps:** update gradle to v9.6.0 ([#206](https://github.com/MarcoCostantini26/TheImpostor/issues/206)) ([8440e4b](https://github.com/MarcoCostantini26/TheImpostor/commit/8440e4bb83f51c4349167fd7a78a6c78b0e56b20))
+* **deps:** update playwright monorepo to v1.61.0 ([#202](https://github.com/MarcoCostantini26/TheImpostor/issues/202)) ([b784cc4](https://github.com/MarcoCostantini26/TheImpostor/commit/b784cc4a813b614644fe68eb6f22636625e02cae))
+* **deps:** update typescript-eslint monorepo ([#210](https://github.com/MarcoCostantini26/TheImpostor/issues/210)) ([c355588](https://github.com/MarcoCostantini26/TheImpostor/commit/c355588db73553017ebfe51812d363529a6dded0))
+* **deps:** update typescript-eslint monorepo to v8.61.1 ([#203](https://github.com/MarcoCostantini26/TheImpostor/issues/203)) ([bdd3340](https://github.com/MarcoCostantini26/TheImpostor/commit/bdd33408fb226579525d5b2251862c11106e60ac))
+
 ## [4.1.13](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.12...4.1.13) (2026-06-13)
 
 ### Dependency updates
