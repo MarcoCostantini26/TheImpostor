@@ -1,3 +1,10 @@
+## [4.1.15](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.14...4.1.15) (2026-06-25)
+
+### Dependency updates
+
+* **core-deps:** update dependency autoprefixer to v10.5.2 ([#215](https://github.com/MarcoCostantini26/TheImpostor/issues/215)) ([e053d2c](https://github.com/MarcoCostantini26/TheImpostor/commit/e053d2c7d9b5fb21305f49952e00180bd3355032))
+* **deps:** update playwright monorepo ([#214](https://github.com/MarcoCostantini26/TheImpostor/issues/214)) ([82003aa](https://github.com/MarcoCostantini26/TheImpostor/commit/82003aae4223fbe9b6b4758454953e57788494c7))
+
 ## [4.1.14](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.13...4.1.14) (2026-06-23)
 
 ### Dependency updates
