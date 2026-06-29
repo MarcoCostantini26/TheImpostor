@@ -1,3 +1,13 @@
+## [4.1.17](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.16...4.1.17) (2026-06-29)
+
+### Dependency updates
+
+* **core-deps:** update dependency postcss to v8.5.16 ([#219](https://github.com/MarcoCostantini26/TheImpostor/issues/219)) ([fd1b099](https://github.com/MarcoCostantini26/TheImpostor/commit/fd1b09930c859e098b43b5978870a16717c00fff))
+* **deps:** update commitlint monorepo to v21.1.0 ([#213](https://github.com/MarcoCostantini26/TheImpostor/issues/213)) ([498caf5](https://github.com/MarcoCostantini26/TheImpostor/commit/498caf586c3fad14a29a0bf118bf631a88c8b500))
+* **deps:** update dependency eslint to v10.6.0 ([#218](https://github.com/MarcoCostantini26/TheImpostor/issues/218)) ([af27f8f](https://github.com/MarcoCostantini26/TheImpostor/commit/af27f8fca82c662bf2ebb60d07332171394dcf3e))
+* **deps:** update dependency vite to v8.1.0 ([#211](https://github.com/MarcoCostantini26/TheImpostor/issues/211)) ([6a2d687](https://github.com/MarcoCostantini26/TheImpostor/commit/6a2d6872a1ab182f787f6c899b1e6fabd6690861))
+* **deps:** update gradle to v9.6.1 ([#217](https://github.com/MarcoCostantini26/TheImpostor/issues/217)) ([1abc33d](https://github.com/MarcoCostantini26/TheImpostor/commit/1abc33dc866a17c020e0c933a7b282f7e1cdee28))
+
 ## [4.1.16](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.15...4.1.16) (2026-06-26)
 
 ### Dependency updates
