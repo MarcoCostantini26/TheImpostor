@@ -1,3 +1,9 @@
+## [4.1.18](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.17...4.1.18) (2026-06-29)
+
+### Dependency updates
+
+* **core-deps:** update tailwindcss monorepo to v4.3.2 ([#220](https://github.com/MarcoCostantini26/TheImpostor/issues/220)) ([e272cb1](https://github.com/MarcoCostantini26/TheImpostor/commit/e272cb137657f37a53e7c731dc129b60dc1cb643))
+
 ## [4.1.17](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.16...4.1.17) (2026-06-29)
 
 ### Dependency updates
