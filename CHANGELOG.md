@@ -1,3 +1,10 @@
+## [4.1.19](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.18...4.1.19) (2026-07-02)
+
+### Dependency updates
+
+* **core-deps:** update semantic-release monorepo ([#224](https://github.com/MarcoCostantini26/TheImpostor/issues/224)) ([660b1c7](https://github.com/MarcoCostantini26/TheImpostor/commit/660b1c78aece01f0d80d576cf57356cc4fdd4e5e))
+* **deps:** update dependency typescript-eslint to v8.62.1 ([#221](https://github.com/MarcoCostantini26/TheImpostor/issues/221)) ([b6f979a](https://github.com/MarcoCostantini26/TheImpostor/commit/b6f979ab67fb67e9f3fa7b1897eebc5448167371))
+
 ## [4.1.18](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.17...4.1.18) (2026-06-29)
 
 ### Dependency updates
