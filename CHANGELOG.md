@@ -1,3 +1,16 @@
+## [4.1.20](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.19...4.1.20) (2026-07-18)
+
+### Dependency updates
+
+* **core-deps:** update dependency autoprefixer to v10.5.4 ([#231](https://github.com/MarcoCostantini26/TheImpostor/issues/231)) ([6d2948d](https://github.com/MarcoCostantini26/TheImpostor/commit/6d2948d4ceb9d7a766df408e6ff3711ef85f25d1))
+* **deps:** update commitlint monorepo to v21.2.0 ([#223](https://github.com/MarcoCostantini26/TheImpostor/issues/223)) ([0f9419a](https://github.com/MarcoCostantini26/TheImpostor/commit/0f9419af9cd10e4aa76deef82bf179ca236b4988))
+* **deps:** update dependency @commitlint/cli to v21.2.1 ([#227](https://github.com/MarcoCostantini26/TheImpostor/issues/227)) ([78ca515](https://github.com/MarcoCostantini26/TheImpostor/commit/78ca515bd434bb59c54b9a55a134dc4d757b2dd9))
+* **deps:** update dependency @eslint/css to v1.4.0 ([#225](https://github.com/MarcoCostantini26/TheImpostor/issues/225)) ([3fbdc89](https://github.com/MarcoCostantini26/TheImpostor/commit/3fbdc89004ea54c8fbd076a3ce5ee2d92548b5b2))
+* **deps:** update dependency @types/node to v25.9.5 ([#228](https://github.com/MarcoCostantini26/TheImpostor/issues/228)) ([5a9f37e](https://github.com/MarcoCostantini26/TheImpostor/commit/5a9f37eeb5f103688c77dfb24b97332e57c55693))
+* **deps:** update dependency typescript-eslint to v8.63.0 ([#226](https://github.com/MarcoCostantini26/TheImpostor/issues/226)) ([32ac6d4](https://github.com/MarcoCostantini26/TheImpostor/commit/32ac6d4a86022c43c12bdee608da3e451b3f4278))
+* **deps:** update dependency vite to v8.1.3 ([#222](https://github.com/MarcoCostantini26/TheImpostor/issues/222)) ([89c2661](https://github.com/MarcoCostantini26/TheImpostor/commit/89c26612de2d5f86e9c2ef6de9368667a14806e7))
+* **deps:** update dependency vite to v8.1.4 ([#230](https://github.com/MarcoCostantini26/TheImpostor/issues/230)) ([f3992c2](https://github.com/MarcoCostantini26/TheImpostor/commit/f3992c2506353b025202186c5304f7bec8e1026a))
+
 ## [4.1.19](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.18...4.1.19) (2026-07-02)
 
 ### Dependency updates
