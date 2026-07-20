@@ -1,3 +1,10 @@
+## [4.1.22](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.21...4.1.22) (2026-07-20)
+
+### Dependency updates
+
+* **core-deps:** update dependency ws to v8.21.1 ([#234](https://github.com/MarcoCostantini26/TheImpostor/issues/234)) ([de068bf](https://github.com/MarcoCostantini26/TheImpostor/commit/de068bf5da08affd4c9281f09f18440decd0119a))
+* **deps:** update dependency vite to v8.1.5 ([#237](https://github.com/MarcoCostantini26/TheImpostor/issues/237)) ([3bdcce8](https://github.com/MarcoCostantini26/TheImpostor/commit/3bdcce87b55d314aa9a21b3f765367ab6caf5e4f))
+
 ## [4.1.21](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.20...4.1.21) (2026-07-19)
 
 ### Dependency updates
