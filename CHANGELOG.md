@@ -1,3 +1,10 @@
+## [4.1.27](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.26...4.1.27) (2026-07-25)
+
+### Dependency updates
+
+* **core-deps:** update dependency postcss to v8.5.23 ([#248](https://github.com/MarcoCostantini26/TheImpostor/issues/248)) ([cb15674](https://github.com/MarcoCostantini26/TheImpostor/commit/cb156744e77a8a729ef84863d39ad149c2d44321))
+* **deps:** update dependency eslint-plugin-vue to v10.10.0 ([#243](https://github.com/MarcoCostantini26/TheImpostor/issues/243)) ([dd35c14](https://github.com/MarcoCostantini26/TheImpostor/commit/dd35c14ad860e6161e82933e9ab15e551f40609f))
+
 ## [4.1.26](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.25...4.1.26) (2026-07-24)
 
 ### Dependency updates
