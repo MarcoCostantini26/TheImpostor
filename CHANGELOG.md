@@ -1,3 +1,14 @@
+## [4.1.28](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.27...4.1.28) (2026-07-29)
+
+### Dependency updates
+
+* **core-deps:** update dependency postcss to v8.5.24 ([#252](https://github.com/MarcoCostantini26/TheImpostor/issues/252)) ([8fbf21e](https://github.com/MarcoCostantini26/TheImpostor/commit/8fbf21e5a79f48d68549ed304810b8efe7e91490))
+* **deps:** update dependency @playwright/test to v1.62.0 ([#249](https://github.com/MarcoCostantini26/TheImpostor/issues/249)) ([3238cdf](https://github.com/MarcoCostantini26/TheImpostor/commit/3238cdf24469e9db719791bf59a200bf4b980ed3))
+* **deps:** update dependency eslint to v10.8.0 ([#239](https://github.com/MarcoCostantini26/TheImpostor/issues/239)) ([da00419](https://github.com/MarcoCostantini26/TheImpostor/commit/da004195cca95ae10ea19a4250bdb76dfe6f22e5))
+* **deps:** update dependency globals to v17.8.0 ([#251](https://github.com/MarcoCostantini26/TheImpostor/issues/251)) ([6be44fa](https://github.com/MarcoCostantini26/TheImpostor/commit/6be44fa391460167365691defdeef6ad608d701a))
+* **deps:** update dependency lint-staged to v17.2.0 ([#240](https://github.com/MarcoCostantini26/TheImpostor/issues/240)) ([a81bdcf](https://github.com/MarcoCostantini26/TheImpostor/commit/a81bdcf34f8f312295557a1c03e7c729c6bafa84))
+* **deps:** update dependency typescript-eslint to v8.65.0 ([#241](https://github.com/MarcoCostantini26/TheImpostor/issues/241)) ([de23417](https://github.com/MarcoCostantini26/TheImpostor/commit/de234178aa6631b0c61dfa55fe4f7c12f75f6182))
+
 ## [4.1.27](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.26...4.1.27) (2026-07-25)
 
 ### Dependency updates
