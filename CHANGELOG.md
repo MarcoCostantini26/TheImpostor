@@ -1,3 +1,16 @@
+## [4.1.30](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.29...4.1.30) (2026-08-02)
+
+### Dependency updates
+
+* **deps:** update actions/setup-go action to v7 ([#245](https://github.com/MarcoCostantini26/TheImpostor/issues/245)) ([ad69a16](https://github.com/MarcoCostantini26/TheImpostor/commit/ad69a16e416d756d62ee9ab3dd36d77995d85ec1))
+* **deps:** update dependency @playwright/test to v1.62.1 ([#255](https://github.com/MarcoCostantini26/TheImpostor/issues/255)) ([9cac5fc](https://github.com/MarcoCostantini26/TheImpostor/commit/9cac5fc7df8cd4d804052666bb75708f12297aff))
+* **deps:** update dependency lint-staged to v17.3.0 ([#256](https://github.com/MarcoCostantini26/TheImpostor/issues/256)) ([5b52145](https://github.com/MarcoCostantini26/TheImpostor/commit/5b5214575386d6ebb89aa5368a9999db9f44d11b))
+* **deps:** update dependency vite to v8.2.0 ([#254](https://github.com/MarcoCostantini26/TheImpostor/issues/254)) ([b28d57e](https://github.com/MarcoCostantini26/TheImpostor/commit/b28d57e03bee4b3f52bfb20a6a3b0645ef681628))
+
+### Bug Fixes
+
+* **deps:** update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v3.1.0 ([#257](https://github.com/MarcoCostantini26/TheImpostor/issues/257)) ([2d6d929](https://github.com/MarcoCostantini26/TheImpostor/commit/2d6d9291bb377e3238652e6eba83147336838ba8))
+
 ## [4.1.29](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.28...4.1.29) (2026-07-30)
 
 ### Dependency updates
