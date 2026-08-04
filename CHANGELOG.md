@@ -1,3 +1,11 @@
+## [4.1.31](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.30...4.1.31) (2026-08-04)
+
+### Dependency updates
+
+* **core-deps:** update dependency ws to v8.21.2 ([#260](https://github.com/MarcoCostantini26/TheImpostor/issues/260)) ([eb434b5](https://github.com/MarcoCostantini26/TheImpostor/commit/eb434b5809fdada5fe31c591e0a4defe5bc64e18))
+* **deps:** update dependency globals to v17.9.0 ([#258](https://github.com/MarcoCostantini26/TheImpostor/issues/258)) ([f15c8fa](https://github.com/MarcoCostantini26/TheImpostor/commit/f15c8fa5368aa17567cf5f5749f9df94de8ec4b8))
+* **deps:** update dependency typescript-eslint to v8.66.0 ([#259](https://github.com/MarcoCostantini26/TheImpostor/issues/259)) ([0ec4d7f](https://github.com/MarcoCostantini26/TheImpostor/commit/0ec4d7feed5934946cae222ba4d3938627261b9c))
+
 ## [4.1.30](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.29...4.1.30) (2026-08-02)
 
 ### Dependency updates
