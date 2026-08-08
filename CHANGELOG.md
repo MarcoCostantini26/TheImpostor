@@ -1,3 +1,11 @@
+## [4.1.32](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.31...4.1.32) (2026-08-08)
+
+### Dependency updates
+
+* **core-deps:** update dependency postcss to v8.5.26 ([#261](https://github.com/MarcoCostantini26/TheImpostor/issues/261)) ([ad8e10d](https://github.com/MarcoCostantini26/TheImpostor/commit/ad8e10d419c71e3f144db9290569a78618160732))
+* **deps:** update actions/setup-node action to v7 ([#246](https://github.com/MarcoCostantini26/TheImpostor/issues/246)) ([4d2e89b](https://github.com/MarcoCostantini26/TheImpostor/commit/4d2e89b54e639401131fd8978b84a26ec3570c4c))
+* **deps:** update dependency typescript to v7 ([#229](https://github.com/MarcoCostantini26/TheImpostor/issues/229)) ([27a6877](https://github.com/MarcoCostantini26/TheImpostor/commit/27a68777034e2782bb9d4d51db74ce30582837b4))
+
 ## [4.1.31](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.30...4.1.31) (2026-08-04)
 
 ### Dependency updates
