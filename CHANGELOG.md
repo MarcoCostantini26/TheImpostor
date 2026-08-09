@@ -1,3 +1,9 @@
+## [4.1.33](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.32...4.1.33) (2026-08-09)
+
+### Dependency updates
+
+* **core-deps:** update dependency ws to v8.21.3 ([#262](https://github.com/MarcoCostantini26/TheImpostor/issues/262)) ([1cbb292](https://github.com/MarcoCostantini26/TheImpostor/commit/1cbb292e4b91e22a7ac0550a9550458e4622deae))
+
 ## [4.1.32](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.31...4.1.32) (2026-08-08)
 
 ### Dependency updates
