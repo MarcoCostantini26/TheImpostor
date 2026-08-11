@@ -1,3 +1,16 @@
+## [4.1.34](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.33...4.1.34) (2026-08-11)
+
+### Dependency updates
+
+* **deps:** update dependency eslint to v10.8.1 ([#265](https://github.com/MarcoCostantini26/TheImpostor/issues/265)) ([fec7f24](https://github.com/MarcoCostantini26/TheImpostor/commit/fec7f24b3d81a34a5b3123ff1a6b422a3db40b7a))
+* **deps:** update dependency typescript-eslint to v8.67.0 ([#266](https://github.com/MarcoCostantini26/TheImpostor/issues/266)) ([0345635](https://github.com/MarcoCostantini26/TheImpostor/commit/0345635b6501b5c4effb9956789cc2ca2bda91e2))
+* **deps:** update dependency vite to v8.2.1 ([#263](https://github.com/MarcoCostantini26/TheImpostor/issues/263)) ([00b3313](https://github.com/MarcoCostantini26/TheImpostor/commit/00b3313ad63224e65ce99a8ec608929fb2a8ce30))
+* **deps:** update gradle to v9.7.0 ([#264](https://github.com/MarcoCostantini26/TheImpostor/issues/264)) ([dd34133](https://github.com/MarcoCostantini26/TheImpostor/commit/dd3413316fbf1168cfa61052d0ae3c5ae2bab2d3))
+
+### Bug Fixes
+
+* **core-deps:** update dependency @semantic-release/git to v11 ([#247](https://github.com/MarcoCostantini26/TheImpostor/issues/247)) ([546d9e4](https://github.com/MarcoCostantini26/TheImpostor/commit/546d9e4fc9566853018cf9c5536ffece9d029da7))
+
 ## [4.1.33](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.32...4.1.33) (2026-08-09)
 
 ### Dependency updates
