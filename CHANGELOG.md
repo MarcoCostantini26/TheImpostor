@@ -1,3 +1,15 @@
+## [4.1.35](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.34...4.1.35) (2026-08-14)
+
+### Dependency updates
+
+* **deps:** update commitlint monorepo to v21.2.2 ([#269](https://github.com/MarcoCostantini26/TheImpostor/issues/269)) ([af3bf6a](https://github.com/MarcoCostantini26/TheImpostor/commit/af3bf6a866eaa0957dd48884ba38f2030f05ecc5))
+* **deps:** update dependency globals to v17.10.0 ([#267](https://github.com/MarcoCostantini26/TheImpostor/issues/267)) ([a99fb81](https://github.com/MarcoCostantini26/TheImpostor/commit/a99fb81e3e526c34b1a758abe04f1892fea64a92))
+* **deps:** update dependency globals to v17.11.0 ([#268](https://github.com/MarcoCostantini26/TheImpostor/issues/268)) ([fe7646a](https://github.com/MarcoCostantini26/TheImpostor/commit/fe7646abf3fde270e8213e6d9c9acb0e1e1c6cc9))
+
+### Bug Fixes
+
+* **core-deps:** update dependency pinia to v4 ([#250](https://github.com/MarcoCostantini26/TheImpostor/issues/250)) ([932f731](https://github.com/MarcoCostantini26/TheImpostor/commit/932f731813e8251b4a2eb340db7a486ed01cec5c))
+
 ## [4.1.34](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.33...4.1.34) (2026-08-11)
 
 ### Dependency updates
