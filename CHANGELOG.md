@@ -1,3 +1,19 @@
+## [4.1.36](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.35...4.1.36) (2026-08-27)
+
+### Dependency updates
+
+* **core-deps:** update dependency vue-router to v5.3.0 ([#281](https://github.com/MarcoCostantini26/TheImpostor/issues/281)) ([73cc03a](https://github.com/MarcoCostantini26/TheImpostor/commit/73cc03ac3dec9084d8862210547805c986f8580e))
+* **deps:** update actions/setup-java action to v6 ([#279](https://github.com/MarcoCostantini26/TheImpostor/issues/279)) ([802a354](https://github.com/MarcoCostantini26/TheImpostor/commit/802a3543d9a5e4960408d07717d68dc9dca0ac44))
+* **deps:** update dependency eslint to v10.9.0 ([#275](https://github.com/MarcoCostantini26/TheImpostor/issues/275)) ([ac0f699](https://github.com/MarcoCostantini26/TheImpostor/commit/ac0f69907caaa1c0572712f46df32473f545e7ef))
+* **deps:** update dependency eslint to v10.9.1 ([#277](https://github.com/MarcoCostantini26/TheImpostor/issues/277)) ([b01b6d2](https://github.com/MarcoCostantini26/TheImpostor/commit/b01b6d220b424d253a8c6a17ee8e55be0b2b3599))
+* **deps:** update dependency go to 1.27 ([#273](https://github.com/MarcoCostantini26/TheImpostor/issues/273)) ([d6d248e](https://github.com/MarcoCostantini26/TheImpostor/commit/d6d248e55e431dd97a2b3dd802a57959b8aa657e))
+* **deps:** update dependency typescript-eslint to v8.68.0 ([#278](https://github.com/MarcoCostantini26/TheImpostor/issues/278)) ([095b9f6](https://github.com/MarcoCostantini26/TheImpostor/commit/095b9f6080eec776ef3d831b5810e4b16bdeddfa))
+* **deps:** update dependency vite to v8.2.2 ([#272](https://github.com/MarcoCostantini26/TheImpostor/issues/272)) ([49a36ca](https://github.com/MarcoCostantini26/TheImpostor/commit/49a36ca7fb8a15c47e8e9d5d75113ec4d6516457))
+* **deps:** update eclipse-temurin docker tag ([#276](https://github.com/MarcoCostantini26/TheImpostor/issues/276)) ([cb4a6ce](https://github.com/MarcoCostantini26/TheImpostor/commit/cb4a6ce587a8af84b3edd0a800b0f4c65ff93438))
+* **deps:** update golang docker tag to v1.27 ([#271](https://github.com/MarcoCostantini26/TheImpostor/issues/271)) ([d0fe93f](https://github.com/MarcoCostantini26/TheImpostor/commit/d0fe93fc43c40ebe6b621452e7c790b7397e706e))
+* **deps:** update gradle to v9.7.1 ([#270](https://github.com/MarcoCostantini26/TheImpostor/issues/270)) ([8945211](https://github.com/MarcoCostantini26/TheImpostor/commit/8945211487481f5b13536f14ee29b5f702c4c9f1))
+* **deps:** update plugin org.springframework.boot to v4.1.1 ([#274](https://github.com/MarcoCostantini26/TheImpostor/issues/274)) ([a70994a](https://github.com/MarcoCostantini26/TheImpostor/commit/a70994a2775d6dd2e5f30118394ad221c7439a56))
+
 ## [4.1.35](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.34...4.1.35) (2026-08-14)
 
 ### Dependency updates
