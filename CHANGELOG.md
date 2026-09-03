@@ -1,3 +1,12 @@
+## [4.1.37](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.36...4.1.37) (2026-09-03)
+
+### Dependency updates
+
+* **core-deps:** update dependency vue-router to v5.3.1 ([#284](https://github.com/MarcoCostantini26/TheImpostor/issues/284)) ([5ceea44](https://github.com/MarcoCostantini26/TheImpostor/commit/5ceea444a7c5a6c2a78f93fdc02ee4fcc1d8d27a))
+* **deps:** update dependency globals to v17.12.0 ([#283](https://github.com/MarcoCostantini26/TheImpostor/issues/283)) ([eb85223](https://github.com/MarcoCostantini26/TheImpostor/commit/eb85223929d18142c54d9f81830802e9a54cc996))
+* **deps:** update dependency lint-staged to v17.4.1 ([#280](https://github.com/MarcoCostantini26/TheImpostor/issues/280)) ([a988ace](https://github.com/MarcoCostantini26/TheImpostor/commit/a988ace5bc83eeb5b930b308a150aec950a5b55a))
+* **deps:** update dependency typescript-eslint to v8.69.0 ([#282](https://github.com/MarcoCostantini26/TheImpostor/issues/282)) ([2087144](https://github.com/MarcoCostantini26/TheImpostor/commit/2087144536f0f51f1d7ba81a27a1abbbec0a57ae))
+
 ## [4.1.36](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.35...4.1.36) (2026-08-27)
 
 ### Dependency updates
