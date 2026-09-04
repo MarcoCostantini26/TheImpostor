@@ -1,3 +1,9 @@
+## [4.1.39](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.38...4.1.39) (2026-09-04)
+
+### Dependency updates
+
+* **core-deps:** update dependency autoprefixer to v10.5.5 ([#287](https://github.com/MarcoCostantini26/TheImpostor/issues/287)) ([dd0a6d1](https://github.com/MarcoCostantini26/TheImpostor/commit/dd0a6d1653d511bb9989e6c8dd5807e4af40c0b2))
+
 ## [4.1.38](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.37...4.1.38) (2026-09-04)
 
 ### Dependency updates
