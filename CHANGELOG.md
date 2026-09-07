@@ -1,3 +1,14 @@
+## [4.1.41](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.40...4.1.41) (2026-09-07)
+
+### Dependency updates
+
+* **deps:** update dependency @playwright/test to v1.63.0 ([#289](https://github.com/MarcoCostantini26/TheImpostor/issues/289)) ([e1006ee](https://github.com/MarcoCostantini26/TheImpostor/commit/e1006ee1164c89ba8466cdea7d0432bdd81f4128))
+* **deps:** update dependency eslint to v10.10.0 ([#288](https://github.com/MarcoCostantini26/TheImpostor/issues/288)) ([3fc3935](https://github.com/MarcoCostantini26/TheImpostor/commit/3fc39359dd9b3392a05da6ed2246db600d2847b1))
+
+### Bug Fixes
+
+* **deps:** update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v3.1.1 ([#292](https://github.com/MarcoCostantini26/TheImpostor/issues/292)) ([a85dbfb](https://github.com/MarcoCostantini26/TheImpostor/commit/a85dbfb5c925ae58431e2a3fad8596e58280a35c))
+
 ## [4.1.40](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.39...4.1.40) (2026-09-05)
 
 ### Dependency updates
