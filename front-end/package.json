@@ -24,7 +24,7 @@
     "vue-toastification": "^2.0.0-rc.5"
   },
   "devDependencies": {
-    "@eslint/css": "^1.0.0",
+    "@eslint/css": "^2.0.0",
     "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.35.0",
     "@vitejs/plugin-vue": "^6.0.5",
