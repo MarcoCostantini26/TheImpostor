@@ -1,3 +1,14 @@
+## [4.1.42](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.41...4.1.42) (2026-09-11)
+
+### Dependency updates
+
+* **core-deps:** update dependency autoprefixer to v10.5.6 ([#295](https://github.com/MarcoCostantini26/TheImpostor/issues/295)) ([68c10ba](https://github.com/MarcoCostantini26/TheImpostor/commit/68c10ba1416e96fbc0183ed8dbe676ba111a6b39))
+* **deps:** update dependency @eslint/css to v2 ([#285](https://github.com/MarcoCostantini26/TheImpostor/issues/285)) ([6083533](https://github.com/MarcoCostantini26/TheImpostor/commit/6083533f0b54e282ca6f9bfff4e4dfb85d60695b))
+* **deps:** update dependency @types/node to v25.9.6 ([#294](https://github.com/MarcoCostantini26/TheImpostor/issues/294)) ([7d8bd5c](https://github.com/MarcoCostantini26/TheImpostor/commit/7d8bd5c39de49b65826aeb86821100fccae294a1))
+* **deps:** update dependency eslint-plugin-vue to v10.11.0 ([#291](https://github.com/MarcoCostantini26/TheImpostor/issues/291)) ([0af31e2](https://github.com/MarcoCostantini26/TheImpostor/commit/0af31e2dcd8775e686d8a52da84e0ae8cf485df4))
+* **deps:** update dependency lint-staged to v17.5.0 ([#290](https://github.com/MarcoCostantini26/TheImpostor/issues/290)) ([623c8a2](https://github.com/MarcoCostantini26/TheImpostor/commit/623c8a25d5d809e84ed2b4f4ab7c2e50e7855f51))
+* **deps:** update dependency typescript-eslint to v8.70.0 ([#293](https://github.com/MarcoCostantini26/TheImpostor/issues/293)) ([bb6c227](https://github.com/MarcoCostantini26/TheImpostor/commit/bb6c2274f3397148fbd30d31182dce89aee6e2e7))
+
 ## [4.1.41](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.40...4.1.41) (2026-09-07)
 
 ### Dependency updates
