@@ -1,3 +1,11 @@
+## [4.1.43](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.42...4.1.43) (2026-09-13)
+
+### Dependency updates
+
+* **core-deps:** update dependency autoprefixer to v10.6.0 ([#298](https://github.com/MarcoCostantini26/TheImpostor/issues/298)) ([f3a0a85](https://github.com/MarcoCostantini26/TheImpostor/commit/f3a0a85067b1b628f338347f7a247a75a151ffdb))
+* **deps:** update dependency lint-staged to v17.5.1 ([#296](https://github.com/MarcoCostantini26/TheImpostor/issues/296)) ([9814977](https://github.com/MarcoCostantini26/TheImpostor/commit/9814977e5304658350d85914244bb566683d0d52))
+* **deps:** update dependency vite to v8.3.0 ([#297](https://github.com/MarcoCostantini26/TheImpostor/issues/297)) ([6ef0557](https://github.com/MarcoCostantini26/TheImpostor/commit/6ef055790c5beb6c3bc9c8b6c6846dc08b4bb01d))
+
 ## [4.1.42](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.41...4.1.42) (2026-09-11)
 
 ### Dependency updates
