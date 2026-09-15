@@ -1,3 +1,10 @@
+## [4.1.44](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.43...4.1.44) (2026-09-15)
+
+### Dependency updates
+
+* **core-deps:** update dependency autoprefixer to v10.6.1 ([#300](https://github.com/MarcoCostantini26/TheImpostor/issues/300)) ([4b0bdd8](https://github.com/MarcoCostantini26/TheImpostor/commit/4b0bdd8977dddc823747bc8f843cdad219757ead))
+* **deps:** update dependency @vitejs/plugin-vue to v6.0.9 ([#299](https://github.com/MarcoCostantini26/TheImpostor/issues/299)) ([dcb6ef1](https://github.com/MarcoCostantini26/TheImpostor/commit/dcb6ef1c7e1378b630aff946ad3ceb236999beae))
+
 ## [4.1.43](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.42...4.1.43) (2026-09-13)
 
 ### Dependency updates
