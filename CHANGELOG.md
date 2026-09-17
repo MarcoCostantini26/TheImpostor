@@ -1,3 +1,11 @@
+## [4.1.45](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.44...4.1.45) (2026-09-17)
+
+### Dependency updates
+
+* **core-deps:** update dependency vue to v3.5.43 ([#304](https://github.com/MarcoCostantini26/TheImpostor/issues/304)) ([c63a473](https://github.com/MarcoCostantini26/TheImpostor/commit/c63a4738bd80b46752a8fd11e1f2450275dbc3f6))
+* **deps:** update dependency @types/node to v25.9.7 ([#303](https://github.com/MarcoCostantini26/TheImpostor/issues/303)) ([fec78ed](https://github.com/MarcoCostantini26/TheImpostor/commit/fec78ed67703aaa412bf7ea6697cd7348a75ade7))
+* **deps:** update dependency java-jdk to v25 ([#302](https://github.com/MarcoCostantini26/TheImpostor/issues/302)) ([2acd30a](https://github.com/MarcoCostantini26/TheImpostor/commit/2acd30acddf6b6470b66f4d97e03c22415fc2f64))
+
 ## [4.1.44](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.43...4.1.44) (2026-09-15)
 
 ### Dependency updates
