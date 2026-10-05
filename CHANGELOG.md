@@ -1,3 +1,17 @@
+## [4.1.47](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.46...4.1.47) (2026-10-05)
+
+### Dependency updates
+
+* **core-deps:** update dependency postcss to v8.5.29 ([#320](https://github.com/MarcoCostantini26/TheImpostor/issues/320)) ([c07fddc](https://github.com/MarcoCostantini26/TheImpostor/commit/c07fddc96dd78378eca4d91582bee60f0459a036))
+* **deps:** update dependency @types/node to v25.9.9 ([#318](https://github.com/MarcoCostantini26/TheImpostor/issues/318)) ([dcd9402](https://github.com/MarcoCostantini26/TheImpostor/commit/dcd94024fa263931bb18f5522824bca8cf07421a))
+* **deps:** update dependency @types/ws to v8.18.2 ([#315](https://github.com/MarcoCostantini26/TheImpostor/issues/315)) ([37c01b2](https://github.com/MarcoCostantini26/TheImpostor/commit/37c01b23de11938a7f617745a01492d10c5c4920))
+* **deps:** update dependency eslint to v10.12.0 ([#319](https://github.com/MarcoCostantini26/TheImpostor/issues/319)) ([9a74eec](https://github.com/MarcoCostantini26/TheImpostor/commit/9a74eecf7d035d8e773dafba1e645960491e284b))
+* **deps:** update dependency globals to v17.13.0 ([#317](https://github.com/MarcoCostantini26/TheImpostor/issues/317)) ([d2cabd0](https://github.com/MarcoCostantini26/TheImpostor/commit/d2cabd0feef52de55235918fba57473e95461dd0))
+* **deps:** update dependency lint-staged to v17.6.0 ([#312](https://github.com/MarcoCostantini26/TheImpostor/issues/312)) ([7a4a83a](https://github.com/MarcoCostantini26/TheImpostor/commit/7a4a83a2d86c32a0705306d758d7655c8ac4aa8b))
+* **deps:** update dependency typescript-eslint to v8.71.0 ([#314](https://github.com/MarcoCostantini26/TheImpostor/issues/314)) ([998e652](https://github.com/MarcoCostantini26/TheImpostor/commit/998e6529eff8f7d0dee38da286f803efdd5034d9))
+* **deps:** update dependency vite to v8.3.2 ([#316](https://github.com/MarcoCostantini26/TheImpostor/issues/316)) ([bcb93b8](https://github.com/MarcoCostantini26/TheImpostor/commit/bcb93b8a12caa8dcbf14668538bb939e8aaabed1))
+* **deps:** update gradle to v9.8.0 ([#311](https://github.com/MarcoCostantini26/TheImpostor/issues/311)) ([8b31461](https://github.com/MarcoCostantini26/TheImpostor/commit/8b31461f8cce32df6be0b55b4800a98a0b8acf07))
+
 ## [4.1.46](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.45...4.1.46) (2026-09-26)
 
 ### Dependency updates
