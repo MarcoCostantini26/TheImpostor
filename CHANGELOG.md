@@ -1,3 +1,12 @@
+## [4.1.48](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.47...4.1.48) (2026-10-08)
+
+### Dependency updates
+
+* **core-deps:** update dependency vue-router to v5.4.0 ([#324](https://github.com/MarcoCostantini26/TheImpostor/issues/324)) ([f5136ea](https://github.com/MarcoCostantini26/TheImpostor/commit/f5136ea823719b5ffd0c1d64993ada9bb44c01fa))
+* **deps:** update dependency typescript-eslint to v8.71.1 ([#321](https://github.com/MarcoCostantini26/TheImpostor/issues/321)) ([5a92556](https://github.com/MarcoCostantini26/TheImpostor/commit/5a9255678b6619c858606cb661f02dc036729e8f))
+* **deps:** update dependency vite to v8.3.3 ([#322](https://github.com/MarcoCostantini26/TheImpostor/issues/322)) ([89d7eb4](https://github.com/MarcoCostantini26/TheImpostor/commit/89d7eb447aa0787604ac1f7fb525cd12e142a4b9))
+* **deps:** update gradle to v9.8.1 ([#323](https://github.com/MarcoCostantini26/TheImpostor/issues/323)) ([0759848](https://github.com/MarcoCostantini26/TheImpostor/commit/0759848f0da2486f8c35920d1f9c2ce3883a1050))
+
 ## [4.1.47](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.46...4.1.47) (2026-10-05)
 
 ### Dependency updates
