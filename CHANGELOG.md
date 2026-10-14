@@ -1,3 +1,12 @@
+## [4.1.49](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.48...4.1.49) (2026-10-14)
+
+### Dependency updates
+
+* **core-deps:** update dependency postcss to v8.5.30 ([#328](https://github.com/MarcoCostantini26/TheImpostor/issues/328)) ([550652d](https://github.com/MarcoCostantini26/TheImpostor/commit/550652d1fe8bd2baf5da94611a50d09b0667b22f))
+* **deps:** update dependency @playwright/test to v1.64.0 ([#325](https://github.com/MarcoCostantini26/TheImpostor/issues/325)) ([b1094af](https://github.com/MarcoCostantini26/TheImpostor/commit/b1094af764fa6b233a7aed697d38b6495e5137c9))
+* **deps:** update dependency @vitejs/plugin-vue to v6.0.10 ([#327](https://github.com/MarcoCostantini26/TheImpostor/issues/327)) ([f4f7d54](https://github.com/MarcoCostantini26/TheImpostor/commit/f4f7d54a2f5485007ca16d2fa7a72eb98bce64f4))
+* **deps:** update dependency vite to v8.3.4 ([#326](https://github.com/MarcoCostantini26/TheImpostor/issues/326)) ([07133f2](https://github.com/MarcoCostantini26/TheImpostor/commit/07133f21e436bc794ac9fa24926518e368cb314e))
+
 ## [4.1.48](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.47...4.1.48) (2026-10-08)
 
 ### Dependency updates
