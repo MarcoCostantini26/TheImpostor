@@ -1,3 +1,12 @@
+## [4.1.51](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.50...4.1.51) (2026-10-17)
+
+### Dependency updates
+
+* **core-deps:** update dependency pinia to v4.1.0 ([#331](https://github.com/MarcoCostantini26/TheImpostor/issues/331)) ([82b5e9a](https://github.com/MarcoCostantini26/TheImpostor/commit/82b5e9aa75c3885b65c0e3207fcf15e0ae868b54))
+* **deps:** update dependency @eslint/css to v2.0.1 ([#333](https://github.com/MarcoCostantini26/TheImpostor/issues/333)) ([d5f67a8](https://github.com/MarcoCostantini26/TheImpostor/commit/d5f67a813eb1ffb8c1948d77e214c530b0cf5a9c))
+* **deps:** update dependency @playwright/test to v1.64.1 ([#332](https://github.com/MarcoCostantini26/TheImpostor/issues/332)) ([13ebb8e](https://github.com/MarcoCostantini26/TheImpostor/commit/13ebb8e8cd2011e70cc3ccbf2c2cfe1f3155f804))
+* **deps:** update dependency typescript-eslint to v8.71.2 ([#329](https://github.com/MarcoCostantini26/TheImpostor/issues/329)) ([6379f42](https://github.com/MarcoCostantini26/TheImpostor/commit/6379f42467125c12c785a645ca6b63d682f6b88c))
+
 ## [4.1.50](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.49...4.1.50) (2026-10-14)
 
 ### Dependency updates
