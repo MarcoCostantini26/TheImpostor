@@ -1,3 +1,10 @@
+## [4.1.52](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.51...4.1.52) (2026-10-19)
+
+### Dependency updates
+
+* **core-deps:** update dependency postcss to v8.5.31 ([#336](https://github.com/MarcoCostantini26/TheImpostor/issues/336)) ([7966f8a](https://github.com/MarcoCostantini26/TheImpostor/commit/7966f8a340385d13401cf9041e5173ab316e2767))
+* **deps:** update dependency eslint to v10.13.0 ([#334](https://github.com/MarcoCostantini26/TheImpostor/issues/334)) ([2e5bafd](https://github.com/MarcoCostantini26/TheImpostor/commit/2e5bafd3db949da63c3f54224c03a25152ae4b47))
+
 ## [4.1.51](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.50...4.1.51) (2026-10-17)
 
 ### Dependency updates
