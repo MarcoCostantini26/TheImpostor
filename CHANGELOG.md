@@ -1,3 +1,17 @@
+## [4.1.53](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.52...4.1.53) (2026-10-25)
+
+### Dependency updates
+
+* **deps:** update commitlint monorepo to v21.2.4 ([#335](https://github.com/MarcoCostantini26/TheImpostor/issues/335)) ([fc82823](https://github.com/MarcoCostantini26/TheImpostor/commit/fc82823f89f3eace38263fe154873c474a7b10fd))
+* **deps:** update dependency typescript-eslint to v8.72.0 ([#338](https://github.com/MarcoCostantini26/TheImpostor/issues/338)) ([851c04d](https://github.com/MarcoCostantini26/TheImpostor/commit/851c04dd255a3c038f3a4f2f0e8a3600989604f9))
+* **deps:** update dependency vite to v8.3.5 ([#339](https://github.com/MarcoCostantini26/TheImpostor/issues/339)) ([e9cb1a8](https://github.com/MarcoCostantini26/TheImpostor/commit/e9cb1a81aee89349adf42b66cdde2fc2b63f6ad8))
+* **deps:** update gradle to v9.8.2 ([#337](https://github.com/MarcoCostantini26/TheImpostor/issues/337)) ([4eb063c](https://github.com/MarcoCostantini26/TheImpostor/commit/4eb063c763b2f6fe3dfe8af49726c760feecd7d6))
+* **deps:** update plugin org.springframework.boot to v4.1.2 ([#340](https://github.com/MarcoCostantini26/TheImpostor/issues/340)) ([d43fde8](https://github.com/MarcoCostantini26/TheImpostor/commit/d43fde88236b9d8fd8aa48c9d75941ac5dc00c1a))
+
+### Bug Fixes
+
+* **deps:** update dependency org.springdoc:springdoc-openapi-starter-webmvc-ui to v3.2.0 ([#341](https://github.com/MarcoCostantini26/TheImpostor/issues/341)) ([b190c3b](https://github.com/MarcoCostantini26/TheImpostor/commit/b190c3bdb7eace52e120ffe00a0b153a716b5135))
+
 ## [4.1.52](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.51...4.1.52) (2026-10-19)
 
 ### Dependency updates
