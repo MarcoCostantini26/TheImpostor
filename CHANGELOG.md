@@ -1,3 +1,10 @@
+## [4.1.54](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.53...4.1.54) (2026-10-27)
+
+### Dependency updates
+
+* **core-deps:** update dependency autoprefixer to v10.6.2 ([#344](https://github.com/MarcoCostantini26/TheImpostor/issues/344)) ([f12a0c8](https://github.com/MarcoCostantini26/TheImpostor/commit/f12a0c829655b95047eec16d7302f516dc6df001))
+* **deps:** update dependency typescript-eslint to v8.72.1 ([#343](https://github.com/MarcoCostantini26/TheImpostor/issues/343)) ([4089d03](https://github.com/MarcoCostantini26/TheImpostor/commit/4089d0382fa8eaa8b7bc2deb4defc4317759a5bb))
+
 ## [4.1.53](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.52...4.1.53) (2026-10-25)
 
 ### Dependency updates
