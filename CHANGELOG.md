@@ -1,3 +1,9 @@
+## [4.1.55](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.54...4.1.55) (2026-10-28)
+
+### Dependency updates
+
+* **core-deps:** update dependency postcss to v8.5.32 ([#345](https://github.com/MarcoCostantini26/TheImpostor/issues/345)) ([16a3306](https://github.com/MarcoCostantini26/TheImpostor/commit/16a3306b6a173424389259f37900482d4abc1f18))
+
 ## [4.1.54](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.53...4.1.54) (2026-10-27)
 
 ### Dependency updates
