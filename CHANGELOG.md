@@ -1,3 +1,13 @@
+## [4.1.56](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.55...4.1.56) (2026-11-01)
+
+### Dependency updates
+
+* **core-deps:** update dependency ws to v8.22.1 ([#349](https://github.com/MarcoCostantini26/TheImpostor/issues/349)) ([0455b94](https://github.com/MarcoCostantini26/TheImpostor/commit/0455b946070842a7bbdce7d307ab8fdf79883f58))
+* **deps:** update dependency eslint to v10.14.0 ([#348](https://github.com/MarcoCostantini26/TheImpostor/issues/348)) ([412e3ec](https://github.com/MarcoCostantini26/TheImpostor/commit/412e3ec415928944a4f5fc8b0bb0d93f19a81789))
+* **deps:** update dependency eslint-plugin-vue to v10.12.0 ([#342](https://github.com/MarcoCostantini26/TheImpostor/issues/342)) ([5e72869](https://github.com/MarcoCostantini26/TheImpostor/commit/5e728693ef9301c33ea4ab2071eaa1789b472426))
+* **deps:** update dependency node to v26 ([#346](https://github.com/MarcoCostantini26/TheImpostor/issues/346)) ([8acd5b1](https://github.com/MarcoCostantini26/TheImpostor/commit/8acd5b1f9d2cded70cabeb9089e6d1ab4b5c5056))
+* **deps:** update eclipse-temurin docker tag ([#347](https://github.com/MarcoCostantini26/TheImpostor/issues/347)) ([d176a73](https://github.com/MarcoCostantini26/TheImpostor/commit/d176a73157ef4ee2de8272917b28c8ae5102cfa2))
+
 ## [4.1.55](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.54...4.1.55) (2026-10-28)
 
 ### Dependency updates
