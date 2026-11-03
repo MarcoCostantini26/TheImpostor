@@ -1,3 +1,10 @@
+## [4.1.57](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.56...4.1.57) (2026-11-03)
+
+### Dependency updates
+
+* **core-deps:** update dependency semantic-release to v25.0.9 ([#351](https://github.com/MarcoCostantini26/TheImpostor/issues/351)) ([8c89da0](https://github.com/MarcoCostantini26/TheImpostor/commit/8c89da061605e6b3954dcee0e840ede5554456f1))
+* **deps:** update dependency globals to v17.14.0 ([#350](https://github.com/MarcoCostantini26/TheImpostor/issues/350)) ([b3bf72a](https://github.com/MarcoCostantini26/TheImpostor/commit/b3bf72adbbfa001cb48be23567ba17e841051025))
+
 ## [4.1.56](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.55...4.1.56) (2026-11-01)
 
 ### Dependency updates
