@@ -1,3 +1,12 @@
+## [4.1.59](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.58...4.1.59) (2026-11-09)
+
+### Dependency updates
+
+* **core-deps:** update dependency ws to v8.22.2 ([#357](https://github.com/MarcoCostantini26/TheImpostor/issues/357)) ([c1d72a8](https://github.com/MarcoCostantini26/TheImpostor/commit/c1d72a8dffb0b1229f9833bb9911bcf05e6b2054))
+* **deps:** update dependency @playwright/test to v1.65.0 ([#355](https://github.com/MarcoCostantini26/TheImpostor/issues/355)) ([1943359](https://github.com/MarcoCostantini26/TheImpostor/commit/1943359304b88e75b4d22fb8bcaf5e2dce9e3d34))
+* **deps:** update dependency vite to v8.3.6 ([#353](https://github.com/MarcoCostantini26/TheImpostor/issues/353)) ([81980de](https://github.com/MarcoCostantini26/TheImpostor/commit/81980de07e79b9055ca1f342cf73dc77339cf978))
+* **deps:** update gradle to v9.9.0 ([#356](https://github.com/MarcoCostantini26/TheImpostor/issues/356)) ([d772f26](https://github.com/MarcoCostantini26/TheImpostor/commit/d772f260e96cf097c1a5bf43dc1381f37de9e90d))
+
 ## [4.1.58](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.57...4.1.58) (2026-11-06)
 
 ### Dependency updates
