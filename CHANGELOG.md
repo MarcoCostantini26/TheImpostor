@@ -1,3 +1,9 @@
+## [4.1.61](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.60...4.1.61) (2026-11-13)
+
+### Dependency updates
+
+* **core-deps:** update dependency @semantic-release/github to v12.0.11 ([#365](https://github.com/MarcoCostantini26/TheImpostor/issues/365)) ([ee645b7](https://github.com/MarcoCostantini26/TheImpostor/commit/ee645b7e863a070acbfd51e02c6e19d0398fa7d0))
+
 ## [4.1.60](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.59...4.1.60) (2026-11-12)
 
 ### Dependency updates

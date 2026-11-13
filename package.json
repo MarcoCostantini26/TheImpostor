@@ -19,7 +19,7 @@
   },
   "dependencies": {
     "@semantic-release/git": "^11.0.1",
-    "@semantic-release/github": "^12.0.10",
+    "@semantic-release/github": "^12.0.11",
     "semantic-release": "^25.0.9",
     "semantic-release-preconfigured-conventional-commits": "^1.1.158",
     "ws": "^8.19.0"
