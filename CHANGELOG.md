@@ -1,3 +1,10 @@
+## [4.1.64](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.63...4.1.64) (2026-11-16)
+
+### Dependency updates
+
+* **core-deps:** update dependency semantic-release-preconfigured-conventional-commits to v1.1.159 ([#371](https://github.com/MarcoCostantini26/TheImpostor/issues/371)) ([f22ad20](https://github.com/MarcoCostantini26/TheImpostor/commit/f22ad205f462a85159fa7bf8a8a8f348e738908d))
+* **deps:** update dependency @playwright/test to v1.65.1 ([#369](https://github.com/MarcoCostantini26/TheImpostor/issues/369)) ([6d92db4](https://github.com/MarcoCostantini26/TheImpostor/commit/6d92db4d3182e3d2b2e4d9fa0fee6bb23058d9aa))
+
 ## [4.1.63](https://github.com/MarcoCostantini26/TheImpostor/compare/4.1.62...4.1.63) (2026-11-15)
 
 ### Dependency updates
